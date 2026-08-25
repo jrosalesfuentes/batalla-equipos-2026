@@ -537,8 +537,8 @@ const COLS = {
   hora:      ['hora','horario'],
   cancha:    ['cancha','pista','court'],
   categoria: ['categoria','cat','serie'],
-  equipoA:   ['equipo a','equipo 1','local','equipo local'],
-  equipoB:   ['equipo b','equipo 2','visita','visitante','equipo visita']
+  equipoA:   ['equipo a','equipo 1','local','equipo local','dupla a','dupla 1'],
+  equipoB:   ['equipo b','equipo 2','visita','visitante','equipo visita','dupla b','dupla 2']
 };
 
 function columna(fila, nombres){
@@ -628,17 +628,55 @@ async function guardarProgramacion(){
 }
 
 function plantilla(){
-  const filas = [['Fecha','Hora','Cancha','Categoria','Equipo A','Equipo B']];
   const eqs = D.equipos.map(e => e.nombre);
+  const cats = D.categorias.map(c => c.codigo);
+  const cruces = [[0,5],[1,4],[2,3]];          // 1-6, 2-5, 3-4
   const horas = ['18:00','19:00','20:00','21:00'];
-  let i = 0;
-  horas.forEach(hh => D.categorias.slice(0,3).forEach((c, k) => {
-    filas.push(['1', hh, String(k+1), c.codigo, eqs[i%eqs.length]||'Equipo 1', eqs[(i+1)%eqs.length]||'Equipo 2']);
-    i += 2;
-  }));
-  const hoja = XLSX.utils.aoa_to_sheet(filas);
+
+  const filas = [['Fecha','Hora','Cancha','Categoria','Equipo A','Equipo B']];
+  let n = 0;
+  for(const cat of cats){
+    for(const [i,j] of cruces){
+      if(n >= horas.length * 3) break;
+      filas.push(['1', horas[Math.floor(n/3)], String(n%3 + 1), cat,
+                  eqs[i] || `Equipo ${i+1}`, eqs[j] || `Equipo ${j+1}`]);
+      n++;
+    }
+  }
+
+  const guia = [
+    ['CÓMO LLENAR ESTA PLANTILLA'],
+    [''],
+    ['Cada fila es UN partido.'],
+    [''],
+    ['La dupla que juega se identifica con dos datos: el equipo y la categoría.'],
+    ['Por ejemplo, "Equipo 3" + "C+" corresponde a una sola dupla del torneo.'],
+    ['No hay que escribir nombres de jugadoras: la app las deduce sola.'],
+    [''],
+    ['COLUMNAS'],
+    ['Fecha', 'Referencial. La fecha real se elige en la app antes de subir el archivo.'],
+    ['Hora', 'Hora de inicio, por ejemplo 18:00. Sirve texto o celda con formato de hora.'],
+    ['Cancha', 'Número o nombre de la cancha.'],
+    ['Categoria', 'Tiene que ser una de estas: ' + cats.join(' · ')],
+    ['Equipo A', 'Nombre del equipo, tal como está escrito en la app.'],
+    ['Equipo B', 'Nombre del equipo rival.'],
+    [''],
+    ['EQUIPOS CARGADOS HOY EN LA APP'],
+    ...eqs.map(e => [e]),
+    [''],
+    ['Si más adelante les cambias el nombre a los equipos, usa los nombres nuevos.'],
+    ['La app avisa fila por fila si algún nombre no calza, antes de guardar nada.']
+  ];
+
   const libro = XLSX.utils.book_new();
+  const hoja = XLSX.utils.aoa_to_sheet(filas);
+  hoja['!cols'] = [{wch:7},{wch:8},{wch:9},{wch:11},{wch:22},{wch:22}];
   XLSX.utils.book_append_sheet(libro, hoja, 'Programación');
+
+  const hojaGuia = XLSX.utils.aoa_to_sheet(guia);
+  hojaGuia['!cols'] = [{wch:16},{wch:70}];
+  XLSX.utils.book_append_sheet(libro, hojaGuia, 'Instrucciones');
+
   XLSX.writeFile(libro, 'programacion-batalla-2026.xlsx');
 }
 
