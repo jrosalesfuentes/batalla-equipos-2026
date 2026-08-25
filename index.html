@@ -195,6 +195,7 @@ const sb = createClient(URL_SB, LLAVE);
 const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[] };
 let vista = 'resultados';
 let sesion = null;            // administradora conectada
+let miFicha = null;           // su ficha de jugadora, si además juega
 let yo = null;                // jugadora conectada
 let filtroFecha = 'todas';
 let equipoAbierto = null;
@@ -217,27 +218,70 @@ async function cargar(){
     t('partidos'), t('v_tabla_equipos'), t('v_ranking_duplas'),
     (await sb.from('noticias').select('*').order('publicada_en',{ascending:false})).data ?? []
   ]);
+  vincularFicha();
+}
+
+/* Si la administradora también juega, cargamos su perfil de jugadora
+   sin que tenga que entrar de nuevo con nombre y código. */
+function vincularFicha(){
+  if(!sesion || !miFicha) return;
+  const j = D.jugadoras.find(x => x.id === miFicha);
+  if(!j) return;
+  const d = D.duplas.find(x => x.jugadora_1 === j.id || x.jugadora_2 === j.id);
+  yo = { jugadora_id:j.id, nombre:j.nombre, equipo_id:j.equipo_id, dupla_id:d?.id ?? null };
 }
 
 /* ---------- sesión ---------- */
+/* No basta con que exista una sesión guardada: hay que comprobar que
+   Supabase todavía acepte escribir. El permiso caduca cada cierto rato. */
+async function permisoReal(){
+  const r = await sb.rpc('es_admin');
+  if(!r.error) return r.data === true;
+  const { data:p, error } = await sb.from('perfiles')
+    .select('id').eq('id', sesion.user.id).maybeSingle();
+  return !error && !!p;
+}
+
 async function revisarSesion(){
   const { data } = await sb.auth.getSession();
   sesion = data.session ?? null;
+
   if(sesion){
-    const { data:p } = await sb.from('perfiles').select('*').eq('id', sesion.user.id).maybeSingle();
-    if(!p) sesion = null;
+    let ok = await permisoReal();
+    if(!ok){
+      /* intentamos renovar antes de rendirnos */
+      const { data:nueva } = await sb.auth.refreshSession();
+      if(nueva?.session){ sesion = nueva.session; ok = await permisoReal(); }
+    }
+    if(!ok){ await sb.auth.signOut(); sesion = null; }
   }
+
+  miFicha = null;
+  if(sesion){
+    const { data:p } = await sb.from('perfiles')
+      .select('jugadora_id').eq('id', sesion.user.id).maybeSingle();
+    miFicha = p?.jugadora_id ?? null;
+  }
+
   const g = localStorage.getItem('batalla:jugadora');
   if(g && !sesion){ try{ yo = JSON.parse(g); }catch(e){ yo = null; } }
   pintarMenu();
+}
+
+/* Si el permiso se cae mientras la app está abierta, avisamos en vez
+   de dejarla fallando en silencio. */
+function caducada(e){
+  const t = (e?.message || '') + (e?.code || '');
+  return /jwt|expired|row-level|policy|401|permission/i.test(t);
 }
 
 function pintarMenu(){
   $('#grupo-admin').hidden = !sesion;
   $('#lnk-salir').hidden   = !(yo || sesion);
   $('#lnk-entrar').hidden  = !!(yo || sesion);
-  $('#quien').textContent = sesion ? 'Administradora · ' + sesion.user.email
-                          : yo     ? 'Jugadora · ' + yo.nombre
+  $('#quien').textContent = sesion && yo ? 'Administradora y jugadora · ' + yo.nombre
+                          : sesion         ? 'Administradora · ' + sesion.user.email
+                          : yo             ? 'Jugadora · ' + yo.nombre
                           : 'Público';
 }
 
@@ -270,7 +314,7 @@ document.querySelectorAll('.cajon a[data-vista]').forEach(a => {
 $('#lnk-salir').onclick = async () => {
   await sb.auth.signOut();
   localStorage.removeItem('batalla:jugadora');
-  sesion = null; yo = null; vista = 'resultados';
+  sesion = null; yo = null; miFicha = null; vista = 'resultados';
   pintarMenu(); cajon(false); pintar();
 };
 
@@ -723,7 +767,7 @@ async function guardarProgramacion(){
     await cargar();
     aviso($('#pl-msg'), `Listo: ${filas.length} partidos guardados.`);
     setTimeout(() => { jornadaProg = jorId; pintar(); }, 900);
-  }catch(e){ aviso($('#pl-msg'), 'No se pudo guardar: ' + e.message, true); }
+  }catch(e){ problema($('#pl-msg'), e); }
 }
 
 function plantilla(){
@@ -812,6 +856,9 @@ async function subirFoto(file, carpeta){
   return sb.storage.from('fotos').getPublicUrl(ruta).data.publicUrl;
 }
 const aviso = (el, txt, mal) => { el.innerHTML = `<div class="avisito ${mal?'mal':'bien'}">${esc(txt)}</div>`; };
+const problema = (el, e) => aviso(el, caducada(e)
+  ? 'Tu sesión caducó. Sal y vuelve a entrar con tu correo y contraseña, y se guarda sin problemas.'
+  : 'No se pudo guardar: ' + e.message, true);
 const codigoAzar = () => String(Math.floor(1000 + Math.random()*9000));
 
 function enlazar(){
@@ -861,7 +908,7 @@ function enlazar(){
       const { error } = await sb.from('equipos').update(cambios).eq('id', id);
       if(error) throw error;
       await cargar(); aviso(msg, 'Guardado.'); setTimeout(pintar, 700);
-    }catch(e){ aviso(msg, 'No se pudo guardar: ' + e.message, true); }
+    }catch(e){ problema(msg, e); }
   });
 
   document.querySelectorAll('.d-guardar').forEach(b => b.onclick = async () => {
@@ -897,7 +944,7 @@ function enlazar(){
       if(error) throw error;
       await cargar();
       aviso(msg, 'Guardado. Códigos → ' + (codigos.join('  ·  ') || 'sin cambios'));
-    }catch(e){ aviso(msg, 'No se pudo guardar: ' + e.message, true); }
+    }catch(e){ problema(msg, e); }
   });
 
   if($('#pl-plantilla')) $('#pl-plantilla').onclick = plantilla;
@@ -943,7 +990,7 @@ function enlazar(){
 
       editandoNoticia = null;
       await cargar(); pintar();
-    }catch(e){ aviso($('#n-msg'), 'No se pudo guardar: ' + e.message, true); }
+    }catch(e){ problema($('#n-msg'), e); }
   };
 
   document.querySelectorAll('.n-editar').forEach(b => b.onclick = () => {
@@ -969,8 +1016,8 @@ function enlazar(){
 /* ---------- arranque ---------- */
 (async function(){
   try{
-    await cargar();
     await revisarSesion();
+    await cargar();
     pintar();
   }catch(e){
     $('#pantalla').className = '';
