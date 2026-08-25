@@ -1,0 +1,17 @@
+{
+  "name": "Batalla de Equipos 2026",
+  "short_name": "Batalla",
+  "description": "Torneo por equipos de Zona Pádel Club",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#007E76",
+  "theme_color": "#007E76",
+  "lang": "es-CL",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
