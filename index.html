@@ -90,11 +90,28 @@ tr:last-child td{border-bottom:0}
 .avisito.mal{background:rgba(217,72,47,.1);color:var(--alerta)}
 .avisito.bien{background:rgba(215,222,105,.35);color:var(--tinta)}
 .cargando{color:#fff;text-align:center;padding:40px 0;font-size:14px}
+.hora{display:flex;align-items:center;gap:8px;margin:18px 0 7px}
+.hora b{color:#fff;font-family:'IBM Plex Mono',monospace;font-size:15px;letter-spacing:.04em}
+.hora span{flex:1;height:1px;background:rgba(255,255,255,.28)}
+.pj{background:#fff;border-radius:10px;padding:11px 13px;margin-bottom:7px;border-left:4px solid transparent}
+.pj.mio{border-left-color:var(--lima);background:#FBFDEE}
+.pj .arriba{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.pj .cancha{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gris)}
+.pj .duelo{font-weight:600;font-size:14.5px;line-height:1.3}
+.pj .duelo em{font-style:normal;color:var(--gris);font-weight:400;padding:0 4px}
+.pj .marca{display:inline-block;background:var(--lima);color:var(--tinta);font-size:10px;font-weight:700;
+  letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-top:6px}
 .dupla{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--glass)}
 .dupla:last-child{border-bottom:0}
 .dupla img{width:52px;height:52px;border-radius:8px;object-fit:cover;background:var(--glass)}
 .dupla .n{font-weight:600;font-size:14px}
 .dupla .c{font-size:12px;color:var(--gris)}
+.prev{max-height:340px;overflow:auto;border:1px solid var(--linea);border-radius:8px;margin:10px 0}
+.prev table{margin:0;border-radius:0}
+.prev td,.prev th{font-size:12px;padding:6px 5px;text-align:left;white-space:nowrap}
+.prev td:nth-child(2){font-family:'IBM Plex Mono',monospace;font-weight:400}
+.mal{color:var(--alerta)}
+.bien{color:var(--verde)}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 </style>
 
@@ -112,6 +129,7 @@ tr:last-child td{border-bottom:0}
   <button class="cerrar" id="cerrar" aria-label="Cerrar menú">&times;</button>
   <h2>Secciones</h2>
   <a data-vista="perfil">Mi perfil</a>
+  <a data-vista="programacion">Programación</a>
   <a data-vista="resultados" class="activo">Resultados</a>
   <a data-vista="noticias">Noticias</a>
   <h2>Acceso</h2>
@@ -122,6 +140,7 @@ tr:last-child td{border-bottom:0}
     <h2>Administración</h2>
     <a data-adm="equipos">Equipos</a>
     <a data-adm="plantel">Jugadoras y duplas</a>
+    <a data-adm="programacion">Programación</a>
     <a data-adm="noticias">Noticias</a>
   </div>
 </nav>
@@ -130,6 +149,7 @@ tr:last-child td{border-bottom:0}
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import * as XLSX from 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm';
 
 const URL_SB = 'https://efuivscdjjpxltytpgxf.supabase.co';
 const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
@@ -223,7 +243,7 @@ $('#lnk-salir').onclick = async () => {
 function pintar(){
   const p = $('#pantalla');
   p.className = '';
-  const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil,
+  const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
               noticias:vNoticias, entrar:vEntrar, admin:vAdmin }[vista] ?? vResultados;
   p.innerHTML = f();
   enlazar();
@@ -277,6 +297,53 @@ function tablaPos(lista, etiqueta){
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
       <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table>`;
+}
+
+/* --- programación semanal --- */
+let jornadaProg = null;
+function vProgramacion(){
+  if(!D.jornadas.length)
+    return `<h2 class="sec">Programación</h2><div class="vacio">Todavía no hay fechas cargadas.</div>`;
+
+  if(jornadaProg === null){
+    const hoy = new Date().toISOString().slice(0,10);
+    jornadaProg = (D.jornadas.find(j => j.fecha >= hoy) || D.jornadas[D.jornadas.length-1]).id;
+  }
+
+  const chips = D.jornadas.map(j =>
+    `<button class="chip ${jornadaProg===j.id?'on':''}" data-jor="${j.id}">${esc(j.nombre)}</button>`).join('');
+
+  const jor = D.jornadas.find(x => x.id === jornadaProg);
+  const lista = D.partidos.filter(p => p.jornada_id === jornadaProg)
+    .sort((a,b) => (a.hora||'99').localeCompare(b.hora||'99')
+                || String(a.cancha||'').localeCompare(String(b.cancha||'')));
+
+  let cuerpo;
+  if(!lista.length){
+    cuerpo = `<div class="vacio">Esta fecha todavía no tiene programación.<br>Las administradoras la publican durante la semana.</div>`;
+  } else {
+    const bloques = {};
+    lista.forEach(p => {
+      const k = p.hora ? p.hora.slice(0,5) : 'Por confirmar';
+      (bloques[k] = bloques[k] || []).push(p);
+    });
+    cuerpo = Object.entries(bloques).map(([hora, ps]) => `
+      <div class="hora"><b>${esc(hora)}</b><span></span></div>
+      ${ps.map(p => {
+        const mio = yo && (p.dupla_a === yo.dupla_id || p.dupla_b === yo.dupla_id);
+        return `<div class="pj ${mio?'mio':''}">
+          <div class="arriba"><span class="cat">${esc(cat(p.categoria_id))}</span>
+            ${p.cancha ? `<span class="cancha">Cancha ${esc(p.cancha)}</span>` : ''}</div>
+          <div class="duelo">${esc(eq(p.equipo_a))} <em>vs</em> ${esc(eq(p.equipo_b))}</div>
+          ${mio ? '<span class="marca">Te toca</span>' : ''}
+        </div>`;
+      }).join('')}`).join('');
+  }
+
+  return `<h2 class="sec">Programación</h2>
+    <div class="chips">${chips}</div>
+    <p class="nota">${esc(jor.nombre)} · ${esc(fechaLarga(jor.fecha))}</p>
+    ${cuerpo}`;
 }
 
 /* --- equipos --- */
@@ -371,11 +438,11 @@ function vEntrar(){
 let subAdm = 'equipos';
 function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2><div class="vacio">Necesitas entrar como administradora.</div>`;
-  const chips = ['equipos','plantel','noticias'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
-      {equipos:'Equipos',plantel:'Jugadoras y duplas',noticias:'Noticias'}[s]}</button>`).join('');
+      {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',noticias:'Noticias'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
-    ({ equipos:admEquipos, plantel:admPlantel, noticias:admNoticias }[subAdm])();
+    ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion, noticias:admNoticias }[subAdm])();
 }
 
 function admEquipos(){
@@ -442,6 +509,139 @@ function admNoticias(){
       </div></div>`).join('')}`;
 }
 
+/* --- administración: cargar la programación desde Excel --- */
+let previa = null;
+
+function admProgramacion(){
+  const jors = D.jornadas.map(j => `<option value="${j.id}">${esc(j.nombre)} · ${esc(j.fecha)}</option>`).join('');
+  return `<div class="card">
+      <h3>Cargar la programación de una fecha</h3>
+      <p style="font-size:13px;color:var(--gris);margin:0 0 12px">
+        Sube el Excel con los partidos. La app lo revisa, te muestra cómo quedó y recién ahí lo guardas.</p>
+      <button class="btn claro" id="pl-plantilla" style="margin-bottom:14px">Descargar plantilla</button>
+      <div style="margin-bottom:10px"><label class="lab">Fecha del torneo</label>
+        <select id="pl-jor">${jors}</select></div>
+      <div style="margin-bottom:10px"><label class="lab">Archivo</label>
+        <input type="file" id="pl-file" accept=".xlsx,.xls,.csv"></div>
+      <label style="font-size:13px;display:block;margin-bottom:12px">
+        <input type="checkbox" id="pl-reemplazar" checked> Reemplazar los partidos que ya tenga esa fecha</label>
+      <div id="pl-msg"></div>
+      <div id="pl-previa"></div>
+    </div>`;
+}
+
+const norm = t => String(t ?? '').toLowerCase().normalize('NFD')
+  .replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
+
+const COLS = {
+  hora:      ['hora','horario'],
+  cancha:    ['cancha','pista','court'],
+  categoria: ['categoria','cat','serie'],
+  equipoA:   ['equipo a','equipo 1','local','equipo local'],
+  equipoB:   ['equipo b','equipo 2','visita','visitante','equipo visita']
+};
+
+function columna(fila, nombres){
+  for(const k of Object.keys(fila)) if(nombres.includes(norm(k))) return fila[k];
+  return '';
+}
+
+function comoHora(v){
+  if(v === '' || v == null) return null;
+  if(v instanceof Date) return String(v.getHours()).padStart(2,'0')+':'+String(v.getMinutes()).padStart(2,'0');
+  if(typeof v === 'number'){
+    const min = Math.round(v * 24 * 60);
+    return String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
+  }
+  const m = String(v).match(/(\d{1,2})[:.](\d{2})/);
+  return m ? m[1].padStart(2,'0')+':'+m[2] : null;
+}
+
+function revisar(filas){
+  return filas.map((f, i) => {
+    const r = { linea:i+2, hora:comoHora(columna(f,COLS.hora)),
+                cancha:String(columna(f,COLS.cancha) ?? '').trim() || null };
+    const cTxt = norm(columna(f, COLS.categoria));
+    const aTxt = norm(columna(f, COLS.equipoA));
+    const bTxt = norm(columna(f, COLS.equipoB));
+    const c = D.categorias.find(x => norm(x.codigo) === cTxt);
+    const a = D.equipos.find(x => norm(x.nombre) === aTxt);
+    const b = D.equipos.find(x => norm(x.nombre) === bTxt);
+    r.categoria = c; r.a = a; r.b = b;
+    r.texto = `${columna(f,COLS.equipoA)} vs ${columna(f,COLS.equipoB)}`;
+    if(!cTxt && !aTxt && !bTxt) r.error = 'vacía';
+    else if(!c) r.error = `categoría desconocida: ${columna(f,COLS.categoria)}`;
+    else if(!a) r.error = `equipo desconocido: ${columna(f,COLS.equipoA)}`;
+    else if(!b) r.error = `equipo desconocido: ${columna(f,COLS.equipoB)}`;
+    else if(a.id === b.id) r.error = 'un equipo no puede jugar contra sí mismo';
+    return r;
+  }).filter(r => r.error !== 'vacía');
+}
+
+function pintarPrevia(){
+  const buenas = previa.filter(r => !r.error);
+  const malas  = previa.filter(r => r.error);
+  $('#pl-previa').innerHTML = `
+    <div class="avisito ${malas.length?'mal':'bien'}">
+      ${buenas.length} partido${buenas.length===1?'':'s'} listo${buenas.length===1?'':'s'} para guardar${
+      malas.length ? ` · ${malas.length} con problemas` : ''}</div>
+    <div class="prev"><table><thead><tr><th>Línea</th><th>Hora</th><th>Cat.</th><th>Partido</th><th>Estado</th></tr></thead>
+      <tbody>${previa.map(r => `<tr>
+        <td>${r.linea}</td><td>${esc(r.hora ?? '—')}</td>
+        <td>${esc(r.categoria?.codigo ?? '—')}</td><td>${esc(r.texto)}</td>
+        <td class="${r.error?'mal':'bien'}">${r.error ? esc(r.error) : 'Correcto'}</td></tr>`).join('')}</tbody></table></div>
+    ${buenas.length ? `<button class="btn lima" id="pl-guardar">Guardar ${buenas.length} partidos</button>` : ''}`;
+  if($('#pl-guardar')) $('#pl-guardar').onclick = guardarProgramacion;
+}
+
+async function guardarProgramacion(){
+  const jorId = +$('#pl-jor').value;
+  const buenas = previa.filter(r => !r.error);
+  try{
+    if($('#pl-reemplazar').checked)
+      await sb.from('partidos').delete().eq('jornada_id', jorId);
+
+    /* la dupla de cada equipo y categoría tiene que existir; si no, se crea vacía */
+    const necesarias = [...new Set(buenas.flatMap(r =>
+      [`${r.a.id}-${r.categoria.id}`, `${r.b.id}-${r.categoria.id}`]))]
+      .map(k => { const [e,c] = k.split('-'); return { equipo_id:+e, categoria_id:+c }; });
+    await sb.from('duplas').upsert(necesarias, { onConflict:'equipo_id,categoria_id', ignoreDuplicates:true });
+
+    const { data: duplas } = await sb.from('duplas').select('*');
+    const buscar = (eqId, catId) => duplas.find(d => d.equipo_id===eqId && d.categoria_id===catId)?.id;
+
+    const filas = buenas.map(r => ({
+      jornada_id: jorId, categoria_id: r.categoria.id,
+      hora: r.hora, cancha: r.cancha,
+      dupla_a: buscar(r.a.id, r.categoria.id),
+      dupla_b: buscar(r.b.id, r.categoria.id),
+      estado: 'programado'
+    }));
+    const { error } = await sb.from('partidos').insert(filas);
+    if(error) throw error;
+
+    previa = null;
+    await cargar();
+    aviso($('#pl-msg'), `Listo: ${filas.length} partidos guardados.`);
+    setTimeout(() => { jornadaProg = jorId; pintar(); }, 900);
+  }catch(e){ aviso($('#pl-msg'), 'No se pudo guardar: ' + e.message, true); }
+}
+
+function plantilla(){
+  const filas = [['Fecha','Hora','Cancha','Categoria','Equipo A','Equipo B']];
+  const eqs = D.equipos.map(e => e.nombre);
+  const horas = ['18:00','19:00','20:00','21:00'];
+  let i = 0;
+  horas.forEach(hh => D.categorias.slice(0,3).forEach((c, k) => {
+    filas.push(['1', hh, String(k+1), c.codigo, eqs[i%eqs.length]||'Equipo 1', eqs[(i+1)%eqs.length]||'Equipo 2']);
+    i += 2;
+  }));
+  const hoja = XLSX.utils.aoa_to_sheet(filas);
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, hoja, 'Programación');
+  XLSX.writeFile(libro, 'programacion-batalla-2026.xlsx');
+}
+
 /* ============================================================
    ACCIONES
    ============================================================ */
@@ -481,6 +681,7 @@ function enlazar(){
   document.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => { subRes = b.dataset.sub; pintar(); });
   document.querySelectorAll('[data-fecha]').forEach(b => b.onclick = () => {
     filtroFecha = b.dataset.fecha === 'todas' ? 'todas' : +b.dataset.fecha; pintar(); });
+  document.querySelectorAll('[data-jor]').forEach(b => b.onclick = () => { jornadaProg = +b.dataset.jor; pintar(); });
   document.querySelectorAll('[data-equipo]').forEach(b => b.onclick = () => { equipoAbierto = +b.dataset.equipo; pintar(); });
   document.querySelectorAll('[data-adm]').forEach(b => b.onclick = () => { subAdm = b.dataset.adm; pintar(); });
   if($('#volver')) $('#volver').onclick = () => { equipoAbierto = null; pintar(); };
@@ -559,6 +760,20 @@ function enlazar(){
       aviso(msg, 'Guardado. Códigos → ' + (codigos.join('  ·  ') || 'sin cambios'));
     }catch(e){ aviso(msg, 'No se pudo guardar: ' + e.message, true); }
   });
+
+  if($('#pl-plantilla')) $('#pl-plantilla').onclick = plantilla;
+  if($('#pl-file')) $('#pl-file').onchange = async e => {
+    const f = e.target.files[0];
+    if(!f) return;
+    try{
+      const libro = XLSX.read(await f.arrayBuffer(), { cellDates:true });
+      const hoja = libro.Sheets[libro.SheetNames[0]];
+      previa = revisar(XLSX.utils.sheet_to_json(hoja, { defval:'' }));
+      if(!previa.length) return aviso($('#pl-msg'), 'No encontré filas con datos en la primera hoja.', true);
+      $('#pl-msg').innerHTML = '';
+      pintarPrevia();
+    }catch(err){ aviso($('#pl-msg'), 'No se pudo leer el archivo: ' + err.message, true); }
+  };
 
   if($('#n-guardar')) $('#n-guardar').onclick = async () => {
     try{
