@@ -165,6 +165,7 @@ tr:last-child td{border-bottom:0}
   <div class="quien" id="quien">Público</div>
   <a data-vista="entrar" id="lnk-entrar">Iniciar sesión</a>
   <a id="lnk-salir" hidden>Salir</a>
+  <a data-vista="diag">Diagnóstico</a>
   <a class="insta" href="https://instagram.com/club.zonapadel" target="_blank" rel="noopener">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
       <rect x="3" y="3" width="18" height="18" rx="5"/>
@@ -192,6 +193,7 @@ const URL_SB = 'https://efuivscdjjpxltytpgxf.supabase.co';
 const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
+const VERSION = 'v9 · 25-08-2026';
 const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[] };
 let vista = 'resultados';
 let sesion = null;            // administradora conectada
@@ -258,9 +260,11 @@ async function revisarSesion(){
 
   miFicha = null;
   if(sesion){
-    const { data:p } = await sb.from('perfiles')
-      .select('jugadora_id').eq('id', sesion.user.id).maybeSingle();
-    miFicha = p?.jugadora_id ?? null;
+    try{
+      const { data:p } = await sb.from('perfiles')
+        .select('jugadora_id').eq('id', sesion.user.id).maybeSingle();
+      miFicha = p?.jugadora_id ?? null;
+    }catch(e){ miFicha = null; }
   }
 
   const g = localStorage.getItem('batalla:jugadora');
@@ -294,22 +298,16 @@ $('#abrir').onclick  = () => cajon(true);
 $('#cerrar').onclick = () => cajon(false);
 $('#velo').onclick   = () => cajon(false);
 
-document.querySelectorAll('.cajon a[data-adm]').forEach(a => {
-  a.onclick = () => {
-    vista = 'admin'; subAdm = a.dataset.adm; equipoAbierto = null;
-    document.querySelectorAll('.cajon a').forEach(o => o.classList.remove('activo'));
-    a.classList.add('activo');
-    cajon(false); pintar();
-  };
-});
-
-document.querySelectorAll('.cajon a[data-vista]').forEach(a => {
-  a.onclick = () => {
-    vista = a.dataset.vista; equipoAbierto = null;
-    document.querySelectorAll('.cajon a').forEach(o => o.classList.remove('activo'));
-    a.classList.add('activo');
-    cajon(false); pintar();
-  };
+$('#cajon').addEventListener('click', ev => {
+  const a = ev.target.closest('a[data-vista],a[data-adm]');
+  if(!a) return;
+  if(a.dataset.adm){ vista = 'admin'; subAdm = a.dataset.adm; }
+  else { vista = a.dataset.vista; }
+  equipoAbierto = null; noticiaAbierta = null;
+  document.querySelectorAll('.cajon a').forEach(o => o.classList.remove('activo'));
+  a.classList.add('activo');
+  cajon(false);
+  pintar();
 });
 $('#lnk-salir').onclick = async () => {
   await sb.auth.signOut();
@@ -325,9 +323,16 @@ function pintar(){
   const p = $('#pantalla');
   p.className = '';
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
-              noticias:vNoticias, entrar:vEntrar, admin:vAdmin }[vista] ?? vResultados;
-  p.innerHTML = f();
-  enlazar();
+              noticias:vNoticias, entrar:vEntrar, admin:vAdmin, diag:vDiag }[vista] ?? vResultados;
+  try{
+    p.innerHTML = f();
+    enlazar();
+  }catch(e){
+    p.innerHTML = `<div class="vacio">Algo falló al mostrar esta sección.<br><br>
+      <span class="mono" style="font-size:12px">${esc(e.message)}</span><br><br>
+      <span style="font-size:12px">Mándale este mensaje a quien construyó la app.</span></div>`;
+    console.error(e);
+  }
 }
 
 /* --- resultados --- */
@@ -562,7 +567,9 @@ function vEntrar(){
 /* --- administración --- */
 let subAdm = 'equipos';
 function vAdmin(){
-  if(!sesion) return `<h2 class="sec">Administración</h2><div class="vacio">Necesitas entrar como administradora.</div>`;
+  if(!sesion) return `<h2 class="sec">Administración</h2>
+    <div class="vacio">Tu sesión de administradora no está activa.<br><br>
+      <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
   const chips = ['equipos','plantel','programacion','noticias'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',noticias:'Noticias'}[s]}</button>`).join('');
@@ -650,6 +657,33 @@ function admNoticias(){
           <button class="btn claro n-toggle" data-id="${x.id}" data-pub="${x.publicada}">${x.publicada?'Despublicar':'Publicar'}</button>
           <button class="btn claro n-borrar" data-id="${x.id}" style="border-color:var(--alerta);color:var(--alerta)">Borrar</button>
         </div></div>`).join('')}`;
+}
+
+/* --- diagnóstico --- */
+function vDiag(){
+  return `<h2 class="sec">Diagnóstico</h2>
+    <div class="card"><div class="mono" style="font-size:13px;line-height:2" id="diag-txt">
+      Comprobando…</div></div>
+    <p class="nota">Manda una foto de esta pantalla si algo no funciona.</p>`;
+}
+
+async function llenarDiag(){
+  const el = $('#diag-txt'); if(!el) return;
+  const lineas = [];
+  lineas.push(`Versión del archivo: ${VERSION}`);
+  lineas.push(`Sesión guardada: ${sesion ? 'sí' : 'no'}`);
+  lineas.push(`Correo: ${sesion ? sesion.user.email : '—'}`);
+  try{
+    const r = await sb.rpc('es_admin');
+    lineas.push(`Permiso en el servidor: ${r.error ? 'ERROR · ' + r.error.message : (r.data ? 'sí' : 'no')}`);
+  }catch(e){ lineas.push(`Permiso en el servidor: ERROR · ${e.message}`); }
+  try{
+    const { error } = await sb.from('equipos').update({ orden: D.equipos[0]?.orden ?? 0 }).eq('id', D.equipos[0]?.id ?? -1);
+    lineas.push(`Prueba de escritura: ${error ? 'FALLA · ' + error.message : 'funciona'}`);
+  }catch(e){ lineas.push(`Prueba de escritura: FALLA · ${e.message}`); }
+  lineas.push(`Ficha de jugadora enlazada: ${miFicha ?? 'no'}`);
+  lineas.push(`Datos cargados: ${D.equipos.length} equipos · ${D.jugadoras.length} jugadoras · ${D.partidos.length} partidos · ${D.noticias.length} noticias`);
+  el.innerHTML = lineas.map(esc).join('<br>');
 }
 
 /* --- administración: cargar la programación desde Excel --- */
@@ -866,6 +900,8 @@ function enlazar(){
   document.querySelectorAll('[data-fecha]').forEach(b => b.onclick = () => {
     filtroFecha = b.dataset.fecha === 'todas' ? 'todas' : +b.dataset.fecha; pintar(); });
   document.querySelectorAll('[data-noticia]').forEach(b => b.onclick = () => { noticiaAbierta = +b.dataset.noticia; pintar(); });
+  if($('#diag-txt')) llenarDiag();
+  if($('#ir-entrar')) $('#ir-entrar').onclick = () => { vista = 'entrar'; pintar(); };
   if($('#volver-n')) $('#volver-n').onclick = () => { noticiaAbierta = null; pintar(); };
   document.querySelectorAll('[data-jor]').forEach(b => b.onclick = () => { jornadaProg = +b.dataset.jor; pintar(); });
   document.querySelectorAll('[data-equipo]').forEach(b => b.onclick = () => { equipoAbierto = +b.dataset.equipo; pintar(); });
@@ -1012,6 +1048,11 @@ function enlazar(){
     await cargar(); pintar();
   });
 }
+
+sb.auth.onAuthStateChange((evento) => {
+  if(evento === 'SIGNED_OUT'){ sesion = null; miFicha = null; pintarMenu();
+    if(vista === 'admin') pintar(); }
+});
 
 /* ---------- arranque ---------- */
 (async function(){
