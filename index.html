@@ -119,6 +119,14 @@ tr:last-child td{border-bottom:0}
 .dupla .n{font-weight:600;font-size:14px}
 .dupla .c{font-size:12px;color:var(--gris)}
 /* --- noticias --- */
+.lista-nombres{margin-top:10px;max-height:330px;overflow-y:auto}
+.nombre{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;
+  background:#fff;border:0;border-bottom:1px solid var(--glass);padding:11px 4px;
+  text-align:left;cursor:pointer;font-family:inherit}
+.nombre:hover{background:var(--paper)}
+.nombre strong{font-size:15px}
+.nombre span{font-size:12px;color:var(--gris)}
+.sinres{font-size:13px;color:var(--gris);padding:10px 4px;margin:0}
 .muro{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
 .mural{background:#fff;border-radius:12px;overflow:hidden;cursor:pointer}
 .mural img,.mural .sinfoto{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--glass)}
@@ -546,26 +554,13 @@ function vPerfil(){
 }
 
 /* --- vida social --- */
-let subSocial = 'duplas';
+let subSocial = 'gritos';
 function vSocial(){
-  const chips = ['duplas','gritos','galeria'].map(s =>
+  const chips = ['gritos','galeria'].map(s =>
     `<button class="chip ${subSocial===s?'on':''}" data-social="${s}">${
-      {duplas:'Las duplas',gritos:'Los gritos',galeria:'Galería'}[s]}</button>`).join('');
+      {gritos:'Los gritos',galeria:'Galería'}[s]}</button>`).join('');
 
   let cuerpo = '';
-  if(subSocial === 'duplas'){
-    const con = D.duplas.filter(d => d.foto_url || d.jugadora_1);
-    cuerpo = con.length ? `<div class="muro">${con.map(d => {
-      const js = [d.jugadora_1, d.jugadora_2].map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean);
-      return `<div class="mural">
-        ${d.foto_url ? `<img src="${esc(d.foto_url)}" alt="">` : '<div class="sinfoto"></div>'}
-        <div class="pie"><strong>${esc(js.join(' y ') || 'Por definir')}</strong>
-          <span>${esc(eq(d.equipo_id))} · ${esc(cat(d.categoria_id))}</span></div>
-      </div>`;
-    }).join('')}</div>`
-    : `<div class="vacio">Todavía no hay fotos de duplas.<br>Se suben desde Administración, en Jugadoras y duplas.</div>`;
-  }
-
   if(subSocial === 'gritos'){
     const con = D.equipos.filter(e => e.grito);
     cuerpo = con.length ? con.map(e => `<div class="card grito">
@@ -648,17 +643,12 @@ function vNoticias(){
 
 /* --- entrar --- */
 function vEntrar(){
-  const ops = D.jugadoras.length
-    ? D.jugadoras.map(j => `<option value="${j.id}">${esc(j.nombre)} · ${esc(eq(j.equipo_id))}</option>`).join('')
-    : '<option value="">(aún no hay jugadoras cargadas)</option>';
   return `<h2 class="sec">Iniciar sesión</h2>
     <div class="card"><h3>Soy jugadora</h3>
-      <div id="msg-j"></div>
-      <div style="margin-bottom:10px"><label class="lab">Tu nombre</label><select id="j-id">${ops}</select></div>
-      <div style="margin-bottom:12px"><label class="lab">Tu código de 4 dígitos</label>
-        <input type="text" id="j-cod" inputmode="numeric" maxlength="4" placeholder="····"></div>
-      <button class="btn lima" id="j-entrar">Entrar</button>
-      <p style="font-size:12.5px;color:var(--gris);margin:10px 0 0">Tu capitana te entrega el código. Queda guardado en este teléfono y no lo tienes que escribir de nuevo.</p>
+      <p style="font-size:13px;color:var(--gris);margin:0 0 10px">
+        Busca tu nombre y tócalo. Queda guardado en este teléfono y no lo tienes que hacer de nuevo.</p>
+      <input type="text" id="j-buscar" placeholder="Escribe tu nombre" autocomplete="off">
+      <div id="j-lista" class="lista-nombres"></div>
     </div>
     <div class="card"><h3>Soy administradora</h3>
       <div id="msg-a"></div>
@@ -666,6 +656,29 @@ function vEntrar(){
       <div style="margin-bottom:12px"><label class="lab">Contraseña</label><input type="password" id="a-pass"></div>
       <button class="btn" id="a-entrar">Entrar</button>
     </div>`;
+}
+
+function pintarNombres(){
+  const cont = $('#j-lista'); if(!cont) return;
+  const q = norm($('#j-buscar').value);
+  if(!D.jugadoras.length){
+    cont.innerHTML = '<p class="sinres">Todavía no hay jugadoras cargadas.</p>'; return;
+  }
+  const lista = D.jugadoras.filter(j => !q || norm(j.nombre).includes(q)).slice(0, 40);
+  cont.innerHTML = lista.length
+    ? lista.map(j => `<button class="nombre" data-jug="${j.id}">
+        <strong>${esc(j.nombre)}</strong><span>${esc(eq(j.equipo_id))}</span></button>`).join('')
+    : '<p class="sinres">Ningún nombre calza con eso. Pregúntale a tu capitana cómo quedaste inscrita.</p>';
+  cont.querySelectorAll('.nombre').forEach(b => b.onclick = () => entrarComo(+b.dataset.jug));
+}
+
+function entrarComo(id){
+  const j = D.jugadoras.find(x => x.id === id);
+  if(!j) return;
+  const d = D.duplas.find(x => x.jugadora_1 === j.id || x.jugadora_2 === j.id);
+  yo = { jugadora_id:j.id, nombre:j.nombre, equipo_id:j.equipo_id, dupla_id:d?.id ?? null };
+  localStorage.setItem('batalla:jugadora', JSON.stringify(yo));
+  pintarMenu(); vista = 'perfil'; subPerfil = 'partidos'; pintar();
 }
 
 /* --- administración --- */
@@ -713,8 +726,6 @@ function admPlantel(){
       ${[0,1].map(k => `<div class="fila">
         <div style="flex:1;min-width:130px"><label class="lab">Jugadora ${k+1}</label>
           <input type="text" class="p-nom" data-k="${k}" value="${esc(j[k]?.nombre ?? '')}"></div>
-        <div style="width:96px"><label class="lab">Código</label>
-          <input type="text" class="p-cod" data-k="${k}" maxlength="4" inputmode="numeric" placeholder="auto"></div>
       </div>`).join('')}
       <div style="margin:6px 0 10px"><label class="lab">Descripción de la dupla</label>
         <textarea class="d-desc">${esc(d?.descripcion ?? '')}</textarea></div>
@@ -725,7 +736,7 @@ function admPlantel(){
   }).join('');
   return `<div style="margin-bottom:12px"><label class="lab" style="color:#fff">Equipo</label>
       <select id="adm-eq">${sel}</select></div>
-    <p class="nota">Si dejas el código en blanco, se genera uno automático y te lo muestro al guardar. Anótalo: después solo lo ves acá.</p>${filas}`;
+    <p class="nota">El nombre que escribas acá es con el que cada jugadora va a entrar a la app, así que tiene que ser único. Si hay dos Javis, distínguelas.</p>${filas}`;
 }
 
 function admNoticias(){
@@ -967,7 +978,6 @@ const aviso = (el, txt, mal) => { el.innerHTML = `<div class="avisito ${mal?'mal
 const problema = (el, e) => aviso(el, caducada(e)
   ? 'Tu sesión caducó. Sal y vuelve a entrar con tu correo y contraseña, y se guarda sin problemas.'
   : 'No se pudo guardar: ' + e.message, true);
-const codigoAzar = () => String(Math.floor(1000 + Math.random()*9000));
 
 function enlazar(){
   document.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => { subRes = b.dataset.sub; pintar(); });
@@ -983,17 +993,10 @@ function enlazar(){
   if($('#volver')) $('#volver').onclick = () => { equipoAbierto = null; pintar(); };
   if($('#adm-eq')) $('#adm-eq').onchange = e => { equipoAbierto = +e.target.value; pintar(); };
 
-  if($('#j-entrar')) $('#j-entrar').onclick = async () => {
-    const id = +$('#j-id').value, cod = $('#j-cod').value.trim();
-    /* sirve con cualquiera de las dos versiones del esquema */
-    let r = await sb.rpc('entrar', { p_jugadora_id:id, p_codigo:cod });
-    if(r.error) r = await sb.rpc('entrar_jugadora', { p_jugadora_id:id, p_codigo:cod });
-    if(r.error || !r.data?.length)
-      return aviso($('#msg-j'), 'Ese código no corresponde. Pregúntale a tu capitana.', true);
-    yo = r.data[0];
-    localStorage.setItem('batalla:jugadora', JSON.stringify(yo));
-    pintarMenu(); vista = 'perfil'; pintar();
-  };
+  if($('#j-buscar')){
+    pintarNombres();
+    $('#j-buscar').oninput = pintarNombres;
+  }
 
   if($('#a-entrar')) $('#a-entrar').onclick = async () => {
     const { error } = await sb.auth.signInWithPassword({
@@ -1026,7 +1029,6 @@ function enlazar(){
     const eqId = +($('#adm-eq')?.value ?? equipoAbierto);
     try{
       const ids = [];
-      const codigos = [];
       for(const k of [0,1]){
         const nom = c.querySelector(`.p-nom[data-k="${k}"]`).value.trim();
         if(!nom){ ids.push(null); continue; }
@@ -1040,10 +1042,6 @@ function enlazar(){
             .insert({ nombre:nom, equipo_id:eqId, categoria_id:catId }).select().single();
           if(error) throw error; jid = data.id;
         }
-        let cod = c.querySelector(`.p-cod[data-k="${k}"]`).value.trim();
-        if(!/^\d{4}$/.test(cod)) cod = codigoAzar();
-        await sb.from('accesos').upsert({ jugadora_id:jid, codigo:cod });
-        codigos.push(`${nom}: ${cod}`);
         ids.push(jid);
       }
       const fila = { equipo_id:eqId, categoria_id:catId, jugadora_1:ids[0], jugadora_2:ids[1],
@@ -1053,7 +1051,7 @@ function enlazar(){
       const { error } = await sb.from('duplas').upsert(fila, { onConflict:'equipo_id,categoria_id' });
       if(error) throw error;
       await cargar();
-      aviso(msg, 'Guardado. Códigos → ' + (codigos.join('  ·  ') || 'sin cambios'));
+      aviso(msg, 'Guardado.');
     }catch(e){ problema(msg, e); }
   });
 
