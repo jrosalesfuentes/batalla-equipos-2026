@@ -119,6 +119,16 @@ tr:last-child td{border-bottom:0}
 .dupla .n{font-weight:600;font-size:14px}
 .dupla .c{font-size:12px;color:var(--gris)}
 /* --- noticias --- */
+.bienvenida{text-align:center;padding:14px 10px 18px}
+.bienvenida h2{color:#fff;font-size:24px;font-weight:700;line-height:1.15;margin:0}
+.bienvenida p{color:var(--claro);font-size:14px;margin:8px 0 0;max-width:30ch;
+  margin-left:auto;margin-right:auto}
+.guardado{font-size:12px;color:var(--gris);text-align:center;margin:12px 0 2px}
+.otros{display:flex;align-items:center;justify-content:center;gap:10px;margin:4px 0 16px}
+.otros span{color:var(--court-2)}
+.enlace{background:none;border:0;color:var(--claro);font-family:inherit;font-size:13.5px;
+  cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:6px 2px}
+.enlace:hover{color:var(--lima)}
 .lista-nombres{margin-top:10px;max-height:330px;overflow-y:auto}
 .nombre{display:flex;align-items:center;gap:11px;width:100%;
   background:#fff;border:0;border-bottom:1px solid var(--glass);padding:9px 4px;
@@ -664,26 +674,28 @@ function vNoticias(){
 }
 
 /* --- entrar --- */
+let verAdmin = false;
 function vEntrar(){
-  return `<h2 class="sec">¿Quién eres?</h2>
-    <div class="card"><h3>Soy jugadora</h3>
-      <p style="font-size:13px;color:var(--gris);margin:0 0 10px">
-        Busca tu nombre y tócalo. Queda guardado en este teléfono y no lo tienes que hacer de nuevo.</p>
+  return `<div class="bienvenida">
+      <h2>Bienvenida a la Batalla</h2>
+      <p>Busca tu nombre para ver tus partidos, tu dupla y tus resultados.</p>
+    </div>
+    <div class="card">
       <input type="text" id="j-buscar" placeholder="Escribe tu nombre" autocomplete="off">
       <div id="j-lista" class="lista-nombres"></div>
+      <p class="guardado">Queda guardado en este teléfono. No lo tienes que hacer de nuevo.</p>
     </div>
-    <div class="card"><h3>Soy administradora</h3>
+    <div class="otros">
+      <button class="enlace" id="ver-admin">${verAdmin ? 'Ocultar' : 'Soy administradora'}</button>
+      <span>·</span>
+      <button class="enlace" id="ir-publico">Solo vengo a mirar</button>
+    </div>
+    ${verAdmin ? `<div class="card">
       <div id="msg-a"></div>
       <div style="margin-bottom:10px"><label class="lab">Correo</label><input type="email" id="a-mail"></div>
       <div style="margin-bottom:12px"><label class="lab">Contraseña</label><input type="password" id="a-pass"></div>
       <button class="btn" id="a-entrar">Entrar</button>
-    </div>
-    <div class="card" style="text-align:center">
-      <h3 style="margin-bottom:6px">Solo vengo a mirar</h3>
-      <p style="font-size:13px;color:var(--gris);margin:0 0 12px">
-        El fixture, la tabla y las noticias están abiertos para todos.</p>
-      <button class="btn claro" id="ir-publico">Entrar como público</button>
-    </div>`;
+    </div>` : ''}`;
 }
 
 function pintarNombres(){
@@ -1061,6 +1073,8 @@ function enlazar(){
   document.querySelectorAll('[data-adm]').forEach(b => b.onclick = () => { subAdm = b.dataset.adm; pintar(); });
   if($('#volver')) $('#volver').onclick = () => { equipoAbierto = null; pintar(); };
   if($('#adm-eq')) $('#adm-eq').onchange = e => { equipoAbierto = +e.target.value; pintar(); };
+
+  if($('#ver-admin')) $('#ver-admin').onclick = () => { verAdmin = !verAdmin; pintar(); };
 
   if($('#ir-publico')) $('#ir-publico').onclick = () => {
     vista = 'programacion';
