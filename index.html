@@ -204,6 +204,7 @@ tr:last-child td{border-bottom:0}
     <a data-adm="plantel">Jugadoras y duplas</a>
     <a data-adm="programacion">Programación</a>
     <a data-adm="noticias">Noticias</a>
+    <a data-adm="extra">Puntos extra</a>
   </div>
   <a class="insta" href="https://instagram.com/club.zonapadel" target="_blank" rel="noopener">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
@@ -225,7 +226,7 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[] };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[] };
 let vista = 'resultados';
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -259,8 +260,8 @@ async function cargar(){
   [D.categorias, D.equipos, D.jugadoras, D.duplas, D.jornadas] = await Promise.all([
     t('categorias','orden'), t('equipos','orden'), t('jugadoras','nombre'), t('duplas'), t('jornadas','numero')
   ]);
-  [D.partidos, D.tabla, D.ranking, D.noticias] = await Promise.all([
-    t('partidos'), t('v_tabla_equipos'), t('v_ranking_duplas'),
+  [D.partidos, D.tabla, D.ranking, D.ajustes, D.noticias] = await Promise.all([
+    t('partidos'), t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
     (await sb.from('noticias').select('*').order('publicada_en',{ascending:false})).data ?? []
   ]);
   vincularFicha();
@@ -409,7 +410,11 @@ function vResultados(){
     cuerpo += lista.length ? lista.map(tarjetaPartido).join('')
       : `<div class="vacio">Todavía no hay partidos programados. Las administradoras los cargan en la sección de administración.</div>`;
   }
-  if(subRes === 'equipos') cuerpo = D.tabla.length ? tablaPos(D.tabla,'Equipo') : sinDatos();
+  if(subRes === 'equipos'){
+    cuerpo = D.tabla.length ? tablaPos(D.tabla,'Equipo') : sinDatos();
+    if(D.ajustes.length) cuerpo += `<p class="nota">Incluye puntos extra: ${
+      D.ajustes.map(a => `${esc(eq(a.equipo_id))} ${a.puntos>0?'+':''}${a.puntos} (${esc(a.motivo)})`).join(' · ')}</p>`;
+  }
   if(subRes === 'duplas'){
     cuerpo = D.ranking.length ? D.categorias.map(c => {
       const l = D.ranking.filter(r => r.categoria === c.codigo);
@@ -541,8 +546,9 @@ function vPerfil(){
     ${misDuplas.map(x => {
       const comp = [x.jugadora_1, x.jugadora_2].filter(i => i !== yo.jugadora_id)
         .map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean)[0];
+      const prestada = x.equipo_2_id && x.equipo_id !== yo.equipo_id;
       const mixta = x.equipo_2_id
-        ? ` · mixta con ${esc(eq(x.equipo_id === yo.equipo_id ? x.equipo_2_id : x.equipo_id))}` : '';
+        ? ` · mixta, suma a ${esc(eq(x.equipo_id))}` : '';
       return `<div class="dupla">
         <img src="${x.foto_url ? esc(x.foto_url) : ''}" alt="">
         <div><div class="n">Categoría ${esc(cat(x.categoria_id))}</div>
@@ -704,11 +710,12 @@ function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
-      {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',noticias:'Noticias'}[s]}</button>`).join('');
+      {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
+       noticias:'Noticias',extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
-    ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion, noticias:admNoticias }[subAdm])();
+    ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion, noticias:admNoticias, extra:admExtra }[subAdm])();
 }
 
 function admEquipos(){
@@ -753,7 +760,8 @@ function admPlantel(){
       <div style="margin:2px 0 10px"><label class="lab">Dupla mixta · segundo equipo</label>
         <select class="d-eq2"><option value="">No es mixta</option>${eqs2}</select>
         <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
-          Si eliges un equipo, los puntos de esta dupla se reparten mitad y mitad.</p></div>
+          Solo para categoría A/B: de qué equipo viene la partner prestada.
+          Los puntos igual van completos al equipo de la jugadora A.</p></div>
       <div style="margin:6px 0 10px"><label class="lab">Descripción de la dupla</label>
         <textarea class="d-desc">${esc(d?.descripcion ?? '')}</textarea></div>
       <div class="fila"><input type="file" class="d-foto" accept="image/*">
@@ -797,6 +805,34 @@ function admNoticias(){
           <button class="btn claro n-toggle" data-id="${x.id}" data-pub="${x.publicada}">${x.publicada?'Despublicar':'Publicar'}</button>
           <button class="btn claro n-borrar" data-id="${x.id}" style="border-color:var(--alerta);color:var(--alerta)">Borrar</button>
         </div></div>`).join('')}`;
+}
+
+/* --- administración: puntos extra --- */
+function admExtra(){
+  const eqs = D.equipos.map(e => `<option value="${e.id}">${esc(e.nombre)}</option>`).join('');
+  return `<div class="card">
+      <h3>Sumar o restar puntos</h3>
+      <p style="font-size:13px;color:var(--gris);margin:0 0 12px">
+        Para los 30 puntos de la mejor presentación de equipos y cualquier otro ajuste.
+        Un número negativo resta.</p>
+      <div style="margin-bottom:8px"><label class="lab">Equipo</label><select id="x-eq">${eqs}</select></div>
+      <div style="margin-bottom:8px"><label class="lab">Motivo</label>
+        <input type="text" id="x-mot" placeholder="Mejor presentación de equipos"></div>
+      <div style="margin-bottom:12px"><label class="lab">Puntos</label>
+        <input type="number" id="x-pts" inputmode="numeric" placeholder="30"></div>
+      <button class="btn lima" id="x-guardar">Guardar</button>
+      <div id="x-msg"></div>
+    </div>
+    ${D.ajustes.length ? D.ajustes.map(a => `<div class="card">
+        <div class="fila" style="margin:0">
+          <div style="flex:1;min-width:130px">
+            <strong>${esc(eq(a.equipo_id))}</strong>
+            <div style="font-size:13px;color:var(--gris)">${esc(a.motivo)}</div></div>
+          <span class="mono" style="font-weight:700;font-size:16px">${a.puntos > 0 ? '+' : ''}${a.puntos}</span>
+          <button class="btn claro x-borrar" data-id="${a.id}"
+            style="border-color:var(--alerta);color:var(--alerta)">Borrar</button>
+        </div></div>`).join('')
+      : '<div class="vacio">Todavía no hay puntos extra asignados.</div>'}`;
 }
 
 /* --- administración: cargar la programación desde Excel --- */
@@ -1091,6 +1127,21 @@ function enlazar(){
       await cargar();
       aviso(msg, 'Guardado.');
     }catch(e){ problema(msg, e); }
+  });
+
+  if($('#x-guardar')) $('#x-guardar').onclick = async () => {
+    const fila = { equipo_id:+$('#x-eq').value, motivo:$('#x-mot').value.trim(),
+                   puntos: parseInt($('#x-pts').value, 10) };
+    if(!fila.motivo) return aviso($('#x-msg'), 'Escribe el motivo.', true);
+    if(Number.isNaN(fila.puntos)) return aviso($('#x-msg'), 'Escribe cuántos puntos.', true);
+    const { error } = await sb.from('ajustes').insert(fila);
+    if(error) return problema($('#x-msg'), error);
+    await cargar(); pintar();
+  };
+
+  document.querySelectorAll('.x-borrar').forEach(b => b.onclick = async () => {
+    await sb.from('ajustes').delete().eq('id', +b.dataset.id);
+    await cargar(); pintar();
   });
 
   if($('#pl-plantilla')) $('#pl-plantilla').onclick = plantilla;
