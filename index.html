@@ -120,12 +120,16 @@ tr:last-child td{border-bottom:0}
 .dupla .c{font-size:12px;color:var(--gris)}
 /* --- noticias --- */
 .lista-nombres{margin-top:10px;max-height:330px;overflow-y:auto}
-.nombre{display:flex;flex-direction:column;align-items:flex-start;gap:2px;width:100%;
-  background:#fff;border:0;border-bottom:1px solid var(--glass);padding:11px 4px;
+.nombre{display:flex;align-items:center;gap:11px;width:100%;
+  background:#fff;border:0;border-bottom:1px solid var(--glass);padding:9px 4px;
   text-align:left;cursor:pointer;font-family:inherit}
 .nombre:hover{background:var(--paper)}
+.nombre img,.nombre .sinfoto-mini{width:40px;height:40px;border-radius:50%;object-fit:cover;
+  flex:none;background:var(--glass)}
+.nombre div{display:flex;flex-direction:column;gap:1px;min-width:0}
 .nombre strong{font-size:15px}
 .nombre span{font-size:12px;color:var(--gris)}
+.avatar-adm{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--glass);flex:none}
 .sinres{font-size:13px;color:var(--gris);padding:10px 4px;margin:0}
 .muro{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
 .mural{background:#fff;border-radius:12px;overflow:hidden;cursor:pointer}
@@ -433,7 +437,7 @@ function tablaPos(lista, etiqueta){
   return `<table><thead><tr><th>#</th><th>${etiqueta}</th><th>PJ</th><th>G</th><th>P</th>
     <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Pts</th></tr></thead><tbody>` +
     lista.map((f,i) => `<tr ${f.equipo_id&&etiqueta==='Equipo'?`data-equipo="${f.equipo_id}" style="cursor:pointer"`:''}><td class="pos">${i+1}</td>
-      <td>${esc(f.nombre ?? f.equipo)}</td><td>${f.pj}</td><td>${f.pg}</td><td>${f.pp}</td>
+      <td>${esc(f.nombre ?? f.equipos ?? f.equipo)}</td><td>${f.pj}</td><td>${f.pg}</td><td>${f.pp}</td>
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
       <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table>`;
@@ -500,7 +504,7 @@ function vEquipos(){
 
 function detalleEquipo(id){
   const e = D.equipos.find(x => x.id === id);
-  const ds = D.duplas.filter(d => d.equipo_id === id);
+  const ds = D.duplas.filter(d => d.equipo_id === id || d.equipo_2_id === id);
   const ps = D.partidos.filter(p => p.equipo_a === id || p.equipo_b === id);
   return `<h2 class="sec">${esc(e.nombre)}</h2>
     <button class="btn claro" id="volver" style="margin-bottom:12px">← Todos los equipos</button>
@@ -510,7 +514,8 @@ function detalleEquipo(id){
       return `<div class="dupla">
         <img src="${d.foto_url ? esc(d.foto_url) : ''}" alt="">
         <div><div class="n">${js.length ? esc(js.join(' y ')) : 'Por definir'}</div>
-        <div class="c">Categoría ${esc(cat(d.categoria_id))}</div></div></div>`;
+        <div class="c">Categoría ${esc(cat(d.categoria_id))}${d.equipo_2_id
+          ? ' · mixta con ' + esc(eq(d.equipo_id === id ? d.equipo_2_id : d.equipo_id)) : ''}</div></div></div>`;
     }).join('') : '<p class="c">Todavía no hay duplas cargadas.</p>'}</div>
     <h2 class="sec">Partidos</h2>
     ${ps.length ? ps.map(tarjetaPartido).join('') : `<div class="vacio">Sin partidos programados.</div>`}`;
@@ -523,26 +528,37 @@ function vPerfil(){
     <div class="vacio">Entra con tu nombre y tu código para ver lo tuyo.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
 
-  const d = D.duplas.find(x => x.id === yo.dupla_id);
-  const comp = d ? [d.jugadora_1, d.jugadora_2].filter(i => i !== yo.jugadora_id)
-    .map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean)[0] : null;
-  const mios = d ? D.partidos.filter(p => p.dupla_a === d.id || p.dupla_b === d.id) : [];
+  const misDuplas = D.duplas.filter(x => x.jugadora_1 === yo.jugadora_id || x.jugadora_2 === yo.jugadora_id);
+  const ids = misDuplas.map(x => x.id);
+  const mios = D.partidos.filter(p => ids.includes(p.dupla_a) || ids.includes(p.dupla_b));
+  const miFoto = D.jugadoras.find(x => x.id === yo.jugadora_id)?.foto_url;
 
   const ficha = `<div class="card"><div class="dupla" style="border:0">
-      <img src="${d?.foto_url ? esc(d.foto_url) : ''}" alt="">
-      <div><div class="n">${esc(yo.nombre)}${comp ? ' y ' + esc(comp) : ''}</div>
-      <div class="c">${esc(eq(yo.equipo_id))}${d ? ' · Categoría ' + esc(cat(d.categoria_id)) : ''}</div></div>
-    </div></div>`;
+      <img src="${miFoto ? esc(miFoto) : ''}" alt="">
+      <div><div class="n">${esc(yo.nombre)}</div>
+      <div class="c">${esc(eq(yo.equipo_id))}</div></div>
+    </div>
+    ${misDuplas.map(x => {
+      const comp = [x.jugadora_1, x.jugadora_2].filter(i => i !== yo.jugadora_id)
+        .map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean)[0];
+      const mixta = x.equipo_2_id
+        ? ` · mixta con ${esc(eq(x.equipo_id === yo.equipo_id ? x.equipo_2_id : x.equipo_id))}` : '';
+      return `<div class="dupla">
+        <img src="${x.foto_url ? esc(x.foto_url) : ''}" alt="">
+        <div><div class="n">Categoría ${esc(cat(x.categoria_id))}</div>
+        <div class="c">${comp ? 'Con ' + esc(comp) : 'Partner por definir'}${mixta}</div></div></div>`;
+    }).join('')}
+  </div>`;
 
   if(subPerfil === 'resultados'){
     const jugados = mios.filter(p => p.estado === 'jugado');
-    const mias = D.ranking.find(r => r.dupla_id === yo.dupla_id);
+    const mias = D.ranking.filter(r => ids.includes(r.dupla_id));
     return `<h2 class="sec">Mis resultados</h2>${ficha}
-      ${mias ? `<div class="card"><h3>Tu dupla en la categoría ${esc(mias.categoria)}</h3>
+      ${mias.map(mias => `<div class="card"><h3>Tu dupla en la categoría ${esc(mias.categoria)}</h3>
         <table><thead><tr><th>PJ</th><th style="text-align:right">Ganados</th><th>Perdidos</th><th>±S</th><th>±G</th><th>Pts</th></tr></thead>
         <tbody><tr><td>${mias.pj}</td><td>${mias.pg}</td><td>${mias.pp}</td>
         <td>${signo(mias.dif_sets)}</td><td>${signo(mias.dif_games)}</td>
-        <td class="pts">${mias.puntos}</td></tr></tbody></table></div>` : ''}
+        <td class="pts">${mias.puntos}</td></tr></tbody></table></div>`).join('')}
       ${jugados.length ? jugados.map(tarjetaPartido).join('')
         : `<div class="vacio">Todavía no has jugado ningún partido.</div>`}`;
   }
@@ -667,7 +683,9 @@ function pintarNombres(){
   const lista = D.jugadoras.filter(j => !q || norm(j.nombre).includes(q)).slice(0, 40);
   cont.innerHTML = lista.length
     ? lista.map(j => `<button class="nombre" data-jug="${j.id}">
-        <strong>${esc(j.nombre)}</strong><span>${esc(eq(j.equipo_id))}</span></button>`).join('')
+        ${j.foto_url ? `<img src="${esc(j.foto_url)}" alt="">` : '<div class="sinfoto-mini"></div>'}
+        <div><strong>${esc(j.nombre)}</strong><span>${esc(eq(j.equipo_id))}</span></div>
+      </button>`).join('')
     : '<p class="sinres">Ningún nombre calza con eso. Pregúntale a tu capitana cómo quedaste inscrita.</p>';
   cont.querySelectorAll('.nombre').forEach(b => b.onclick = () => entrarComo(+b.dataset.jug));
 }
@@ -720,13 +738,22 @@ function admPlantel(){
   const filas = D.categorias.map(c => {
     const d = D.duplas.find(x => x.equipo_id === id && x.categoria_id === c.id);
     const j = [0,1].map(k => D.jugadoras.find(x => x.id === (k ? d?.jugadora_2 : d?.jugadora_1)));
+    const eqs2 = D.equipos.filter(e => e.id !== id)
+      .map(e => `<option value="${e.id}" ${d?.equipo_2_id===e.id?'selected':''}>${esc(e.nombre)}</option>`).join('');
     return `<div class="card" data-dupla="${c.id}">
       <div class="fila" style="margin-bottom:12px"><span class="cat">${esc(c.codigo)}</span>
         ${d?.foto_url ? `<img src="${esc(d.foto_url)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover">` : ''}</div>
-      ${[0,1].map(k => `<div class="fila">
-        <div style="flex:1;min-width:130px"><label class="lab">Jugadora ${k+1}</label>
+      ${[0,1].map(k => `<div class="fila" style="align-items:flex-end">
+        ${j[k]?.foto_url ? `<img src="${esc(j[k].foto_url)}" class="avatar-adm">` : '<div class="avatar-adm"></div>'}
+        <div style="flex:1;min-width:120px"><label class="lab">Jugadora ${k+1}</label>
           <input type="text" class="p-nom" data-k="${k}" value="${esc(j[k]?.nombre ?? '')}"></div>
+        <div style="flex-basis:100%"><label class="lab">Su foto de perfil</label>
+          <input type="file" class="p-foto" data-k="${k}" accept="image/*"></div>
       </div>`).join('')}
+      <div style="margin:2px 0 10px"><label class="lab">Dupla mixta · segundo equipo</label>
+        <select class="d-eq2"><option value="">No es mixta</option>${eqs2}</select>
+        <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+          Si eliges un equipo, los puntos de esta dupla se reparten mitad y mitad.</p></div>
       <div style="margin:6px 0 10px"><label class="lab">Descripción de la dupla</label>
         <textarea class="d-desc">${esc(d?.descripcion ?? '')}</textarea></div>
       <div class="fila"><input type="file" class="d-foto" accept="image/*">
@@ -1035,16 +1062,27 @@ function enlazar(){
         const previa = D.duplas.find(x => x.equipo_id===eqId && x.categoria_id===catId);
         const idPrev = k ? previa?.jugadora_2 : previa?.jugadora_1;
         let jid = idPrev;
+        /* si el nombre ya existe en el torneo, es la misma persona: la reutilizamos
+           en vez de crear una segunda ficha (caso de la jugadora prestada) */
+        if(!jid){
+          const ya = D.jugadoras.find(x => norm(x.nombre) === norm(nom));
+          if(ya) jid = ya.id;
+        }
+        const campos = { nombre:nom };
+        const ff = c.querySelector(`.p-foto[data-k="${k}"]`).files[0];
+        if(ff) campos.foto_url = await subirFoto(ff, 'jugadoras');
         if(jid){
-          await sb.from('jugadoras').update({ nombre:nom }).eq('id', jid);
+          await sb.from('jugadoras').update(campos).eq('id', jid);
         }else{
           const { data, error } = await sb.from('jugadoras')
-            .insert({ nombre:nom, equipo_id:eqId, categoria_id:catId }).select().single();
+            .insert({ ...campos, equipo_id:eqId, categoria_id:catId }).select().single();
           if(error) throw error; jid = data.id;
         }
         ids.push(jid);
       }
+      const eq2 = c.querySelector('.d-eq2').value;
       const fila = { equipo_id:eqId, categoria_id:catId, jugadora_1:ids[0], jugadora_2:ids[1],
+                     equipo_2_id: eq2 ? +eq2 : null,
                      descripcion: c.querySelector('.d-desc').value.trim() || null };
       const f = c.querySelector('.d-foto').files[0];
       if(f) fila.foto_url = await subirFoto(f, 'duplas');
