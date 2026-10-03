@@ -227,7 +227,7 @@ const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
 const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[] };
-let vista = 'resultados';
+let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
 
@@ -372,7 +372,7 @@ $('#navbar').addEventListener('click', clicMenu);
 $('#lnk-salir').onclick = async () => {
   await sb.auth.signOut();
   localStorage.removeItem('batalla:jugadora');
-  sesion = null; yo = null; miFicha = null; vista = 'resultados';
+  sesion = null; yo = null; miFicha = null; vista = 'entrar';
   pintarMenu(); cajon(false); pintar();
 };
 
@@ -665,7 +665,7 @@ function vNoticias(){
 
 /* --- entrar --- */
 function vEntrar(){
-  return `<h2 class="sec">Iniciar sesión</h2>
+  return `<h2 class="sec">¿Quién eres?</h2>
     <div class="card"><h3>Soy jugadora</h3>
       <p style="font-size:13px;color:var(--gris);margin:0 0 10px">
         Busca tu nombre y tócalo. Queda guardado en este teléfono y no lo tienes que hacer de nuevo.</p>
@@ -677,6 +677,12 @@ function vEntrar(){
       <div style="margin-bottom:10px"><label class="lab">Correo</label><input type="email" id="a-mail"></div>
       <div style="margin-bottom:12px"><label class="lab">Contraseña</label><input type="password" id="a-pass"></div>
       <button class="btn" id="a-entrar">Entrar</button>
+    </div>
+    <div class="card" style="text-align:center">
+      <h3 style="margin-bottom:6px">Solo vengo a mirar</h3>
+      <p style="font-size:13px;color:var(--gris);margin:0 0 12px">
+        El fixture, la tabla y las noticias están abiertos para todos.</p>
+      <button class="btn claro" id="ir-publico">Entrar como público</button>
     </div>`;
 }
 
@@ -1056,6 +1062,13 @@ function enlazar(){
   if($('#volver')) $('#volver').onclick = () => { equipoAbierto = null; pintar(); };
   if($('#adm-eq')) $('#adm-eq').onchange = e => { equipoAbierto = +e.target.value; pintar(); };
 
+  if($('#ir-publico')) $('#ir-publico').onclick = () => {
+    vista = 'programacion';
+    document.querySelectorAll('#navbar button').forEach(b =>
+      b.classList.toggle('on', b.dataset.vista === vista));
+    pintar();
+  };
+
   if($('#j-buscar')){
     pintarNombres();
     $('#j-buscar').oninput = pintarNombres;
@@ -1220,6 +1233,9 @@ sb.auth.onAuthStateChange((evento) => {
   try{
     await revisarSesion();
     await cargar();
+    /* quien ya entró alguna vez va directo a lo suyo */
+    if(yo){ vista = 'perfil'; subPerfil = 'partidos'; }
+    else if(sesion){ vista = 'admin'; subAdm = 'equipos'; }
     pintar();
   }catch(e){
     $('#pantalla').className = '';
