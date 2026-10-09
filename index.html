@@ -503,7 +503,7 @@ function tablaPos(lista, etiqueta){
   return `<table><thead><tr><th>#</th><th>${etiqueta}</th><th>PJ</th><th>G</th><th>P</th>
     <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Pts</th></tr></thead><tbody>` +
     lista.map((f,i) => `<tr ${f.equipo_id&&etiqueta==='Equipo'?`data-equipo="${f.equipo_id}" style="cursor:pointer"`:''}><td class="pos">${i+1}</td>
-      <td>${esc(f.nombre ?? f.equipos ?? f.equipo)}</td><td>${f.pj}</td><td>${f.pg}</td><td>${f.pp}</td>
+      <td>${esc(f.nombre ?? f.equipo)}</td><td>${f.pj}</td><td>${f.pg}</td><td>${f.pp}</td>
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
       <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table>`;
@@ -600,7 +600,10 @@ function fichaDupla(d){
 
 function detalleEquipo(id){
   const e = D.equipos.find(x => x.id === id);
-  const ds = D.duplas.filter(d => d.equipo_id === id || d.equipo_2_id === id);
+  /* La dupla A/B pertenece al equipo de la jugadora A. El equipo que presta
+     una jugadora B no la cuenta como dupla suya: esa B sigue siendo de su
+     equipo en su propia dupla B. */
+  const ds = D.duplas.filter(d => d.equipo_id === id);
   const ps = D.partidos.filter(p => p.equipo_a === id || p.equipo_b === id);
   const orden = c => D.categorias.find(x => x.id === c)?.orden ?? 9;
   return `<h2 class="sec">Equipos</h2>${chipsEquipos(id)}
