@@ -84,6 +84,8 @@ textarea{min-height:80px;resize:vertical}
 
 .chip .punto{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;
   vertical-align:middle;border:1px solid rgba(0,0,0,.15)}
+.muestra{width:30px;height:30px;border-radius:50%;flex:none;border:1px solid var(--linea)}
+.sin-logo{font-size:12px;color:var(--gris);font-style:italic}
 .cabeza-eq{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;
   padding:14px;margin-bottom:12px}
 .cabeza-eq img{width:52px;height:52px;object-fit:contain;flex:none}
@@ -155,6 +157,8 @@ tr:last-child td{border-bottom:0}
 .avatar{width:52px;height:52px;border-radius:50%;flex:none;display:flex;
   align-items:center;justify-content:center;font-size:24px;font-weight:700;line-height:1}
 .avatar.chico{width:38px;height:38px;font-size:17px}
+.avatar.con-logo{overflow:hidden}
+.avatar.con-logo img{width:100%;height:100%;object-fit:contain;padding:12%}
 .nombre div{display:flex;flex-direction:column;gap:1px;min-width:0}
 .nombre strong{font-size:15px}
 .nombre span{font-size:12px;color:var(--gris)}
@@ -292,8 +296,14 @@ const claro = hex => {
   const [r,g,b] = [0,2,4].map(i => parseInt(c.slice(i,i+2),16));
   return (0.299*r + 0.587*g + 0.114*b) > 150;
 };
+const logoEq = id => D.equipos.find(e => e.id === id)?.logo_url || null;
+
+/* El círculo de cada jugadora: el logo de su equipo si ya lo subieron,
+   y mientras tanto su inicial sobre el color del equipo. */
 const inicial = (nombre, equipoId, clase) => {
-  const col = colorEq(equipoId);
+  const col = colorEq(equipoId), logo = logoEq(equipoId);
+  if(logo) return `<span class="${clase} con-logo" style="background:${esc(col)}"
+    aria-hidden="true"><img src="${esc(logo)}" alt=""></span>`;
   return `<span class="${clase}" style="background:${esc(col)};color:${claro(col)?'#053B37':'#fff'}"
     aria-hidden="true">${esc((nombre || '?').trim().charAt(0).toUpperCase())}</span>`;
 };
@@ -814,21 +824,30 @@ function vAdmin(){
 }
 
 function admEquipos(){
-  return `<p class="nota">Cambia el nombre, el color y el logo de cada equipo. El logo se sube al depósito de fotos.</p>` +
+  return `<p class="nota">Cada equipo tiene su color asignado. Acá se le pone el nombre que eligieron,
+      su logo, su descripción y su grito. El logo es el que van a ver sus jugadoras en el círculo de su perfil.</p>` +
     D.equipos.map(e => `<div class="card" data-eqedit="${e.id}">
-      <div class="fila">
-        ${e.logo_url ? `<img src="${esc(e.logo_url)}" style="width:44px;height:44px;object-fit:contain">` : ''}
-        <div style="flex:1;min-width:150px"><label class="lab">Nombre</label>
-          <input type="text" class="e-nom" value="${esc(e.nombre)}"></div>
-        <div style="width:90px"><label class="lab">Color</label>
-          <input type="text" class="e-col" value="${esc(e.color ?? '')}" placeholder="#D7DE69"></div>
+      <div class="fila" style="margin-bottom:14px">
+        <span class="muestra" style="background:${esc(e.color || '#CBDDD9')}"></span>
+        ${e.logo_url
+          ? `<img src="${esc(e.logo_url)}" style="width:46px;height:46px;object-fit:contain">`
+          : `<span class="sin-logo">sin logo</span>`}
+        <span style="font-size:12px;color:var(--gris)">Equipo ${e.orden}</span>
       </div>
-      <div style="margin-bottom:8px"><label class="lab">Descripción</label>
-        <textarea class="e-desc">${esc(e.descripcion ?? '')}</textarea></div>
-      <div style="margin-bottom:10px"><label class="lab">Grito</label>
+      <div style="margin-bottom:10px"><label class="lab">Nombre del equipo</label>
+        <input type="text" class="e-nom" value="${esc(e.nombre)}" placeholder="Las Pitufas"></div>
+      <div style="margin-bottom:10px"><label class="lab">Logo</label>
+        <input type="file" class="e-logo" accept="image/*"></div>
+      <div style="margin-bottom:10px"><label class="lab">Color</label>
+        <div class="fila" style="margin:0">
+          <input type="color" class="e-col" value="${esc(e.color || '#007E76')}" style="width:54px;padding:3px">
+          <span style="font-size:12px;color:var(--gris)">Marca al equipo en las listas y en los círculos.</span>
+        </div></div>
+      <div style="margin-bottom:10px"><label class="lab">Descripción</label>
+        <textarea class="e-desc" maxlength="1000">${esc(e.descripcion ?? '')}</textarea></div>
+      <div style="margin-bottom:12px"><label class="lab">Grito</label>
         <input type="text" class="e-grito" value="${esc(e.grito ?? '')}"></div>
-      <div class="fila"><input type="file" class="e-logo" accept="image/*">
-        <button class="btn e-guardar">Guardar</button></div>
+      <button class="btn e-guardar">Guardar</button>
       <div class="e-msg"></div>
     </div>`).join('');
 }
