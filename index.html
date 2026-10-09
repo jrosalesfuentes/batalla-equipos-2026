@@ -122,6 +122,16 @@ tr:last-child td{border-bottom:0}
   letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-top:6px}
 .dupla{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--glass)}
 .dupla:last-child{border-bottom:0}
+.dupla.tocable{cursor:pointer}
+.dupla.tocable:hover{background:var(--paper)}
+.dupla .flecha{color:var(--gris);font-size:19px;line-height:1;margin-left:auto;padding-left:8px;
+  transition:transform .18s}
+.dupla .flecha.arriba{transform:rotate(180deg)}
+.dupla-abierta{padding:2px 0 14px}
+.foto-grande{display:block;width:100%;border-radius:12px;background:var(--glass)}
+.foto-grande.vacia{aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
+  color:var(--gris);font-size:13.5px}
+.desc-dupla{margin:11px 0 0;font-size:14px;line-height:1.55;color:var(--tinta);white-space:pre-wrap}
 .dupla img,.dupla .sinfoto-dupla{width:52px;height:52px;border-radius:8px;object-fit:cover;
   background:var(--glass);flex:none}
 .dupla .n{font-weight:600;font-size:14px}
@@ -263,6 +273,7 @@ const ETQS = ['Crónica','Resultados','Aviso','Galería'];
 let yo = null;                // jugadora conectada
 let filtroFecha = 'todas';
 let equipoAbierto = null;
+let duplaAbierta = null;
 
 const $  = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -555,6 +566,28 @@ function vEquipos(){
   }).join('') + `</div>`;
 }
 
+/* Una dupla en una lista. Al tocarla se abre con la foto en grande
+   y su descripción. */
+function fichaDupla(d){
+  const js = [d.jugadora_1, d.jugadora_2].map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean);
+  const desc = (d.descripcion || '').trim();
+  const abierta = duplaAbierta === d.id;
+  return `<div class="dupla tocable" data-dupla-ver="${d.id}">
+      ${fotoDupla(d.foto_url)}
+      <div style="min-width:0;flex:1">
+        <div class="n">${js.length ? esc(js.join(' y ')) : 'Por definir'}</div>
+        <div class="c">Categoría ${esc(cat(d.categoria_id))}</div>
+      </div>
+      <span class="flecha ${abierta?'arriba':''}" aria-hidden="true">⌄</span>
+    </div>
+    ${abierta ? `<div class="dupla-abierta">
+      ${d.foto_url
+        ? `<img class="foto-grande" src="${esc(d.foto_url)}" alt="${esc(js.join(' y '))}">`
+        : `<div class="foto-grande vacia">Sin foto todavía</div>`}
+      ${desc ? `<p class="desc-dupla">${esc(desc)}</p>` : ''}
+    </div>` : ''}`;
+}
+
 function detalleEquipo(id){
   const e = D.equipos.find(x => x.id === id);
   const ds = D.duplas.filter(d => d.equipo_id === id || d.equipo_2_id === id);
@@ -568,13 +601,7 @@ function detalleEquipo(id){
     </div>
     ${e.descripcion ? `<div class="card">${esc(e.descripcion)}</div>` : ''}
     <div class="card"><h3>Duplas</h3>${ds.length
-      ? [...ds].sort((a,b) => orden(a.categoria_id) - orden(b.categoria_id)).map(d => {
-          const js = [d.jugadora_1, d.jugadora_2].map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean);
-          return `<div class="dupla">
-            ${fotoDupla(d.foto_url)}
-            <div><div class="n">${js.length ? esc(js.join(' y ')) : 'Por definir'}</div>
-            <div class="c">Categoría ${esc(cat(d.categoria_id))}</div></div></div>`;
-        }).join('')
+      ? [...ds].sort((a,b) => orden(a.categoria_id) - orden(b.categoria_id)).map(fichaDupla).join('')
       : '<p class="c">Todavía no hay duplas cargadas.</p>'}</div>
     <h2 class="sec">Partidos</h2>
     ${ps.length ? ps.map(tarjetaPartido).join('') : `<div class="vacio">Sin partidos programados.</div>`}`;
@@ -598,10 +625,19 @@ function vPerfil(){
     ${misDuplas.map(x => {
       const comp = [x.jugadora_1, x.jugadora_2].filter(i => i !== yo.jugadora_id)
         .map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean)[0];
-      return `<div class="dupla">
+      const abierta = duplaAbierta === x.id;
+      const desc = (x.descripcion || '').trim();
+      return `<div class="dupla tocable" data-dupla-ver="${x.id}">
         ${fotoDupla(x.foto_url)}
-        <div><div class="n">Categoría ${esc(cat(x.categoria_id))}</div>
-        <div class="c">${comp ? 'Con ' + esc(comp) : 'Partner por definir'}</div></div></div>`;
+        <div style="min-width:0;flex:1"><div class="n">Categoría ${esc(cat(x.categoria_id))}</div>
+        <div class="c">${comp ? 'Con ' + esc(comp) : 'Partner por definir'}</div></div>
+        <span class="flecha ${abierta?'arriba':''}" aria-hidden="true">⌄</span></div>
+        ${abierta ? `<div class="dupla-abierta">
+          ${x.foto_url
+            ? `<img class="foto-grande" src="${esc(x.foto_url)}" alt="">`
+            : `<div class="foto-grande vacia">Sin foto todavía</div>`}
+          ${desc ? `<p class="desc-dupla">${esc(desc)}</p>` : ''}
+        </div>` : ''}`;
     }).join('')}
   </div>`;
 
@@ -819,7 +855,9 @@ function admPlantel(){
           Solo para categoría A/B: de qué equipo viene la partner prestada.
           Los puntos igual van completos al equipo de la jugadora A.</p></div>
       <div style="margin:6px 0 10px"><label class="lab">Descripción de la dupla</label>
-        <textarea class="d-desc">${esc(d?.descripcion ?? '')}</textarea></div>
+        <textarea class="d-desc" maxlength="1000">${esc(d?.descripcion ?? '')}</textarea>
+        <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+          Se ve en Equipos, tocando la dupla, y en el perfil de ellas dos. Máximo 1000 caracteres.</p></div>
       <div style="margin-bottom:10px"><label class="lab">Foto de la dupla</label>
         <input type="file" class="d-foto" accept="image/*"></div>
       <button class="btn d-guardar">Guardar dupla</button>
@@ -1108,6 +1146,11 @@ function enlazar(){
   if($('#ir-entrar')) $('#ir-entrar').onclick = () => { vista = 'entrar'; pintar(); };
   if($('#volver-n')) $('#volver-n').onclick = () => { noticiaAbierta = null; pintar(); };
   document.querySelectorAll('[data-jor]').forEach(b => b.onclick = () => { jornadaProg = +b.dataset.jor; pintar(); });
+  document.querySelectorAll('[data-dupla-ver]').forEach(b => b.onclick = () => {
+    const n = +b.dataset.duplaVer;
+    duplaAbierta = duplaAbierta === n ? null : n;
+    pintar();
+  });
   document.querySelectorAll('[data-equipo]').forEach(b => b.onclick = () => {
     const n = +b.dataset.equipo; equipoAbierto = n || null;
     pintar(); window.scrollTo({top:0});
