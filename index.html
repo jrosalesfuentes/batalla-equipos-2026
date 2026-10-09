@@ -30,7 +30,7 @@ input,button,select,textarea{font-family:inherit;font-size:15px}
 .logo-batalla{display:block;width:88px;height:auto;flex:none;order:3}
 .titulo h1{font-weight:800;font-size:clamp(22px,6vw,34px);line-height:.95;letter-spacing:-.035em;margin:0;color:#fff}
 .titulo h1 em{font-style:normal;color:var(--lima)}
-.sub{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--claro);font-family:'IBM Plex Mono',monospace;line-height:1.3}
+.sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#fff;font-weight:700;line-height:1.35}
 .quien{color:var(--claro);font-size:12px;padding:2px 20px 8px;font-family:'IBM Plex Mono',monospace}
 
 /* cajón lateral */
@@ -82,6 +82,12 @@ textarea{min-height:80px;resize:vertical}
 .chip{padding:7px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:13px;cursor:pointer}
 .chip.on{background:var(--lima);color:var(--tinta);border-color:var(--lima);font-weight:600}
 
+.chip .punto{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;
+  vertical-align:middle;border:1px solid rgba(0,0,0,.15)}
+.cabeza-eq{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;
+  padding:14px;margin-bottom:12px}
+.cabeza-eq img{width:52px;height:52px;object-fit:contain;flex:none}
+.grito-chico{margin:4px 0 0;font-size:13.5px;color:var(--verde);font-weight:600}
 .rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .eqcard{background:#fff;border-radius:12px;padding:14px;text-align:center;cursor:pointer;border:0}
 .eqcard img{width:56px;height:56px;object-fit:contain;margin-bottom:6px}
@@ -116,7 +122,8 @@ tr:last-child td{border-bottom:0}
   letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-top:6px}
 .dupla{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--glass)}
 .dupla:last-child{border-bottom:0}
-.dupla img{width:52px;height:52px;border-radius:8px;object-fit:cover;background:var(--glass)}
+.dupla img,.dupla .sinfoto-dupla{width:52px;height:52px;border-radius:8px;object-fit:cover;
+  background:var(--glass);flex:none}
 .dupla .n{font-weight:600;font-size:14px}
 .dupla .c{font-size:12px;color:var(--gris)}
 /* --- noticias --- */
@@ -135,12 +142,12 @@ tr:last-child td{border-bottom:0}
   background:#fff;border:0;border-bottom:1px solid var(--glass);padding:9px 4px;
   text-align:left;cursor:pointer;font-family:inherit}
 .nombre:hover{background:var(--paper)}
-.nombre img,.nombre .sinfoto-mini{width:40px;height:40px;border-radius:50%;object-fit:cover;
-  flex:none;background:var(--glass)}
+.avatar{width:52px;height:52px;border-radius:50%;flex:none;display:flex;
+  align-items:center;justify-content:center;font-size:24px;font-weight:700;line-height:1}
+.avatar.chico{width:38px;height:38px;font-size:17px}
 .nombre div{display:flex;flex-direction:column;gap:1px;min-width:0}
 .nombre strong{font-size:15px}
 .nombre span{font-size:12px;color:var(--gris)}
-.avatar-adm{width:44px;height:44px;border-radius:50%;object-fit:cover;background:var(--glass);flex:none}
 .sinres{font-size:13px;color:var(--gris);padding:10px 4px;margin:0}
 .muro{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
 .mural{background:#fff;border-radius:12px;overflow:hidden;cursor:pointer}
@@ -261,6 +268,24 @@ const $  = s => document.querySelector(s);
 const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const cat = id => D.categorias.find(c => c.id === id)?.codigo ?? '';
 const eq  = id => D.equipos.find(e => e.id === id)?.nombre ?? '';
+const colorEq = id => D.equipos.find(e => e.id === id)?.color || '#CBDDD9';
+const fotoDupla = url => url
+  ? `<img src="${esc(url)}" alt="">`
+  : `<div class="sinfoto-dupla" aria-hidden="true"></div>`;
+
+/* Inicial de la jugadora sobre el color de su equipo.
+   El texto se oscurece o aclara según lo claro que sea el fondo. */
+const claro = hex => {
+  const c = String(hex || '').replace('#','');
+  if(c.length !== 6) return false;
+  const [r,g,b] = [0,2,4].map(i => parseInt(c.slice(i,i+2),16));
+  return (0.299*r + 0.587*g + 0.114*b) > 150;
+};
+const inicial = (nombre, equipoId, clase) => {
+  const col = colorEq(equipoId);
+  return `<span class="${clase}" style="background:${esc(col)};color:${claro(col)?'#053B37':'#fff'}"
+    aria-hidden="true">${esc((nombre || '?').trim().charAt(0).toUpperCase())}</span>`;
+};
 const signo = n => (n > 0 ? '+' : '') + n;
 const fechaLarga = f => new Date(f + 'T12:00:00')
   .toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long' });
@@ -510,10 +535,18 @@ function vProgramacion(){
 }
 
 /* --- equipos --- */
+function chipsEquipos(activo){
+  return `<div class="chips">
+    <button class="chip ${activo?'':'on'}" data-equipo="0">Todos</button>
+    ${D.equipos.map(e => `<button class="chip ${activo===e.id?'on':''}" data-equipo="${e.id}">
+      <span class="punto" style="background:${esc(e.color || '#CBDDD9')}"></span>${esc(e.nombre)}
+    </button>`).join('')}</div>`;
+}
+
 function vEquipos(){
-  if(equipoAbierto) return detalleEquipo(equipoAbierto);
   if(!D.equipos.length) return `<h2 class="sec">Equipos</h2><div class="vacio">Todavía no hay equipos cargados.</div>`;
-  return `<h2 class="sec">Equipos</h2><div class="rejilla">` + D.equipos.map(e => {
+  if(equipoAbierto) return detalleEquipo(equipoAbierto);
+  return `<h2 class="sec">Equipos</h2>${chipsEquipos(null)}<div class="rejilla">` + D.equipos.map(e => {
     const t = D.tabla.find(x => x.equipo_id === e.id);
     return `<button class="eqcard" data-equipo="${e.id}">
       ${e.logo_url ? `<img src="${esc(e.logo_url)}" alt="">` : ''}
@@ -526,17 +559,23 @@ function detalleEquipo(id){
   const e = D.equipos.find(x => x.id === id);
   const ds = D.duplas.filter(d => d.equipo_id === id || d.equipo_2_id === id);
   const ps = D.partidos.filter(p => p.equipo_a === id || p.equipo_b === id);
-  return `<h2 class="sec">${esc(e.nombre)}</h2>
-    <button class="btn claro" id="volver" style="margin-bottom:12px">← Todos los equipos</button>
+  const orden = c => D.categorias.find(x => x.id === c)?.orden ?? 9;
+  return `<h2 class="sec">Equipos</h2>${chipsEquipos(id)}
+    <div class="cabeza-eq">
+      ${e.logo_url ? `<img src="${esc(e.logo_url)}" alt="">` : ''}
+      <div><h3 style="margin:0">${esc(e.nombre)}</h3>
+      ${e.grito ? `<p class="grito-chico">“${esc(e.grito)}”</p>` : ''}</div>
+    </div>
     ${e.descripcion ? `<div class="card">${esc(e.descripcion)}</div>` : ''}
-    <div class="card"><h3>Duplas</h3>${ds.length ? ds.map(d => {
-      const js = [d.jugadora_1, d.jugadora_2].map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean);
-      return `<div class="dupla">
-        <img src="${d.foto_url ? esc(d.foto_url) : ''}" alt="">
-        <div><div class="n">${js.length ? esc(js.join(' y ')) : 'Por definir'}</div>
-        <div class="c">Categoría ${esc(cat(d.categoria_id))}${d.equipo_2_id
-          ? ' · mixta con ' + esc(eq(d.equipo_id === id ? d.equipo_2_id : d.equipo_id)) : ''}</div></div></div>`;
-    }).join('') : '<p class="c">Todavía no hay duplas cargadas.</p>'}</div>
+    <div class="card"><h3>Duplas</h3>${ds.length
+      ? [...ds].sort((a,b) => orden(a.categoria_id) - orden(b.categoria_id)).map(d => {
+          const js = [d.jugadora_1, d.jugadora_2].map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean);
+          return `<div class="dupla">
+            ${fotoDupla(d.foto_url)}
+            <div><div class="n">${js.length ? esc(js.join(' y ')) : 'Por definir'}</div>
+            <div class="c">Categoría ${esc(cat(d.categoria_id))}</div></div></div>`;
+        }).join('')
+      : '<p class="c">Todavía no hay duplas cargadas.</p>'}</div>
     <h2 class="sec">Partidos</h2>
     ${ps.length ? ps.map(tarjetaPartido).join('') : `<div class="vacio">Sin partidos programados.</div>`}`;
 }
@@ -551,23 +590,18 @@ function vPerfil(){
   const misDuplas = D.duplas.filter(x => x.jugadora_1 === yo.jugadora_id || x.jugadora_2 === yo.jugadora_id);
   const ids = misDuplas.map(x => x.id);
   const mios = D.partidos.filter(p => ids.includes(p.dupla_a) || ids.includes(p.dupla_b));
-  const miFoto = D.jugadoras.find(x => x.id === yo.jugadora_id)?.foto_url;
-
   const ficha = `<div class="card"><div class="dupla" style="border:0">
-      <img src="${miFoto ? esc(miFoto) : ''}" alt="">
+      ${inicial(yo.nombre, yo.equipo_id, 'avatar')}
       <div><div class="n">${esc(yo.nombre)}</div>
       <div class="c">${esc(eq(yo.equipo_id))}</div></div>
     </div>
     ${misDuplas.map(x => {
       const comp = [x.jugadora_1, x.jugadora_2].filter(i => i !== yo.jugadora_id)
         .map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean)[0];
-      const prestada = x.equipo_2_id && x.equipo_id !== yo.equipo_id;
-      const mixta = x.equipo_2_id
-        ? ` · mixta, suma a ${esc(eq(x.equipo_id))}` : '';
       return `<div class="dupla">
-        <img src="${x.foto_url ? esc(x.foto_url) : ''}" alt="">
+        ${fotoDupla(x.foto_url)}
         <div><div class="n">Categoría ${esc(cat(x.categoria_id))}</div>
-        <div class="c">${comp ? 'Con ' + esc(comp) : 'Partner por definir'}${mixta}</div></div></div>`;
+        <div class="c">${comp ? 'Con ' + esc(comp) : 'Partner por definir'}</div></div></div>`;
     }).join('')}
   </div>`;
 
@@ -714,7 +748,7 @@ function pintarNombres(){
   const lista = D.jugadoras.filter(j => norm(j.nombre).includes(q)).slice(0, 12);
   cont.innerHTML = lista.length
     ? lista.map(j => `<button class="nombre" data-jug="${j.id}">
-        ${j.foto_url ? `<img src="${esc(j.foto_url)}" alt="">` : '<div class="sinfoto-mini"></div>'}
+        ${inicial(j.nombre, j.equipo_id, 'avatar chico')}
         <div><strong>${esc(j.nombre)}</strong><span>${esc(eq(j.equipo_id))}</span></div>
       </button>`).join('')
     : '<p class="sinres">Ningún nombre calza con eso. Pregúntale a tu capitana cómo quedaste inscrita.</p>';
@@ -775,12 +809,9 @@ function admPlantel(){
     return `<div class="card" data-dupla="${c.id}">
       <div class="fila" style="margin-bottom:12px"><span class="cat">${esc(c.codigo)}</span>
         ${d?.foto_url ? `<img src="${esc(d.foto_url)}" style="width:44px;height:44px;border-radius:8px;object-fit:cover">` : ''}</div>
-      ${[0,1].map(k => `<div class="fila" style="align-items:flex-end">
-        ${j[k]?.foto_url ? `<img src="${esc(j[k].foto_url)}" class="avatar-adm">` : '<div class="avatar-adm"></div>'}
+      ${[0,1].map(k => `<div class="fila">
         <div style="flex:1;min-width:120px"><label class="lab">Jugadora ${k+1}</label>
           <input type="text" class="p-nom" data-k="${k}" value="${esc(j[k]?.nombre ?? '')}"></div>
-        <div style="flex-basis:100%"><label class="lab">Su foto de perfil</label>
-          <input type="file" class="p-foto" data-k="${k}" accept="image/*"></div>
       </div>`).join('')}
       <div style="margin:2px 0 10px"><label class="lab">Dupla mixta · segundo equipo</label>
         <select class="d-eq2"><option value="">No es mixta</option>${eqs2}</select>
@@ -789,8 +820,9 @@ function admPlantel(){
           Los puntos igual van completos al equipo de la jugadora A.</p></div>
       <div style="margin:6px 0 10px"><label class="lab">Descripción de la dupla</label>
         <textarea class="d-desc">${esc(d?.descripcion ?? '')}</textarea></div>
-      <div class="fila"><input type="file" class="d-foto" accept="image/*">
-        <button class="btn d-guardar">Guardar dupla</button></div>
+      <div style="margin-bottom:10px"><label class="lab">Foto de la dupla</label>
+        <input type="file" class="d-foto" accept="image/*"></div>
+      <button class="btn d-guardar">Guardar dupla</button>
       <div class="d-msg"></div>
     </div>`;
   }).join('');
@@ -1076,7 +1108,10 @@ function enlazar(){
   if($('#ir-entrar')) $('#ir-entrar').onclick = () => { vista = 'entrar'; pintar(); };
   if($('#volver-n')) $('#volver-n').onclick = () => { noticiaAbierta = null; pintar(); };
   document.querySelectorAll('[data-jor]').forEach(b => b.onclick = () => { jornadaProg = +b.dataset.jor; pintar(); });
-  document.querySelectorAll('[data-equipo]').forEach(b => b.onclick = () => { equipoAbierto = +b.dataset.equipo; pintar(); });
+  document.querySelectorAll('[data-equipo]').forEach(b => b.onclick = () => {
+    const n = +b.dataset.equipo; equipoAbierto = n || null;
+    pintar(); window.scrollTo({top:0});
+  });
   document.querySelectorAll('[data-adm]').forEach(b => b.onclick = () => { subAdm = b.dataset.adm; pintar(); });
   if($('#volver')) $('#volver').onclick = () => { equipoAbierto = null; pintar(); };
   if($('#adm-eq')) $('#adm-eq').onchange = e => { equipoAbierto = +e.target.value; pintar(); };
@@ -1138,14 +1173,11 @@ function enlazar(){
           const ya = D.jugadoras.find(x => norm(x.nombre) === norm(nom));
           if(ya) jid = ya.id;
         }
-        const campos = { nombre:nom };
-        const ff = c.querySelector(`.p-foto[data-k="${k}"]`).files[0];
-        if(ff) campos.foto_url = await subirFoto(ff, 'jugadoras');
         if(jid){
-          await sb.from('jugadoras').update(campos).eq('id', jid);
+          await sb.from('jugadoras').update({ nombre:nom }).eq('id', jid);
         }else{
           const { data, error } = await sb.from('jugadoras')
-            .insert({ ...campos, equipo_id:eqId, categoria_id:catId }).select().single();
+            .insert({ nombre:nom, equipo_id:eqId, categoria_id:catId }).select().single();
           if(error) throw error; jid = data.id;
         }
         ids.push(jid);
