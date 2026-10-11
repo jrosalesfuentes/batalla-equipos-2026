@@ -86,11 +86,15 @@ textarea{min-height:80px;resize:vertical}
   vertical-align:middle;border:1px solid rgba(0,0,0,.15)}
 /* --- DIVA --- */
 .diva-cab{background:#fff;border-radius:14px;padding:18px;text-align:center;margin-bottom:12px}
-.diva-foto,.diva-sinfoto{width:112px;height:112px;border-radius:50%;object-fit:cover;
-  margin:0 auto 12px;display:block;background:var(--glass);
+.diva-foto,.diva-sinfoto{width:138px;height:138px;border-radius:50%;object-fit:cover;
+  object-position:center 50%;margin:0 auto 12px;display:block;background:var(--glass);
   box-shadow:0 0 0 4px var(--lima)}
-.diva-sinfoto{display:flex;align-items:center;justify-content:center;font-size:40px;
+.diva-sinfoto{display:flex;align-items:center;justify-content:center;font-size:48px;
   font-weight:700;color:var(--verde)}
+.encuadre{display:flex;align-items:center;gap:12px;margin-top:10px}
+.encuadre img{width:84px;height:84px;border-radius:50%;object-fit:cover;flex:none;
+  background:var(--glass);box-shadow:0 0 0 3px var(--lima)}
+.encuadre input[type=range]{flex:1;accent-color:var(--verde)}
 .diva-cab h3{margin:0;font-size:20px}
 .diva-sigla{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--gris);margin:6px 0 0;line-height:1.5}
@@ -765,7 +769,8 @@ function vDiva(){
 
   const ficha = `<div class="diva-cab">
       ${d.foto_url
-        ? `<img class="diva-foto" src="${esc(d.foto_url)}" alt="${esc(nombre)}">`
+        ? `<img class="diva-foto" src="${esc(d.foto_url)}" alt="${esc(nombre)}"
+             style="object-position:center ${d.foto_pos ?? 50}%">`
         : `<div class="diva-sinfoto" aria-hidden="true">${esc(nombre.charAt(0).toUpperCase())}</div>`}
       <h3>${esc(nombre)}</h3>
       <p class="diva-sigla">Decisora Imparcial<br>de Validación y Arbitraje</p>
@@ -846,7 +851,14 @@ function panelDiva(){
       <div style="margin-bottom:10px"><label class="lab">Descripción</label>
         <textarea id="dv-desc" maxlength="1500">${esc(d.descripcion ?? '')}</textarea></div>
       <div style="margin-bottom:10px"><label class="lab">Su foto</label>
-        <input type="file" id="dv-foto" accept="image/*"></div>
+        <input type="file" id="dv-foto" accept="image/*">
+        ${d.foto_url ? `<div class="encuadre">
+          <img id="dv-previa" src="${esc(d.foto_url)}"
+            style="object-position:center ${d.foto_pos ?? 50}%" alt="">
+          <div style="flex:1">
+            <label class="lab">Subir o bajar el encuadre</label>
+            <input type="range" id="dv-pos" min="0" max="100" value="${d.foto_pos ?? 50}">
+          </div></div>` : ''}</div>
       <div style="margin-bottom:12px"><label class="lab">Reglamento en PDF</label>
         <input type="file" id="dv-pdf" accept="application/pdf">
         ${d.reglamento_url ? '<p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">Ya hay uno subido. Sube otro solo si lo quieres reemplazar.</p>' : ''}</div>
@@ -1446,6 +1458,11 @@ function enlazar(){
     await cargar(); pintar();
   };
 
+  if($('#dv-pos')) $('#dv-pos').oninput = e => {
+    const previa = $('#dv-previa');
+    if(previa) previa.style.objectPosition = `center ${e.target.value}%`;
+  };
+
   if($('#dv-editar'))   $('#dv-editar').onclick   = () => { editandoDiva = true;  pintar(); };
   if($('#dv-cancelar')) $('#dv-cancelar').onclick = () => { editandoDiva = false; pintar(); };
 
@@ -1454,6 +1471,7 @@ function enlazar(){
       const fila = { id:1, nombre:$('#dv-nom').value.trim() || null,
                      descripcion:$('#dv-desc').value.trim() || null,
                      actualizada_en: new Date().toISOString() };
+      if($('#dv-pos')) fila.foto_pos = +$('#dv-pos').value;
       const f = $('#dv-foto').files[0];
       if(f) fila.foto_url = await subirFoto(f, 'diva');
       const pdf = $('#dv-pdf').files[0];
