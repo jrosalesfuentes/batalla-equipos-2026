@@ -228,6 +228,46 @@ tr:last-child td{border-bottom:0}
 .titulo-fecha h3{margin:0;font-size:30px;line-height:1.05;color:#fff;letter-spacing:-.02em}
 .titulo-fecha p{margin:5px 0 0;font-size:13.5px;color:var(--lima)}
 
+/* --- La parrilla del fixture --- */
+/* Sin ajuste magnético: con él el navegador empujaba la columna de
+   la hora fuera de la pantalla al abrir la pantalla. */
+.parrilla-caja{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:5px}
+.parrilla{display:grid;grid-template-columns:54px repeat(var(--canchas), minmax(172px, 1fr));
+  gap:6px;min-width:min-content}
+.parrilla .cab{background:var(--verde-hondo);color:#fff;font-size:11px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;text-align:center;padding:9px 6px;
+  border-radius:9px;display:flex;align-items:center;justify-content:center;line-height:1.15}
+.parrilla .hcol{position:sticky;left:0;z-index:2;background:var(--lima);color:var(--tinta);
+  font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;border-radius:9px;
+  padding:6px 2px;text-align:center;line-height:1.15}
+.parrilla .hcol.cab{background:var(--verde-hondo);color:#fff;font-family:inherit;font-size:11px}
+.parrilla .celda{background:#fff;border-radius:11px;padding:10px 11px;
+  display:flex;flex-direction:column;gap:5px;min-width:0}
+.parrilla .celda.libre{align-items:center;justify-content:center;color:var(--linea);
+  background:rgba(255,255,255,.1);font-size:18px}
+.parrilla .celda.mio{box-shadow:inset 0 0 0 2px var(--lima)}
+.parrilla .celda.suspendido{opacity:.72}
+.parrilla .celda .cat{align-self:flex-start}
+.parrilla .pareja{min-width:0}
+.parrilla .pareja b{display:block;font-size:13.5px;line-height:1.2;overflow-wrap:anywhere}
+.parrilla .pareja.gana b{color:var(--verde)}
+.parrilla .pareja.gana b::after{content:' ★';font-size:10px;vertical-align:2px}
+.parrilla .pareja span{display:block;font-size:10.5px;color:var(--gris);letter-spacing:.04em;
+  text-transform:uppercase;margin-top:2px;overflow-wrap:anywhere}
+.parrilla .pareja i{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;
+  border:1px solid rgba(0,0,0,.15)}
+.parrilla .medio{font-size:11px;color:var(--gris);letter-spacing:.08em;text-transform:uppercase;
+  border-top:1px solid var(--glass);border-bottom:1px solid var(--glass);padding:4px 0;text-align:center}
+.parrilla .medio .res{font-family:'IBM Plex Mono',monospace;font-size:12.5px;font-weight:700;
+  color:var(--tinta);letter-spacing:0;text-transform:none}
+.parrilla .medio .susp{color:var(--alerta);font-weight:700;font-size:10px}
+.parrilla .celda .tetoca{align-self:flex-start;width:auto;margin:0;background:var(--lima);
+  color:var(--tinta);font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 9px;border-radius:999px}
+.desliza{font-size:11.5px;color:var(--claro);margin:8px 0 0;text-align:right}
+@media (min-width:620px){ .desliza{display:none} }
+
 /* La rejilla para cargar el marcador. */
 .marcador .rejilla{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:7px;
   align-items:center;margin-top:12px}
@@ -700,6 +740,53 @@ function tituloFecha(jor, cola){
   </div>`;
 }
 
+/* La parrilla de la fecha: las horas abajo a la izquierda y una
+   columna por cancha, como el cuadro que arman las organizadoras.
+   En el teléfono la columna de la hora queda fija y las canchas se
+   deslizan de lado. */
+function parrilla(lista){
+  const canchas = [...new Set(lista.map(p => p.cancha).filter(Boolean))]
+    .sort((a,b) => String(a).localeCompare(String(b), 'es', { numeric:true }));
+  const horas = [...new Set(lista.map(p => p.hora ? p.hora.slice(0,5) : 'Por confirmar'))].sort();
+  if(!canchas.length) canchas.push(null);
+
+  const celdas = horas.map(h => {
+    const fila = canchas.map(c => {
+      const p = lista.find(x => (x.hora ? x.hora.slice(0,5) : 'Por confirmar') === h
+                             && (c === null || x.cancha === c));
+      if(!p) return `<div class="celda libre">—</div>`;
+      const jugado = p.estado === 'jugado' && p.set1_a != null;
+      const gA = jugado && cuentaPartido(p, p.es_final).setsA > cuentaPartido(p, p.es_final).setsB;
+      return `<div class="celda ${esMio(p) ? 'mio' : ''} ${p.estado === 'suspendido' ? 'suspendido' : ''}">
+        <span class="cat">${esc(cat(p.categoria_id))}</span>
+        ${ladoParrilla(p.dupla_a, p.equipo_a, jugado && gA)}
+        <div class="medio">${jugado
+          ? `<span class="res">${esc(marcadorTexto(p))}</span>`
+          : p.estado === 'suspendido' ? '<span class="susp">suspendido</span>' : 'vs'}</div>
+        ${ladoParrilla(p.dupla_b, p.equipo_b, jugado && !gA)}
+        ${esMio(p) ? '<span class="tetoca">Te toca</span>' : ''}
+      </div>`;
+    }).join('');
+    return `<div class="hcol">${esc(h)}</div>${fila}`;
+  }).join('');
+
+  return `<div class="parrilla-caja">
+      <div class="parrilla" style="--canchas:${canchas.length}">
+        <div class="hcol cab">Hora</div>
+        ${canchas.map(c => `<div class="cab">${c === null ? 'Partidos' : 'Cancha ' + esc(c)}</div>`).join('')}
+        ${celdas}
+      </div>
+    </div>
+    ${canchas.length > 1 ? '<p class="desliza">Desliza de lado para ver las otras canchas →</p>' : ''}`;
+}
+
+function ladoParrilla(duplaId, equipoId, ganadora){
+  return `<div class="pareja ${ganadora ? 'gana' : ''}">
+    <b>${esc(nomDupla(duplaId))}</b>
+    <span><i style="background:${esc(colorEq(equipoId))}"></i>${esc(eq(equipoId))}</span>
+  </div>`;
+}
+
 /* --- programación semanal --- */
 function vProgramacion(){
   if(!D.jornadas.length)
@@ -718,29 +805,9 @@ function vProgramacion(){
     .sort((a,b) => (a.hora||'99').localeCompare(b.hora||'99')
                 || String(a.cancha||'').localeCompare(String(b.cancha||'')));
 
-  let cuerpo;
-  if(!lista.length){
-    cuerpo = `<div class="vacio">Esta fecha todavía no tiene programación.<br>Las administradoras la publican durante la semana.</div>`;
-  } else {
-    const bloques = {};
-    lista.forEach(p => {
-      const k = p.hora ? p.hora.slice(0,5) : 'Por confirmar';
-      (bloques[k] = bloques[k] || []).push(p);
-    });
-    cuerpo = Object.entries(bloques).map(([hora, ps]) => `
-      <div class="hora"><b>${esc(hora)}</b><span></span></div>
-      ${ps.map(p => {
-        const mio = esMio(p);
-        return `<div class="pj ${mio?'mio':''}">
-          <div class="arriba"><span class="cat">${esc(cat(p.categoria_id))}</span>
-            ${p.cancha ? `<span class="cancha">Cancha ${esc(p.cancha)}</span>` : ''}</div>
-          ${ladoPartido(p.dupla_a, p.equipo_a)}
-          <div class="versus">vs</div>
-          ${ladoPartido(p.dupla_b, p.equipo_b)}
-          ${mio ? '<span class="marca">Te toca</span>' : ''}
-        </div>`;
-      }).join('')}`).join('');
-  }
+  const cuerpo = lista.length
+    ? parrilla(lista)
+    : `<div class="vacio">Esta fecha todavía no tiene programación.<br>Las administradoras la publican durante la semana.</div>`;
 
   return `<h2 class="sec">Programación</h2>
     <div class="chips">${chips}</div>
