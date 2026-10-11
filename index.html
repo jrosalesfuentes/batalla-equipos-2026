@@ -85,22 +85,36 @@ textarea{min-height:80px;resize:vertical}
 .chip .punto{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;
   vertical-align:middle;border:1px solid rgba(0,0,0,.15)}
 /* --- DIVA --- */
-.diva-cab{background:#fff;border-radius:14px;padding:18px;text-align:center;margin-bottom:12px}
-.diva-foto,.diva-sinfoto{width:138px;height:138px;border-radius:50%;object-fit:cover;
-  object-position:center 50%;margin:0 auto 12px;display:block;background:var(--glass);
-  box-shadow:0 0 0 4px var(--lima)}
-.diva-sinfoto{display:flex;align-items:center;justify-content:center;font-size:48px;
+.diva-cab{background:#fff;border-radius:16px;padding:22px 18px 20px;text-align:center;
+  margin-bottom:12px}
+
+/* El sello: la foto y el logo son una sola pieza. El logo se asoma
+   por la esquina de la foto, con borde blanco, como un emblema. */
+.diva-sello{position:relative;width:148px;margin:0 auto 15px}
+.diva-foto,.diva-sinfoto{width:148px;height:148px;border-radius:50%;object-fit:cover;
+  object-position:center 50%;display:block;background:var(--glass);
+  box-shadow:0 0 0 4px var(--lima),0 6px 18px rgba(5,59,55,.13)}
+.diva-sinfoto{display:flex;align-items:center;justify-content:center;font-size:52px;
   font-weight:700;color:var(--verde)}
+.diva-emblema{position:absolute;right:-7px;bottom:-5px;width:56px;height:56px;
+  border-radius:16px;background:#fff;border:3px solid #fff;overflow:hidden;
+  box-shadow:0 2px 9px rgba(5,59,55,.2);display:flex;align-items:center;justify-content:center}
+.diva-emblema img{width:100%;height:100%;object-fit:contain;display:block}
+
 .encuadre{display:flex;align-items:center;gap:12px;margin-top:10px}
 .encuadre img{width:84px;height:84px;border-radius:50%;object-fit:cover;flex:none;
   background:var(--glass);box-shadow:0 0 0 3px var(--lima)}
 .encuadre input[type=range]{flex:1;accent-color:var(--verde)}
-.diva-cab h3{margin:0;font-size:20px}
-.diva-logo{display:block;width:min(120px,42vw);height:auto;margin:0 auto 12px}
-.diva-sigla{font-size:17px;font-weight:700;letter-spacing:.16em;color:var(--verde);margin:7px 0 0}
+
+.diva-cab h3{margin:0;font-size:21px;letter-spacing:-.01em}
+.diva-sigla{display:inline-block;background:var(--lima);color:var(--tinta);
+  font-size:13px;font-weight:700;letter-spacing:.2em;padding:5px 15px 5px 17px;
+  border-radius:999px;margin:10px 0 0}
 .diva-largo{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--gris);margin:4px 0 0;line-height:1.5}
-.diva-cab .texto{margin:12px 0 0;text-align:left;line-height:1.55;white-space:pre-wrap}
+  text-transform:uppercase;color:var(--gris);margin:9px 0 0;line-height:1.55}
+.diva-cab .texto{margin:0;text-align:left;line-height:1.6;white-space:pre-wrap}
+.diva-cab .texto::before{content:'';display:block;width:46px;height:2px;
+  background:var(--linea);border-radius:2px;margin:16px auto 15px}
 .reglamento{display:flex;align-items:center;gap:11px;background:#fff;border-radius:12px;
   padding:14px;margin-bottom:12px;text-decoration:none;color:var(--tinta)}
 .reglamento:hover{background:var(--paper)}
@@ -737,11 +751,15 @@ function vDiva(){
   const sinResponder = D.preguntas.filter(q => !q.respuesta).length;
 
   const ficha = `<div class="diva-cab">
-      ${d.logo_url ? `<img class="diva-logo" src="${esc(d.logo_url)}" alt="">` : ''}
-      ${d.foto_url
-        ? `<img class="diva-foto" src="${esc(d.foto_url)}" alt="${esc(nombre)}"
-             style="object-position:center ${d.foto_pos ?? 50}%">`
-        : `<div class="diva-sinfoto" aria-hidden="true">${esc(nombre.charAt(0).toUpperCase())}</div>`}
+      <div class="diva-sello">
+        ${d.foto_url
+          ? `<img class="diva-foto" src="${esc(d.foto_url)}" alt="${esc(nombre)}"
+               style="object-position:center ${d.foto_pos ?? 50}%">`
+          : `<div class="diva-sinfoto" aria-hidden="true">${esc(nombre.charAt(0).toUpperCase())}</div>`}
+        ${d.logo_url
+          ? `<span class="diva-emblema" aria-hidden="true"><img src="${esc(d.logo_url)}" alt=""></span>`
+          : ''}
+      </div>
       <h3>${esc(nombre)}</h3>
       <p class="diva-sigla">DIVA</p>
       <p class="diva-largo">Decisora Imparcial de Validación y Arbitraje</p>
