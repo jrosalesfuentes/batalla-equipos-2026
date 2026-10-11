@@ -38,11 +38,11 @@ input,button,select,textarea{font-family:inherit;font-size:15px}
 .navbar{position:sticky;top:0;z-index:6;background:var(--verde-hondo);display:flex;
   box-shadow:0 2px 10px rgba(0,0,0,.13)}
 .navbar button{flex:1;min-width:0;background:transparent;border:0;color:var(--glass);cursor:pointer;
-  padding:8px 1px 7px;display:flex;flex-direction:column;align-items:center;gap:3px;
-  font-family:inherit;font-size:9px;font-weight:600;letter-spacing:.01em;white-space:nowrap;
+  padding:8px 0 7px;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-family:inherit;font-size:8.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;
   border-bottom:3px solid transparent}
 .navbar button.on{color:var(--lima);border-bottom-color:var(--lima)}
-.navbar svg{width:20px;height:20px;flex:none}
+.navbar svg{width:19px;height:19px;flex:none}
 .insta{display:flex;align-items:center;gap:9px;margin:26px 20px 0;padding-top:16px;
   border-top:1px solid rgba(255,255,255,.16);color:var(--claro);text-decoration:none;font-size:13px}
 .insta:hover{color:var(--lima)}
@@ -84,6 +84,34 @@ textarea{min-height:80px;resize:vertical}
 
 .chip .punto{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;
   vertical-align:middle;border:1px solid rgba(0,0,0,.15)}
+/* --- DIVA --- */
+.diva-cab{background:#fff;border-radius:14px;padding:18px;text-align:center;margin-bottom:12px}
+.diva-foto,.diva-sinfoto{width:112px;height:112px;border-radius:50%;object-fit:cover;
+  margin:0 auto 12px;display:block;background:var(--glass);
+  box-shadow:0 0 0 4px var(--lima)}
+.diva-sinfoto{display:flex;align-items:center;justify-content:center;font-size:40px;
+  font-weight:700;color:var(--verde)}
+.diva-cab h3{margin:0;font-size:20px}
+.diva-sigla{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gris);margin:6px 0 0;line-height:1.5}
+.diva-cab .texto{margin:12px 0 0;text-align:left;line-height:1.55;white-space:pre-wrap}
+.reglamento{display:flex;align-items:center;gap:11px;background:#fff;border-radius:12px;
+  padding:14px;margin-bottom:12px;text-decoration:none;color:var(--tinta)}
+.reglamento:hover{background:var(--paper)}
+.reglamento svg{width:26px;height:26px;flex:none;color:var(--verde)}
+.reglamento strong{display:block;font-size:15px}
+.reglamento span{font-size:12.5px;color:var(--gris)}
+.preg{background:#fff;border-radius:12px;padding:14px;margin-bottom:10px}
+.preg .quien{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.preg .quien strong{font-size:14.5px}
+.preg .quien time{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--gris)}
+.preg .texto{margin:0;line-height:1.5}
+.preg .resp{margin:12px 0 0;padding:11px 13px;background:rgba(215,222,105,.26);
+  border-radius:9px;border-left:3px solid var(--lima)}
+.preg .resp .de{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--verde);margin:0 0 5px}
+.preg .resp p{margin:0;line-height:1.5;white-space:pre-wrap}
+.preg .sin-resp{margin:10px 0 0;font-size:12.5px;color:var(--gris);font-style:italic}
 .muestra{width:30px;height:30px;border-radius:50%;flex:none;border:1px solid var(--linea)}
 .sin-logo{font-size:12px;color:var(--gris);font-style:italic}
 .cabeza-eq{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;
@@ -225,9 +253,10 @@ tr:last-child td{border-bottom:0}
 <nav class="navbar" id="navbar">
   <button data-vista="equipos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.2-2.9 7.7-7 9-4.1-1.3-7-4.8-7-9V6l7-3z"/></svg>Equipos</button>
   <button data-vista="resultados"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/><path d="M9 20h6M12 13v7"/></svg>Resultados</button>
-  <button data-vista="programacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Programación</button>
-  <button data-vista="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.3-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.7-7 9-7 9z"/></svg>Vida Social</button>
+  <button data-vista="programacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Fixture</button>
+  <button data-vista="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.3-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.7-7 9-7 9z"/></svg>Social</button>
   <button data-vista="noticias"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M7 9.5h6M7 13h10M7 16h7"/></svg>Noticias</button>
+  <button data-vista="diva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l4 3 4-6 4 6 4-3-1.6 10H5.6L4 8z"/></svg>DIVA</button>
 </nav>
 
 <div class="velo" id="velo"></div>
@@ -268,10 +297,11 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[] };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[] };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
+let soyDiva = false;
 
 /* Estado de las pantallas. Va todo junto y arriba a propósito: si alguna
    de estas queda declarada más abajo, los clics que la usan fallan en
@@ -327,10 +357,12 @@ async function cargar(){
   [D.categorias, D.equipos, D.jugadoras, D.duplas, D.jornadas] = await Promise.all([
     t('categorias','orden'), t('equipos','orden'), t('jugadoras','nombre'), t('duplas'), t('jornadas','numero')
   ]);
-  [D.partidos, D.tabla, D.ranking, D.ajustes, D.noticias] = await Promise.all([
+  [D.partidos, D.tabla, D.ranking, D.ajustes, D.preguntas, D.noticias] = await Promise.all([
     t('partidos'), t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
+    (await sb.from('preguntas').select('*').order('creada_en',{ascending:false})).data ?? [],
     (await sb.from('noticias').select('*').order('publicada_en',{ascending:false})).data ?? []
   ]);
+  D.diva = (await sb.from('diva').select('*').eq('id',1).maybeSingle()).data ?? null;
   vincularFicha();
 }
 
@@ -373,9 +405,10 @@ async function revisarSesion(){
   if(sesion){
     try{
       const { data:p } = await sb.from('perfiles')
-        .select('jugadora_id').eq('id', sesion.user.id).maybeSingle();
+        .select('jugadora_id, es_diva').eq('id', sesion.user.id).maybeSingle();
       miFicha = p?.jugadora_id ?? null;
-    }catch(e){ miFicha = null; }
+      soyDiva = !!p?.es_diva;
+    }catch(e){ miFicha = null; soyDiva = false; }
   }
 
   const g = localStorage.getItem('batalla:jugadora');
@@ -439,7 +472,7 @@ $('#navbar').addEventListener('click', clicMenu);
 $('#lnk-salir').onclick = async () => {
   await sb.auth.signOut();
   localStorage.removeItem('batalla:jugadora');
-  sesion = null; yo = null; miFicha = null; vista = 'entrar';
+  sesion = null; yo = null; miFicha = null; soyDiva = false; vista = 'entrar';
   pintarMenu(); cajon(false); pintar();
 };
 
@@ -450,7 +483,7 @@ function pintar(){
   const p = $('#pantalla');
   p.className = '';
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
-              noticias:vNoticias, social:vSocial, entrar:vEntrar, admin:vAdmin }[vista] ?? vResultados;
+              noticias:vNoticias, social:vSocial, diva:vDiva, entrar:vEntrar, admin:vAdmin }[vista] ?? vResultados;
   const puerta = vista === 'entrar';
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
@@ -724,8 +757,111 @@ function vSocial(){
   return `<h2 class="sec">Vida social</h2><div class="chips">${chips}</div>${cuerpo}`;
 }
 
+/* --- DIVA · Decisora Imparcial de Validación y Arbitraje --- */
+function vDiva(){
+  const d = D.diva || {};
+  const nombre = d.nombre || 'DIVA';
+  const sinResponder = D.preguntas.filter(q => !q.respuesta).length;
+
+  const ficha = `<div class="diva-cab">
+      ${d.foto_url
+        ? `<img class="diva-foto" src="${esc(d.foto_url)}" alt="${esc(nombre)}">`
+        : `<div class="diva-sinfoto" aria-hidden="true">${esc(nombre.charAt(0).toUpperCase())}</div>`}
+      <h3>${esc(nombre)}</h3>
+      <p class="diva-sigla">Decisora Imparcial<br>de Validación y Arbitraje</p>
+      ${d.descripcion ? `<p class="texto">${esc(d.descripcion)}</p>` : ''}
+    </div>`;
+
+  const regla = d.reglamento_url
+    ? `<a class="reglamento" href="${esc(d.reglamento_url)}" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5z"/>
+          <path d="M14 3v5h5M9 13h6M9 17h4"/></svg>
+        <span style="flex:1"><strong>Reglamento del torneo</strong>
+        <span>Las bases oficiales, en PDF</span></span></a>`
+    : `<div class="vacio" style="margin-bottom:12px">El reglamento todavía no está subido.</div>`;
+
+  const formulario = yo
+    ? `<div class="card">
+        <h3>Hacerle una pregunta</h3>
+        <p style="font-size:13px;color:var(--gris);margin:0 0 10px">
+          Tu pregunta y la respuesta quedan visibles para todas, como respaldo oficial.</p>
+        <div id="q-msg"></div>
+        <textarea id="q-texto" maxlength="800"
+          placeholder="¿Podemos reprogramar el partido del martes?"></textarea>
+        <button class="btn lima" id="q-enviar" style="margin-top:10px">Enviar pregunta</button>
+      </div>`
+    : `<div class="vacio">Entra con tu nombre para hacerle una pregunta.<br><br>
+        <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
+
+  const lista = D.preguntas.length
+    ? D.preguntas.map(q => `<div class="preg">
+        <div class="quien"><strong>${esc(q.nombre)}</strong>
+          <time>${esc(fechaCorta(q.creada_en))}</time></div>
+        <p class="texto">${esc(q.texto)}</p>
+        ${q.respuesta
+          ? `<div class="resp"><p class="de">Responde ${esc(nombre)}</p>
+             <p>${esc(q.respuesta)}</p></div>`
+          : `<p class="sin-resp">Esperando respuesta.</p>`}
+        ${soyDiva ? `<div class="fila" style="margin:11px 0 0">
+          <button class="btn claro q-responder" data-id="${q.id}">
+            ${q.respuesta ? 'Editar respuesta' : 'Responder'}</button>
+          <button class="btn claro q-borrar" data-id="${q.id}"
+            style="border-color:var(--alerta);color:var(--alerta)">Borrar</button>
+        </div>
+        ${respondiendo === q.id ? `<div style="margin-top:10px">
+          <textarea class="q-resp-texto" maxlength="1500">${esc(q.respuesta ?? '')}</textarea>
+          <div class="fila" style="margin-top:9px">
+            <button class="btn lima q-guardar" data-id="${q.id}">Guardar respuesta</button>
+            <button class="btn claro q-cancelar">Cancelar</button></div>
+          <div class="q-resp-msg"></div></div>` : ''}` : ''}
+      </div>`).join('')
+    : `<div class="vacio">Todavía no hay preguntas.</div>`;
+
+  return `<h2 class="sec">DIVA</h2>
+    ${ficha}
+    ${regla}
+    ${soyDiva ? panelDiva() : ''}
+    <h2 class="sec">Preguntas${sinResponder ? ` · ${sinResponder} sin responder` : ''}</h2>
+    ${formulario}
+    ${lista}`;
+}
+
+/* Lo que solo ve la DIVA: su ficha y el reglamento */
+let editandoDiva = false;
+function panelDiva(){
+  const d = D.diva || {};
+  if(!editandoDiva) return `<div class="card">
+      <div class="fila" style="margin:0">
+        <span style="flex:1;font-size:13.5px;color:var(--gris)">
+          Eres la DIVA. Puedes editar tu ficha, subir el reglamento y responder.</span>
+        <button class="btn claro" id="dv-editar">Editar mi ficha</button>
+      </div></div>`;
+  return `<div class="card">
+      <h3>Mi ficha</h3>
+      <div style="margin-bottom:10px"><label class="lab">Nombre</label>
+        <input type="text" id="dv-nom" value="${esc(d.nombre ?? '')}"></div>
+      <div style="margin-bottom:10px"><label class="lab">Descripción</label>
+        <textarea id="dv-desc" maxlength="1500">${esc(d.descripcion ?? '')}</textarea></div>
+      <div style="margin-bottom:10px"><label class="lab">Mi foto</label>
+        <input type="file" id="dv-foto" accept="image/*"></div>
+      <div style="margin-bottom:12px"><label class="lab">Reglamento en PDF</label>
+        <input type="file" id="dv-pdf" accept="application/pdf">
+        ${d.reglamento_url ? '<p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">Ya hay uno subido. Sube otro solo si lo quieres reemplazar.</p>' : ''}</div>
+      <div class="fila"><button class="btn lima" id="dv-guardar">Guardar</button>
+        <button class="btn claro" id="dv-cancelar">Cancelar</button></div>
+      <div id="dv-msg"></div>
+    </div>`;
+}
+
 /* --- noticias: portada, lista y nota completa --- */
 const clase = e => norm(e).replace('ó','o').replace(/[^a-z]/g,'');
+const fechaCorta = f => f
+  ? new Date(f).toLocaleDateString('es-CL',{day:'numeric',month:'short'}) +
+    ' · ' + new Date(f).toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'})
+  : '';
+let respondiendo = null;
 const fechita = n => {
   const f = n.publicada_en || n.creada_en;
   return f ? new Date(f).toLocaleDateString('es-CL',{day:'numeric',month:'long'}) : '';
@@ -1174,6 +1310,15 @@ function achicar(file, maxLado = 1400){
   });
 }
 
+async function subirArchivo(file, carpeta){
+  const ext = (file.name.split('.').pop() || 'pdf').toLowerCase();
+  const ruta = `${carpeta}/${Date.now()}.${ext}`;
+  const { error } = await sb.storage.from('fotos')
+    .upload(ruta, file, { upsert:true, contentType: file.type || 'application/octet-stream' });
+  if(error) throw error;
+  return sb.storage.from('fotos').getPublicUrl(ruta).data.publicUrl;
+}
+
 async function subirFoto(file, carpeta){
   const chico = await achicar(file);
   const ruta = `${carpeta}/${Date.now()}.jpg`;
@@ -1288,6 +1433,62 @@ function enlazar(){
       await cargar();
       aviso(msg, 'Guardado.');
     }catch(e){ problema(msg, e); }
+  });
+
+  /* --- DIVA --- */
+  if($('#q-enviar')) $('#q-enviar').onclick = async () => {
+    const texto = $('#q-texto').value.trim();
+    if(!texto) return aviso($('#q-msg'), 'Escribe tu pregunta.', true);
+    const { error } = await sb.from('preguntas')
+      .insert({ jugadora_id: yo.jugadora_id, nombre: yo.nombre, texto });
+    if(error) return problema($('#q-msg'), error);
+    await cargar(); pintar();
+  };
+
+  if($('#dv-editar'))   $('#dv-editar').onclick   = () => { editandoDiva = true;  pintar(); };
+  if($('#dv-cancelar')) $('#dv-cancelar').onclick = () => { editandoDiva = false; pintar(); };
+
+  if($('#dv-guardar')) $('#dv-guardar').onclick = async () => {
+    try{
+      const fila = { id:1, nombre:$('#dv-nom').value.trim() || null,
+                     descripcion:$('#dv-desc').value.trim() || null,
+                     actualizada_en: new Date().toISOString() };
+      const f = $('#dv-foto').files[0];
+      if(f) fila.foto_url = await subirFoto(f, 'diva');
+      const pdf = $('#dv-pdf').files[0];
+      if(pdf) fila.reglamento_url = await subirArchivo(pdf, 'reglamento');
+      const { error } = await sb.from('diva').upsert(fila, { onConflict:'id' });
+      if(error) throw error;
+      editandoDiva = false;
+      await cargar(); pintar();
+    }catch(e){ problema($('#dv-msg'), e); }
+  };
+
+  document.querySelectorAll('.q-responder').forEach(b => b.onclick = () => {
+    respondiendo = +b.dataset.id; pintar();
+  });
+  if($('.q-cancelar')) $('.q-cancelar').onclick = () => { respondiendo = null; pintar(); };
+  document.querySelectorAll('.q-cancelar').forEach(b => b.onclick = () => {
+    respondiendo = null; pintar();
+  });
+
+  document.querySelectorAll('.q-guardar').forEach(b => b.onclick = async () => {
+    const caja = b.closest('div').parentElement;
+    const texto = caja.querySelector('.q-resp-texto').value.trim();
+    const msg = caja.querySelector('.q-resp-msg');
+    if(!texto) return aviso(msg, 'Escribe la respuesta.', true);
+    const { error } = await sb.from('preguntas')
+      .update({ respuesta: texto, respondida_en: new Date().toISOString() })
+      .eq('id', +b.dataset.id);
+    if(error) return problema(msg, error);
+    respondiendo = null;
+    await cargar(); pintar();
+  });
+
+  document.querySelectorAll('.q-borrar').forEach(b => b.onclick = async () => {
+    if(!confirm('¿Borrar esta pregunta? No se puede deshacer.')) return;
+    await sb.from('preguntas').delete().eq('id', +b.dataset.id);
+    await cargar(); pintar();
   });
 
   if($('#x-guardar')) $('#x-guardar').onclick = async () => {
