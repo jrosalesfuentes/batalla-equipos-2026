@@ -112,7 +112,7 @@ textarea{min-height:80px;resize:vertical}
   color:var(--verde);margin:0 0 5px}
 .preg .resp p{margin:0;line-height:1.5;white-space:pre-wrap}
 .preg .sin-resp{margin:10px 0 0;font-size:12.5px;color:var(--gris);font-style:italic}
-.muestra{width:30px;height:30px;border-radius:50%;flex:none;border:1px solid var(--linea)}
+.muestra{width:30px;height:30px;border-radius:8px;flex:none;border:1px solid var(--linea)}
 .sin-logo{font-size:12px;color:var(--gris);font-style:italic}
 .cabeza-eq{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;
   padding:14px;margin-bottom:12px}
@@ -122,9 +122,9 @@ textarea{min-height:80px;resize:vertical}
 .eqfila{display:flex;align-items:center;gap:11px;width:100%;background:#fff;border:0;
   border-radius:12px;padding:11px;margin-bottom:9px;cursor:pointer;font-family:inherit;text-align:left}
 .eqfila:hover{background:var(--paper)}
-.eq-logo{width:48px;height:48px;border-radius:50%;flex:none;display:flex;align-items:center;
+.eq-logo{width:48px;height:48px;border-radius:10px;flex:none;display:flex;align-items:center;
   justify-content:center;overflow:hidden}
-.eq-logo img{width:100%;height:100%;object-fit:contain;padding:11%}
+.eq-logo img{width:100%;height:100%;object-fit:contain}
 .eq-foto{width:76px;height:48px;border-radius:7px;object-fit:cover;flex:none;background:var(--glass)}
 .eq-foto.vacia{display:flex;align-items:center;justify-content:center;font-size:10.5px;
   color:var(--gris);font-style:italic}
@@ -192,11 +192,11 @@ tr:last-child td{border-bottom:0}
   background:#fff;border:0;border-bottom:1px solid var(--glass);padding:9px 4px;
   text-align:left;cursor:pointer;font-family:inherit}
 .nombre:hover{background:var(--paper)}
-.avatar{width:52px;height:52px;border-radius:50%;flex:none;display:flex;
+.avatar{width:52px;height:52px;border-radius:11px;flex:none;display:flex;
   align-items:center;justify-content:center;font-size:24px;font-weight:700;line-height:1}
-.avatar.chico{width:38px;height:38px;font-size:17px}
+.avatar.chico{width:38px;height:38px;font-size:17px;border-radius:9px}
 .avatar.con-logo{overflow:hidden}
-.avatar.con-logo img{width:100%;height:100%;object-fit:contain;padding:12%}
+.avatar.con-logo img{width:100%;height:100%;object-fit:contain}
 .nombre div{display:flex;flex-direction:column;gap:1px;min-width:0}
 .nombre strong{font-size:15px}
 .nombre span{font-size:12px;color:var(--gris)}
@@ -804,7 +804,7 @@ function vDiva(){
           ? `<div class="resp"><p class="de">Responde ${esc(nombre)}</p>
              <p>${esc(q.respuesta)}</p></div>`
           : `<p class="sin-resp">Esperando respuesta.</p>`}
-        ${soyDiva ? `<div class="fila" style="margin:11px 0 0">
+        ${sesion ? `<div class="fila" style="margin:11px 0 0">
           <button class="btn claro q-responder" data-id="${q.id}">
             ${q.respuesta ? 'Editar respuesta' : 'Responder'}</button>
           <button class="btn claro q-borrar" data-id="${q.id}"
@@ -822,7 +822,7 @@ function vDiva(){
   return `<h2 class="sec">DIVA</h2>
     ${ficha}
     ${regla}
-    ${soyDiva ? panelDiva() : ''}
+    ${sesion ? panelDiva() : ''}
     <h2 class="sec">Preguntas${sinResponder ? ` · ${sinResponder} sin responder` : ''}</h2>
     ${formulario}
     ${lista}`;
@@ -835,16 +835,17 @@ function panelDiva(){
   if(!editandoDiva) return `<div class="card">
       <div class="fila" style="margin:0">
         <span style="flex:1;font-size:13.5px;color:var(--gris)">
-          Eres la DIVA. Puedes editar tu ficha, subir el reglamento y responder.</span>
-        <button class="btn claro" id="dv-editar">Editar mi ficha</button>
+          ${soyDiva ? 'Eres la DIVA.' : 'Como administradora'} puedes editar la ficha,
+          subir el reglamento y responder las preguntas.</span>
+        <button class="btn claro" id="dv-editar">Editar la ficha</button>
       </div></div>`;
   return `<div class="card">
-      <h3>Mi ficha</h3>
+      <h3>Ficha de la DIVA</h3>
       <div style="margin-bottom:10px"><label class="lab">Nombre</label>
         <input type="text" id="dv-nom" value="${esc(d.nombre ?? '')}"></div>
       <div style="margin-bottom:10px"><label class="lab">Descripción</label>
         <textarea id="dv-desc" maxlength="1500">${esc(d.descripcion ?? '')}</textarea></div>
-      <div style="margin-bottom:10px"><label class="lab">Mi foto</label>
+      <div style="margin-bottom:10px"><label class="lab">Su foto</label>
         <input type="file" id="dv-foto" accept="image/*"></div>
       <div style="margin-bottom:12px"><label class="lab">Reglamento en PDF</label>
         <input type="file" id="dv-pdf" accept="application/pdf">
