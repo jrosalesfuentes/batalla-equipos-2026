@@ -208,6 +208,41 @@ tr:last-child td{border-bottom:0}
   margin-right:5px;border:1px solid rgba(255,255,255,.4)}
 .proximo .contra-vs{align-self:center;font-size:12px;color:var(--claro);letter-spacing:.06em}
 .proximo .arenga{margin:14px 0 0;font-size:13.5px;font-style:italic;color:var(--claro)}
+
+/* El resumen de la fecha, arriba de la programación. */
+.resumen{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);
+  border-radius:14px;padding:15px 16px;margin-bottom:14px;color:#fff}
+.resumen .cuenta{display:inline-block;background:var(--lima);color:var(--tinta);font-size:11px;
+  font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 11px;border-radius:999px}
+.resumen .cuando{margin:10px 0 0;font-size:16px;font-weight:600}
+.resumen .cifra{margin:2px 0 0;font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600}
+.resumen .detalle{margin:3px 0 0;font-size:12.5px;color:var(--claro)}
+.resumen .tuyo{margin:11px 0 0;padding-top:11px;border-top:1px solid rgba(255,255,255,.18);
+  font-size:13.5px;color:var(--lima)}
+.resumen .tuyo b{color:#fff}
+
+/* La rejilla para cargar el marcador. */
+.marcador .rejilla{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:7px;
+  align-items:center;margin-top:12px}
+.marcador .rejilla .rot{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gris);font-weight:700;text-align:center;line-height:1.1}
+.marcador .rejilla .rn{font-size:13.5px;font-weight:600;line-height:1.2;min-width:0;
+  color:var(--tinta);font-family:inherit;letter-spacing:0;overflow-wrap:anywhere}
+.marcador .rejilla .rn span{display:block;font-size:11px;color:var(--gris);font-weight:400;
+  margin-top:2px}
+.marcador .rejilla .rn i{display:inline-block;width:7px;height:7px;border-radius:50%;
+  margin-right:5px;border:1px solid rgba(0,0,0,.15)}
+.marcador .rejilla input{width:100%;text-align:center;font-family:'IBM Plex Mono',monospace;
+  font-size:18px;font-weight:600;padding:9px 0;margin:0}
+.marcador .pista{font-size:11.5px;color:var(--gris);margin:9px 0 0}
+.veredicto{background:var(--paper);border:1px solid var(--linea);border-radius:11px;
+  padding:11px 13px;margin-top:12px}
+.veredicto strong{display:block;font-size:15px}
+.veredicto > span{font-size:12.5px;color:var(--gris)}
+.veredicto .reparto{display:flex;gap:10px;margin-top:9px;flex-wrap:wrap}
+.veredicto .reparto span{flex:1;min-width:110px;background:#fff;border-radius:8px;padding:7px 10px;
+  font-size:12.5px;color:var(--gris);display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.veredicto .reparto b{font-family:'IBM Plex Mono',monospace;font-size:17px;color:var(--verde)}
 .dupla{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--glass)}
 .dupla:last-child{border-bottom:0}
 .dupla.tocable{cursor:pointer}
@@ -373,6 +408,7 @@ const etqs = () => D.etiquetas.length ? D.etiquetas.map(e => e.nombre) : ETQS_BA
 let yo = null;                // jugadora conectada
 let jorAdm = null;            // fecha abierta en el editor de programación
 let partidoEdit = null;       // partido que se está editando
+let resultadoEdit = null;     // partido al que se le está cargando el marcador
 let filtroFecha = 'todas';
 let equipoAbierto = null;
 let duplaAbierta = null;
@@ -685,8 +721,44 @@ function vProgramacion(){
 
   return `<h2 class="sec">Programación</h2>
     <div class="chips">${chips}</div>
-    <p class="nota">${esc(jor.nombre)} · ${esc(fechaLarga(jor.fecha))}</p>
+    ${resumenFecha(jor, lista)}
     ${cuerpo}`;
+}
+
+/* El encabezado de la fecha elegida. Lo ve todo el mundo, incluso
+   quien entró solo a mirar: cuánto falta, cuántos partidos hay y
+   entre qué horas. A la jugadora conectada le agrega su hora. */
+function resumenFecha(jor, lista){
+  if(!lista.length)
+    return `<p class="nota">${esc(jor.nombre)} · ${esc(fechaLarga(jor.fecha))}</p>`;
+
+  const horas = [...new Set(lista.map(p => p.hora ? p.hora.slice(0,5) : null).filter(Boolean))].sort();
+  const canchas = new Set(lista.map(p => p.cancha).filter(Boolean)).size;
+  const cats = D.categorias.filter(c => lista.some(p => p.categoria_id === c.id)).map(c => c.codigo);
+  const falta = cuantoFalta(new Date(jor.fecha + 'T' + (horas[0] || '12:00') + ':00').getTime());
+
+  const mios = lista.filter(esMio).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+  const mio = mios.length
+    ? `<p class="tuyo">${mios.map(p =>
+        `Juegas a las <b>${esc(p.hora ? p.hora.slice(0,5) : 'por confirmar')}</b>${
+          p.cancha ? ` en la cancha <b>${esc(p.cancha)}</b>` : ''}`).join('. ')}.</p>`
+    : '';
+
+  return `<div class="resumen">
+    <span class="cuenta">${esc(falta)}</span>
+    <p class="cuando">${esc(mayus(fechaLarga(jor.fecha)))}</p>
+    <p class="cifra">${lista.length} partido${lista.length===1?'':'s'}</p>
+    <p class="detalle">${horas.length ? esc(horas[0]) + ' a ' + esc(ultimaHora(horas)) : 'horario por confirmar'}${
+      canchas ? ` · ${canchas} cancha${canchas===1?'':'s'}` : ''}${
+      cats.length ? ` · ${esc(cats.join(' · '))}` : ''}</p>
+    ${mio}
+  </div>`;
+}
+
+/* La última hora de juego, sumándole una hora al último partido. */
+function ultimaHora(horas){
+  const h = horas[horas.length - 1].split(':');
+  return String((+h[0] + 1) % 24).padStart(2,'0') + ':' + h[1];
 }
 
 /* --- equipos --- */
@@ -1357,13 +1429,15 @@ function admProgramacion(){
     .sort((a,b) => (a.hora||'99').localeCompare(b.hora||'99')
                 || String(a.cancha||'').localeCompare(String(b.cancha||'')));
 
-  const filas = lista.map(p => partidoEdit === p.id
-    ? formPartido(p)
-    : `<div class="card"><div class="fila" style="margin:0">
+  const filas = lista.map(p => {
+    if(partidoEdit === p.id)   return formPartido(p);
+    if(resultadoEdit === p.id) return formResultado(p);
+    const jugado = p.estado === 'jugado';
+    return `<div class="card"><div class="fila" style="margin:0">
         <span class="cat">${esc(cat(p.categoria_id))}</span>
         <span class="mono" style="font-size:13px">${p.hora ? esc(p.hora.slice(0,5)) : '—'}</span>
         <span style="font-size:12px;color:var(--gris)">${p.cancha ? 'cancha ' + esc(p.cancha) : 'sin cancha'}</span>
-        ${p.estado !== 'programado'
+        ${p.estado !== 'programado' && !jugado
           ? `<span class="etq aviso">${esc(p.estado)}</span>` : ''}
         <button class="btn claro pa-editar" data-id="${p.id}" style="margin-left:auto">Editar</button>
       </div>
@@ -1372,7 +1446,13 @@ function admProgramacion(){
         <span style="color:var(--gris)"> (${esc(eq(p.equipo_a))}) vs </span>
         <strong>${esc(nomDupla(p.dupla_b))}</strong>
         <span style="color:var(--gris)"> (${esc(eq(p.equipo_b))})</span>
-      </div></div>`).join('');
+      </div>
+      <div class="fila" style="margin:10px 0 0">
+        ${jugado ? `<span class="mono" style="font-weight:700">${esc(marcadorTexto(p))}</span>` : ''}
+        <button class="btn ${jugado?'claro':'lima'} pa-resultado" data-id="${p.id}" style="margin-left:auto">
+          ${jugado ? 'Corregir resultado' : 'Cargar resultado'}</button>
+      </div></div>`;
+  }).join('');
 
   return `<p class="nota">Acá se arregla la programación si algo cambia durante el torneo:
       correr un partido de hora, moverlo de cancha, pasarlo a otra fecha, suspenderlo o
@@ -1381,7 +1461,10 @@ function admProgramacion(){
     <p class="nota">${esc(jor.nombre)} · ${esc(fechaLarga(jor.fecha))} ·
       ${lista.length} partido${lista.length===1?'':'s'}</p>
     ${partidoEdit === 'nuevo' ? formPartido(null) : `
-      <button class="btn claro" id="pa-nuevo" style="margin-bottom:12px">Agregar un partido a esta fecha</button>`}
+      <div class="fila" style="margin-bottom:12px">
+        <button class="btn claro" id="pa-nuevo">Agregar un partido a esta fecha</button>
+        <button class="btn claro" id="pa-excel">Descargar Excel con los resultados</button>
+      </div>`}
     ${filas || `<div class="vacio">Esta fecha no tiene partidos.</div>`}`;
 }
 
@@ -1425,6 +1508,278 @@ function formPartido(p){
     </div>
     <div id="pa-msg"></div>
   </div>`;
+}
+
+/* ============================================================
+   CARGAR EL RESULTADO DE UN PARTIDO
+   Dos sets a 6 juegos (tie break a 7 si van 6-6) y, si quedan
+   1-1, súper tie break a 11 por diferencia de 2.
+   ============================================================ */
+
+/* El marcador escrito, para mostrarlo en las listas. */
+function marcadorTexto(p){
+  if(p.set1_a == null) return '';
+  let t = `${p.set1_a}-${p.set1_b} · ${p.set2_a}-${p.set2_b}`;
+  if(p.stb_a != null) t += ` · [${p.stb_a}-${p.stb_b}]`;
+  return t;
+}
+
+/* Las mismas cuentas que hace la base de datos, para poder
+   mostrar quién gana y cuántos puntos antes de guardar. */
+function cuentaPartido(m, esFinal){
+  const gan = (a,b) => a != null && b != null && a > b;
+  const setsA = (gan(m.set1_a,m.set1_b)?1:0) + (gan(m.set2_a,m.set2_b)?1:0) + (gan(m.stb_a,m.stb_b)?1:0);
+  const setsB = (gan(m.set1_b,m.set1_a)?1:0) + (gan(m.set2_b,m.set2_a)?1:0) + (gan(m.stb_b,m.stb_a)?1:0);
+  const pts = (propios, ajenos) => esFinal
+    ? (propios > ajenos ? 60 : 30)
+    : propios > ajenos ? (ajenos === 0 ? 40 : 30)
+                       : (propios === 0 ? 10 : 20);
+  return { setsA, setsB, puntosA: pts(setsA, setsB), puntosB: pts(setsB, setsA) };
+}
+
+/* Avisos de un marcador raro. No impiden guardar: en la cancha
+   pasa de todo y la DIVA manda. */
+function reparos(m){
+  const r = [];
+  const revisa = (a, b, n) => {
+    if(a == null || b == null) return r.push(`Falta el set ${n}.`);
+    if(a === b) return r.push(`El set ${n} no puede quedar empatado.`);
+    const alto = Math.max(a,b), bajo = Math.min(a,b);
+    if(alto > 7) r.push(`El set ${n} tiene más de 7 juegos.`);
+    else if(alto === 7 && bajo < 5) r.push(`Un 7-${bajo} en el set ${n} no es un resultado normal.`);
+    else if(alto < 6) r.push(`El set ${n} terminó antes de los 6 juegos.`);
+  };
+  revisa(m.set1_a, m.set1_b, 1);
+  revisa(m.set2_a, m.set2_b, 2);
+  if(m.stb_a != null || m.stb_b != null){
+    if(m.stb_a == null || m.stb_b == null) r.push('Falta un número del súper tie break.');
+    else if(m.stb_a === m.stb_b) r.push('El súper tie break no puede quedar empatado.');
+    else if(Math.max(m.stb_a,m.stb_b) < 11) r.push('El súper tie break se juega a 11.');
+    else if(Math.abs(m.stb_a - m.stb_b) < 2) r.push('El súper tie break se gana por diferencia de 2.');
+  }
+  return r;
+}
+
+const numCampo = sel => { const v = $(sel)?.value; return v === '' || v == null ? null : +v; };
+const leerMarcador = () => ({
+  set1_a:numCampo('#r-1a'), set1_b:numCampo('#r-1b'),
+  set2_a:numCampo('#r-2a'), set2_b:numCampo('#r-2b'),
+  stb_a: numCampo('#r-sa'), stb_b: numCampo('#r-sb')
+});
+
+function formResultado(p){
+  const n = (v) => v == null ? '' : v;
+  return `<div class="card marcador" id="r-form" data-id="${p.id}">
+    <div class="fila" style="margin:0 0 4px">
+      <span class="cat">${esc(cat(p.categoria_id))}</span>
+      <span class="mono" style="font-size:13px">${p.hora ? esc(p.hora.slice(0,5)) : ''}</span>
+      <span style="font-size:12px;color:var(--gris)">${p.cancha ? 'cancha ' + esc(p.cancha) : ''}</span>
+    </div>
+    <div class="rejilla">
+      <span></span><span class="rot">Set 1</span><span class="rot">Set 2</span><span class="rot">Súper TB</span>
+      <div class="rn">${esc(nomDupla(p.dupla_a))}
+        <span><i style="background:${esc(colorEq(p.equipo_a))}"></i>${esc(eq(p.equipo_a))}</span></div>
+      <input type="number" id="r-1a" inputmode="numeric" min="0" max="9"  value="${n(p.set1_a)}">
+      <input type="number" id="r-2a" inputmode="numeric" min="0" max="9"  value="${n(p.set2_a)}">
+      <input type="number" id="r-sa" inputmode="numeric" min="0" max="30" value="${n(p.stb_a)}">
+      <div class="rn">${esc(nomDupla(p.dupla_b))}
+        <span><i style="background:${esc(colorEq(p.equipo_b))}"></i>${esc(eq(p.equipo_b))}</span></div>
+      <input type="number" id="r-1b" inputmode="numeric" min="0" max="9"  value="${n(p.set1_b)}">
+      <input type="number" id="r-2b" inputmode="numeric" min="0" max="9"  value="${n(p.set2_b)}">
+      <input type="number" id="r-sb" inputmode="numeric" min="0" max="30" value="${n(p.stb_b)}">
+    </div>
+    <p class="pista">El súper tie break se llena solo si el partido quedó 1-1.
+      Si se definió en dos sets, déjalo en blanco.</p>
+    <div id="r-previa"></div>
+    <div class="fila" style="margin-top:12px">
+      <button class="btn lima" id="r-guardar">Guardar resultado</button>
+      <button class="btn claro" id="r-cancelar">Cancelar</button>
+      ${p.estado === 'jugado'
+        ? `<button class="btn claro" id="r-deshacer"
+             style="border-color:var(--alerta);color:var(--alerta);margin-left:auto">Borrar marcador</button>`
+        : ''}
+    </div>
+    <div id="r-msg"></div>
+  </div>`;
+}
+
+/* Se repinta sola mientras escriben: quién gana y cuántos puntos. */
+function previaResultado(){
+  const caja = $('#r-previa');
+  if(!caja) return;
+  const p = D.partidos.find(x => x.id === +$('#r-form').dataset.id);
+  const m = leerMarcador();
+  if(m.set1_a == null && m.set1_b == null && m.set2_a == null && m.set2_b == null)
+    return caja.innerHTML = '';
+  const c = cuentaPartido(m, p.es_final);
+  const r = reparos(m);
+  const gana = c.setsA === c.setsB ? null : (c.setsA > c.setsB ? 'a' : 'b');
+  caja.innerHTML = `
+    ${gana ? `<div class="veredicto">
+      <strong>Gana ${esc(nomDupla(gana === 'a' ? p.dupla_a : p.dupla_b))}</strong>
+      <span>${c.setsA}-${c.setsB} en sets</span>
+      <div class="reparto">
+        <span>${esc(eq(p.equipo_a))} <b>${c.puntosA}</b></span>
+        <span>${esc(eq(p.equipo_b))} <b>${c.puntosB}</b></span>
+      </div></div>`
+      : `<div class="avisito mal">Con estos números el partido queda empatado en sets.</div>`}
+    ${r.length ? `<div class="avisito mal">${r.map(esc).join('<br>')}</div>` : ''}`;
+}
+
+async function guardarResultado(){
+  const id = +$('#r-form').dataset.id;
+  const p  = D.partidos.find(x => x.id === id);
+  const m  = leerMarcador();
+  const c  = cuentaPartido(m, p.es_final);
+  if(c.setsA === c.setsB)
+    return problema($('#r-msg'), new Error('El partido no puede quedar empatado en sets.'));
+  try{
+    const { error } = await sb.from('partidos').update({
+      ...m, estado:'jugado',
+      cargado_por: sesion?.user?.id ?? null,
+      cargado_en: new Date().toISOString()
+    }).eq('id', id);
+    if(error) throw error;
+    resultadoEdit = null;
+    await cargar();
+    pintar();
+  }catch(e){ problema($('#r-msg'), e); }
+}
+
+async function borrarResultado(){
+  const id = +$('#r-form').dataset.id;
+  if(!confirm('¿Borrar el marcador y dejar el partido como programado?')) return;
+  try{
+    const { error } = await sb.from('partidos').update({
+      set1_a:null, set1_b:null, set2_a:null, set2_b:null,
+      stb_a:null, stb_b:null, estado:'programado',
+      cargado_por:null, cargado_en:null
+    }).eq('id', id);
+    if(error) throw error;
+    resultadoEdit = null;
+    await cargar();
+    pintar();
+  }catch(e){ problema($('#r-msg'), e); }
+}
+
+/* ============================================================
+   RESPALDO EN EXCEL
+   El mismo cuadro que mandaron las organizadoras, pero con el
+   marcador de cada partido, más tres hojas de resumen.
+   ============================================================ */
+
+async function excelRespaldo(){
+  const boton = $('#pa-excel');
+  if(boton){ boton.disabled = true; boton.textContent = 'Armando el Excel…'; }
+  try{
+    await armarExcel();
+  }catch(e){
+    alert('No se pudo armar el Excel: ' + (e.message || e));
+  }finally{
+    if(boton){ boton.disabled = false; boton.textContent = 'Descargar Excel con los resultados'; }
+  }
+}
+
+async function armarExcel(){
+  /* La librería de Excel pesa bastante y solo la ocupan las
+     administradoras, así que se baja recién al apretar el botón. */
+  const XLSX = await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm');
+  const libro = XLSX.utils.book_new();
+  const jugados = p => p.estado === 'jugado' && p.set1_a != null;
+
+  /* ---------- hoja 1: la parrilla, fecha por fecha ---------- */
+  const canchas = [...new Set(D.partidos.map(p => p.cancha).filter(Boolean))]
+    .sort((a,b) => String(a).localeCompare(String(b), 'es', { numeric:true }));
+  const ancho = 1 + canchas.length * 4;
+  const filas = [];
+  const juntar = [];                               // celdas combinadas
+  const fila = n => filas.length + n;              // fila actual, base 0
+
+  for(const j of D.jornadas){
+    const suyos = D.partidos.filter(p => p.jornada_id === j.id);
+    if(!suyos.length) continue;
+
+    juntar.push({ s:{ r:fila(0), c:0 }, e:{ r:fila(0), c:ancho - 1 } });
+    filas.push([`${j.nombre.toUpperCase()} · ${fechaLarga(j.fecha).toUpperCase()}`]);
+
+    const cab = ['Hora'];
+    canchas.forEach((c, i) => {
+      juntar.push({ s:{ r:fila(0), c:1 + i*4 }, e:{ r:fila(0), c:4 + i*4 } });
+      cab.push(`CANCHA ${c}`, '', '', '');
+    });
+    filas.push(cab);
+    filas.push(['', ...canchas.flatMap(() => ['Cat.','Dupla A','Dupla B','Resultado'])]);
+
+    const horas = [...new Set(suyos.map(p => p.hora ? p.hora.slice(0,5) : 'Sin hora'))].sort();
+    for(const h of horas){
+      const linea = [h];
+      for(const c of canchas){
+        const p = suyos.find(x => (x.hora ? x.hora.slice(0,5) : 'Sin hora') === h && x.cancha === c);
+        linea.push(p ? cat(p.categoria_id) : '',
+                   p ? nomDupla(p.dupla_a) : '',
+                   p ? nomDupla(p.dupla_b) : '',
+                   p ? (jugados(p) ? marcadorTexto(p)
+                      : p.estado === 'programado' ? '' : p.estado) : '');
+      }
+      filas.push(linea);
+    }
+    filas.push([]);
+  }
+
+  const hoja = XLSX.utils.aoa_to_sheet(filas);
+  hoja['!merges'] = juntar;
+  hoja['!cols'] = [{ wch:9 }, ...canchas.flatMap(() => [{ wch:7 },{ wch:21 },{ wch:21 },{ wch:17 }])];
+  XLSX.utils.book_append_sheet(libro, hoja, 'Programación');
+
+  /* ---------- hoja 2: un partido por línea ---------- */
+  const det = [['Fecha','Día','Hora','Cancha','Categoría',
+                'Dupla A','Equipo A','Dupla B','Equipo B',
+                'Set 1','Set 2','Súper TB','Ganador','Puntos A','Puntos B','Estado']];
+  for(const j of D.jornadas){
+    const suyos = D.partidos.filter(p => p.jornada_id === j.id)
+      .sort((a,b) => (a.hora||'').localeCompare(b.hora||'')
+                  || String(a.cancha||'').localeCompare(String(b.cancha||'')));
+    for(const p of suyos){
+      const c = jugados(p) ? cuentaPartido(p, p.es_final) : null;
+      det.push([
+        j.nombre, j.fecha, p.hora ? p.hora.slice(0,5) : '', p.cancha ?? '',
+        cat(p.categoria_id),
+        nomDupla(p.dupla_a), eq(p.equipo_a), nomDupla(p.dupla_b), eq(p.equipo_b),
+        p.set1_a != null ? `${p.set1_a}-${p.set1_b}` : '',
+        p.set2_a != null ? `${p.set2_a}-${p.set2_b}` : '',
+        p.stb_a  != null ? `${p.stb_a}-${p.stb_b}`   : '',
+        c ? nomDupla(c.setsA > c.setsB ? p.dupla_a : p.dupla_b) : '',
+        c ? c.puntosA : '', c ? c.puntosB : '',
+        p.estado
+      ]);
+    }
+  }
+  const hoja2 = XLSX.utils.aoa_to_sheet(det);
+  hoja2['!cols'] = [{wch:20},{wch:11},{wch:7},{wch:8},{wch:9},{wch:21},{wch:10},
+                    {wch:21},{wch:10},{wch:7},{wch:7},{wch:9},{wch:21},{wch:9},{wch:9},{wch:12}];
+  hoja2['!autofilter'] = { ref: XLSX.utils.encode_range({ s:{r:0,c:0}, e:{r:det.length-1, c:15} }) };
+  XLSX.utils.book_append_sheet(libro, hoja2, 'Partido por partido');
+
+  /* ---------- hoja 3: la tabla de equipos ---------- */
+  const tab = [['#','Equipo','PJ','Ganados','Perdidos','Sets a favor','Sets en contra','±Sets',
+                'Games a favor','Games en contra','±Games','Puntos extra','PUNTOS']];
+  D.tabla.forEach((t, i) => tab.push([i+1, t.nombre, t.pj, t.pg, t.pp, t.sets_g, t.sets_p, t.dif_sets,
+    t.games_g, t.games_p, t.dif_games, t.puntos_extra ?? 0, t.puntos]));
+  const hoja3 = XLSX.utils.aoa_to_sheet(tab);
+  hoja3['!cols'] = [{wch:4},{wch:12},{wch:5},{wch:9},{wch:10},{wch:13},{wch:14},{wch:7},
+                    {wch:14},{wch:15},{wch:8},{wch:13},{wch:8}];
+  XLSX.utils.book_append_sheet(libro, hoja3, 'Tabla de equipos');
+
+  /* ---------- hoja 4: el ranking de duplas ---------- */
+  const ran = [['Categoría','Dupla','Equipo','PJ','Ganados','Perdidos','±Sets','±Games','Puntos']];
+  D.ranking.forEach(r => ran.push([r.categoria, nomDupla(r.dupla_id), r.equipo,
+    r.pj, r.pg, r.pp, r.dif_sets, r.dif_games, r.puntos]));
+  const hoja4 = XLSX.utils.aoa_to_sheet(ran);
+  hoja4['!cols'] = [{wch:10},{wch:24},{wch:12},{wch:5},{wch:9},{wch:10},{wch:8},{wch:9},{wch:8}];
+  XLSX.utils.book_append_sheet(libro, hoja4, 'Ranking de duplas');
+
+  const hoy = new Date().toISOString().slice(0,10);
+  XLSX.writeFile(libro, `batalla-equipos-2026-${hoy}.xlsx`);
 }
 
 async function guardarPartido(){
@@ -1696,12 +2051,26 @@ function enlazar(){
 
   /* --- editor de la programación --- */
   document.querySelectorAll('[data-jadm]').forEach(b => b.onclick = () => {
-    jorAdm = +b.dataset.jadm; partidoEdit = null; pintar();
+    jorAdm = +b.dataset.jadm; partidoEdit = null; resultadoEdit = null; pintar();
   });
   document.querySelectorAll('.pa-editar').forEach(b => b.onclick = () => {
-    partidoEdit = +b.dataset.id; pintar();
+    partidoEdit = +b.dataset.id; resultadoEdit = null; pintar();
   });
+  document.querySelectorAll('.pa-resultado').forEach(b => b.onclick = () => {
+    resultadoEdit = +b.dataset.id; partidoEdit = null; pintar();
+  });
+  if($('#r-form')){
+    ['#r-1a','#r-1b','#r-2a','#r-2b','#r-sa','#r-sb'].forEach(sel => {
+      const c = $(sel); if(c) c.oninput = previaResultado;
+    });
+    previaResultado();
+  }
+  if($('#r-guardar'))  $('#r-guardar').onclick  = guardarResultado;
+  if($('#r-cancelar')) $('#r-cancelar').onclick = () => { resultadoEdit = null; pintar(); };
+  if($('#r-deshacer')) $('#r-deshacer').onclick = borrarResultado;
+
   if($('#pa-nuevo'))    $('#pa-nuevo').onclick    = () => { partidoEdit = 'nuevo'; pintar(); };
+  if($('#pa-excel'))    $('#pa-excel').onclick    = excelRespaldo;
   if($('#pa-cancelar')) $('#pa-cancelar').onclick = () => { partidoEdit = null; pintar(); };
   if($('#pa-guardar'))  $('#pa-guardar').onclick  = guardarPartido;
   if($('#pa-borrar'))   $('#pa-borrar').onclick   = borrarPartido;
