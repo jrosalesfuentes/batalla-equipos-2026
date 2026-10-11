@@ -223,6 +223,11 @@ tr:last-child td{border-bottom:0}
   font-size:13.5px;color:var(--lima)}
 .resumen .tuyo b{color:#fff}
 
+/* El título grande de la fecha elegida. */
+.titulo-fecha{margin:16px 0 13px}
+.titulo-fecha h3{margin:0;font-size:30px;line-height:1.05;color:#fff;letter-spacing:-.02em}
+.titulo-fecha p{margin:5px 0 0;font-size:13.5px;color:var(--lima)}
+
 /* La rejilla para cargar el marcador. */
 .marcador .rejilla{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:7px;
   align-items:center;margin-top:12px}
@@ -629,8 +634,9 @@ function vResultados(){
     cuerpo = `<div class="chips">${fechas.map(f =>
       `<button class="chip ${String(filtroFecha)===String(f)?'on':''}" data-fecha="${f}">${
         f==='todas' ? 'Todas' : esc(D.jornadas.find(j=>j.id===f).nombre)}</button>`).join('')}</div>`;
+    cuerpo += tituloFecha(filtroFecha === 'todas' ? null : D.jornadas.find(j => j.id === filtroFecha));
     const lista = D.partidos.filter(p => filtroFecha==='todas' || p.jornada_id===filtroFecha);
-    cuerpo += lista.length ? lista.map(tarjetaPartido).join('')
+    cuerpo += lista.length ? lista.map(x => tarjetaPartido(x, filtroFecha !== 'todas')).join('')
       : `<div class="vacio">Todavía no hay partidos programados. Las administradoras los cargan en la sección de administración.</div>`;
   }
   if(subRes === 'equipos'){
@@ -648,8 +654,8 @@ function vResultados(){
 }
 const sinDatos = () => `<div class="vacio">Aún no hay partidos jugados. La tabla aparece sola en cuanto se cargue el primer resultado.</div>`;
 
-function tarjetaPartido(p){
-  const j = D.jornadas.find(x => x.id === p.jornada_id);
+function tarjetaPartido(p, sinFecha){
+  const j = sinFecha ? null : D.jornadas.find(x => x.id === p.jornada_id);
   const marcador = p.estado === 'jugado'
     ? `<span class="mono">${p.set1_a}-${p.set1_b} · ${p.set2_a}-${p.set2_b}${p.stb_a!=null?` · ${p.stb_a}-${p.stb_b}`:''}</span>`
     : `<span class="mono" style="color:var(--gris)">${p.hora ? p.hora.slice(0,5) : 'por jugar'}${p.cancha?' · cancha '+esc(p.cancha):''}</span>`;
@@ -681,6 +687,17 @@ function tablaPos(lista, etiqueta){
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
       <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table>`;
+}
+
+/* El título grande de una fecha: el número arriba y la fecha del
+   calendario abajo. Se usa en Resultados y en Administración. */
+function tituloFecha(jor, cola){
+  if(!jor) return `<div class="titulo-fecha"><h3>Todas las fechas</h3>
+    <p>El torneo completo, de la primera a la última.</p></div>`;
+  return `<div class="titulo-fecha">
+    <h3>${esc(jor.nombre)}</h3>
+    <p>${esc(mayus(fechaLarga(jor.fecha)))}${cola ? ' · ' + esc(cola) : ''}</p>
+  </div>`;
 }
 
 /* --- programación semanal --- */
@@ -840,7 +857,7 @@ function detalleEquipo(id){
       ? [...ds].sort((a,b) => orden(a.categoria_id) - orden(b.categoria_id)).map(fichaDupla).join('')
       : '<p class="c">Todavía no hay duplas cargadas.</p>'}</div>
     <h2 class="sec">Partidos</h2>
-    ${ps.length ? ps.map(tarjetaPartido).join('') : `<div class="vacio">Sin partidos programados.</div>`}`;
+    ${ps.length ? ps.map(x => tarjetaPartido(x)).join('') : `<div class="vacio">Sin partidos programados.</div>`}`;
 }
 
 /* --- perfil de la jugadora: partidos y resultados --- */
@@ -886,7 +903,7 @@ function vPerfil(){
         <tbody><tr><td>${mias.pj}</td><td>${mias.pg}</td><td>${mias.pp}</td>
         <td>${signo(mias.dif_sets)}</td><td>${signo(mias.dif_games)}</td>
         <td class="pts">${mias.puntos}</td></tr></tbody></table></div>`).join('')}
-      ${jugados.length ? jugados.map(tarjetaPartido).join('')
+      ${jugados.length ? jugados.map(x => tarjetaPartido(x)).join('')
         : `<div class="vacio">Todavía no has jugado ningún partido.</div>`}`;
   }
 
@@ -1428,11 +1445,8 @@ function admProgramacion(){
     jorAdm = (D.jornadas.find(j => j.fecha >= hoy) || D.jornadas[0]).id;
   }
   const jor = D.jornadas.find(j => j.id === jorAdm) || D.jornadas[0];
-  const chips = D.jornadas.map(j => {
-    const n = D.partidos.filter(p => p.jornada_id === j.id).length;
-    return `<button class="chip ${jorAdm===j.id?'on':''}" data-jadm="${j.id}">${esc(j.nombre)}
-      <span style="opacity:.65">· ${n}</span></button>`;
-  }).join('');
+  const chips = D.jornadas.map(j =>
+    `<button class="chip ${jorAdm===j.id?'on':''}" data-jadm="${j.id}">${esc(j.nombre)}</button>`).join('');
 
   const lista = D.partidos.filter(p => p.jornada_id === jorAdm)
     .sort((a,b) => (a.hora||'99').localeCompare(b.hora||'99')
@@ -1467,8 +1481,7 @@ function admProgramacion(){
       correr un partido de hora, moverlo de cancha, pasarlo a otra fecha, suspenderlo o
       cambiar una dupla. Lo que guardes lo ven todas al tiro.</p>
     <div class="chips">${chips}</div>
-    <p class="nota">${esc(jor.nombre)} · ${esc(fechaLarga(jor.fecha))} ·
-      ${lista.length} partido${lista.length===1?'':'s'}</p>
+    ${tituloFecha(jor, `${lista.length} partido${lista.length===1?'':'s'}`)}
     ${partidoEdit === 'nuevo' ? formPartido(null) : `
       <div class="fila" style="margin-bottom:12px">
         <button class="btn claro" id="pa-nuevo">Agregar un partido a esta fecha</button>
