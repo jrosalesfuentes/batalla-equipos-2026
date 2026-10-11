@@ -96,8 +96,10 @@ textarea{min-height:80px;resize:vertical}
   background:var(--glass);box-shadow:0 0 0 3px var(--lima)}
 .encuadre input[type=range]{flex:1;accent-color:var(--verde)}
 .diva-cab h3{margin:0;font-size:20px}
-.diva-sigla{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;
-  text-transform:uppercase;color:var(--gris);margin:6px 0 0;line-height:1.5}
+.diva-logo{display:block;width:min(120px,42vw);height:auto;margin:0 auto 12px}
+.diva-sigla{font-size:17px;font-weight:700;letter-spacing:.16em;color:var(--verde);margin:7px 0 0}
+.diva-largo{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gris);margin:4px 0 0;line-height:1.5}
 .diva-cab .texto{margin:12px 0 0;text-align:left;line-height:1.55;white-space:pre-wrap}
 .reglamento{display:flex;align-items:center;gap:11px;background:#fff;border-radius:12px;
   padding:14px;margin-bottom:12px;text-decoration:none;color:var(--tinta)}
@@ -258,7 +260,6 @@ tr:last-child td{border-bottom:0}
   <button data-vista="equipos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.2-2.9 7.7-7 9-4.1-1.3-7-4.8-7-9V6l7-3z"/></svg>Equipos</button>
   <button data-vista="resultados"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/><path d="M9 20h6M12 13v7"/></svg>Resultados</button>
   <button data-vista="programacion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Fixture</button>
-  <button data-vista="social"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.3-7-9a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 4.7-7 9-7 9z"/></svg>Social</button>
   <button data-vista="noticias"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M7 9.5h6M7 13h10M7 16h7"/></svg>Noticias</button>
   <button data-vista="diva"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8l4 3 4-6 4 6 4-3-1.6 10H5.6L4 8z"/></svg>DIVA</button>
 </nav>
@@ -487,7 +488,7 @@ function pintar(){
   const p = $('#pantalla');
   p.className = '';
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
-              noticias:vNoticias, social:vSocial, diva:vDiva, entrar:vEntrar, admin:vAdmin }[vista] ?? vResultados;
+              noticias:vNoticias, diva:vDiva, entrar:vEntrar, admin:vAdmin }[vista] ?? vResultados;
   const puerta = vista === 'entrar';
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
@@ -729,38 +730,6 @@ function vPerfil(){
       : `<div class="vacio">No tienes partidos programados por ahora.</div>`}`;
 }
 
-/* --- vida social --- */
-let subSocial = 'gritos';
-function vSocial(){
-  const chips = ['gritos','galeria'].map(s =>
-    `<button class="chip ${subSocial===s?'on':''}" data-social="${s}">${
-      {gritos:'Los gritos',galeria:'Galería'}[s]}</button>`).join('');
-
-  let cuerpo = '';
-  if(subSocial === 'gritos'){
-    const con = D.equipos.filter(e => e.grito);
-    cuerpo = con.length ? con.map(e => `<div class="card grito">
-        <div class="fila" style="margin:0 0 8px">
-          ${e.logo_url ? `<img src="${esc(e.logo_url)}" style="width:34px;height:34px;object-fit:contain">` : ''}
-          <strong>${esc(e.nombre)}</strong></div>
-        <p class="frase">“${esc(e.grito)}”</p>
-      </div>`).join('')
-    : `<div class="vacio">Todavía no hay gritos cargados.<br>Se agregan desde Administración, en Equipos.</div>`;
-  }
-
-  if(subSocial === 'galeria'){
-    const fotos = D.noticias.filter(n => (n.publicada || sesion) && n.portada_url);
-    cuerpo = fotos.length ? `<div class="muro">${fotos.map(n => `
-      <div class="mural" data-noticia="${n.id}">
-        <img src="${esc(n.portada_url)}" alt="">
-        <div class="pie"><strong>${esc(n.titulo)}</strong><span>${esc(fechita(n))}</span></div>
-      </div>`).join('')}</div>`
-    : `<div class="vacio">Todavía no hay fotos publicadas.</div>`;
-  }
-
-  return `<h2 class="sec">Vida social</h2><div class="chips">${chips}</div>${cuerpo}`;
-}
-
 /* --- DIVA · Decisora Imparcial de Validación y Arbitraje --- */
 function vDiva(){
   const d = D.diva || {};
@@ -768,12 +737,14 @@ function vDiva(){
   const sinResponder = D.preguntas.filter(q => !q.respuesta).length;
 
   const ficha = `<div class="diva-cab">
+      ${d.logo_url ? `<img class="diva-logo" src="${esc(d.logo_url)}" alt="">` : ''}
       ${d.foto_url
         ? `<img class="diva-foto" src="${esc(d.foto_url)}" alt="${esc(nombre)}"
              style="object-position:center ${d.foto_pos ?? 50}%">`
         : `<div class="diva-sinfoto" aria-hidden="true">${esc(nombre.charAt(0).toUpperCase())}</div>`}
       <h3>${esc(nombre)}</h3>
-      <p class="diva-sigla">Decisora Imparcial<br>de Validación y Arbitraje</p>
+      <p class="diva-sigla">DIVA</p>
+      <p class="diva-largo">Decisora Imparcial de Validación y Arbitraje</p>
       ${d.descripcion ? `<p class="texto">${esc(d.descripcion)}</p>` : ''}
     </div>`;
 
@@ -850,6 +821,8 @@ function panelDiva(){
         <input type="text" id="dv-nom" value="${esc(d.nombre ?? '')}"></div>
       <div style="margin-bottom:10px"><label class="lab">Descripción</label>
         <textarea id="dv-desc" maxlength="1500">${esc(d.descripcion ?? '')}</textarea></div>
+      <div style="margin-bottom:10px"><label class="lab">Logo de la DIVA</label>
+        <input type="file" id="dv-logo" accept="image/*"></div>
       <div style="margin-bottom:10px"><label class="lab">Su foto</label>
         <input type="file" id="dv-foto" accept="image/*">
         ${d.foto_url ? `<div class="encuadre">
@@ -880,6 +853,7 @@ const fechita = n => {
   return f ? new Date(f).toLocaleDateString('es-CL',{day:'numeric',month:'long'}) : '';
 };
 
+let subNot = 'noticias';
 function vNoticias(){
   const pub = D.noticias.filter(n => n.publicada || sesion);
   if(noticiaAbierta){
@@ -897,13 +871,28 @@ function vNoticias(){
       </div>`;
   }
 
+  const chips = `<div class="chips">
+    <button class="chip ${subNot==='noticias'?'on':''}" data-not="noticias">Noticias</button>
+    <button class="chip ${subNot==='gritos'?'on':''}" data-not="gritos">Los gritos</button></div>`;
+
+  if(subNot === 'gritos'){
+    const con = D.equipos.filter(e => (e.grito || '').trim());
+    return `<h2 class="sec">Noticias</h2>${chips}` + (con.length
+      ? con.map(e => `<div class="card grito">
+          <div class="fila" style="margin:0 0 8px">
+            ${e.logo_url ? `<img src="${esc(e.logo_url)}" style="width:34px;height:34px;object-fit:contain;border-radius:7px">` : ''}
+            <strong>${esc(e.nombre)}</strong></div>
+          <p class="frase">“${esc(e.grito)}”</p></div>`).join('')
+      : `<div class="vacio">Todavía no hay gritos cargados.<br>Se agregan desde Administración, en Equipos.</div>`);
+  }
+
   if(!pub.length)
-    return `<h2 class="sec">Noticias</h2><div class="vacio">Todavía no hay noticias publicadas.<br>Acá van a aparecer las crónicas de cada fecha.</div>`;
+    return `<h2 class="sec">Noticias</h2>${chips}<div class="vacio">Todavía no hay noticias publicadas.<br>Acá van a aparecer las crónicas de cada fecha.</div>`;
 
   const dest = pub.find(n => n.destacada) || pub[0];
   const resto = pub.filter(n => n.id !== dest.id);
 
-  return `<h2 class="sec">Noticias</h2>
+  return `<h2 class="sec">Noticias</h2>${chips}
     <div class="portada" data-noticia="${dest.id}">
       <div class="foto">
         ${dest.portada_url ? `<img src="${esc(dest.portada_url)}" alt="">` : ''}
@@ -1349,7 +1338,7 @@ function enlazar(){
   document.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => { subRes = b.dataset.sub; pintar(); });
   document.querySelectorAll('[data-fecha]').forEach(b => b.onclick = () => {
     filtroFecha = b.dataset.fecha === 'todas' ? 'todas' : +b.dataset.fecha; pintar(); });
-  document.querySelectorAll('[data-social]').forEach(b => b.onclick = () => { subSocial = b.dataset.social; pintar(); });
+  document.querySelectorAll('[data-not]').forEach(b => b.onclick = () => { subNot = b.dataset.not; pintar(); });
   document.querySelectorAll('[data-noticia]').forEach(b => b.onclick = () => { noticiaAbierta = +b.dataset.noticia; pintar(); });
   if($('#ir-entrar')) $('#ir-entrar').onclick = () => { vista = 'entrar'; pintar(); };
   if($('#volver-n')) $('#volver-n').onclick = () => { noticiaAbierta = null; pintar(); };
@@ -1472,6 +1461,8 @@ function enlazar(){
                      descripcion:$('#dv-desc').value.trim() || null,
                      actualizada_en: new Date().toISOString() };
       if($('#dv-pos')) fila.foto_pos = +$('#dv-pos').value;
+      const lg = $('#dv-logo').files[0];
+      if(lg) fila.logo_url = await subirFoto(lg, 'diva');
       const f = $('#dv-foto').files[0];
       if(f) fila.foto_url = await subirFoto(f, 'diva');
       const pdf = $('#dv-pdf').files[0];
