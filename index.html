@@ -91,10 +91,20 @@ textarea{min-height:80px;resize:vertical}
 .cabeza-eq img{width:52px;height:52px;object-fit:contain;flex:none}
 .grito-chico{margin:4px 0 0;font-size:13.5px;color:var(--verde);font-weight:600}
 .rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-.eqcard{background:#fff;border-radius:12px;padding:14px;text-align:center;cursor:pointer;border:0}
-.eqcard img{width:56px;height:56px;object-fit:contain;margin-bottom:6px}
-.eqcard .nom{font-weight:700;font-size:14px}
-.eqcard .pts{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gris)}
+.eqfila{display:flex;align-items:center;gap:11px;width:100%;background:#fff;border:0;
+  border-radius:12px;padding:11px;margin-bottom:9px;cursor:pointer;font-family:inherit;text-align:left}
+.eqfila:hover{background:var(--paper)}
+.eq-logo{width:48px;height:48px;border-radius:50%;flex:none;display:flex;align-items:center;
+  justify-content:center;overflow:hidden}
+.eq-logo img{width:100%;height:100%;object-fit:contain;padding:11%}
+.eq-foto{width:76px;height:48px;border-radius:7px;object-fit:cover;flex:none;background:var(--glass)}
+.eq-foto.vacia{display:flex;align-items:center;justify-content:center;font-size:10.5px;
+  color:var(--gris);font-style:italic}
+.eq-datos{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.eq-datos strong{font-size:15.5px}
+.eq-datos span{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--gris)}
+.foto-equipo{display:block;width:100%;border-radius:10px;margin-bottom:11px;background:var(--glass)}
+.desc-equipo{margin:0;line-height:1.55;white-space:pre-wrap}
 
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;margin-bottom:8px}
 th{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--gris);padding:8px 5px;text-align:right;border-bottom:1px solid var(--linea);white-space:nowrap}
@@ -567,13 +577,19 @@ function chipsEquipos(activo){
 function vEquipos(){
   if(!D.equipos.length) return `<h2 class="sec">Equipos</h2><div class="vacio">Todavía no hay equipos cargados.</div>`;
   if(equipoAbierto) return detalleEquipo(equipoAbierto);
-  return `<h2 class="sec">Equipos</h2>${chipsEquipos(null)}<div class="rejilla">` + D.equipos.map(e => {
+  return `<h2 class="sec">Equipos</h2>${chipsEquipos(null)}` + D.equipos.map(e => {
     const t = D.tabla.find(x => x.equipo_id === e.id);
-    return `<button class="eqcard" data-equipo="${e.id}">
-      ${e.logo_url ? `<img src="${esc(e.logo_url)}" alt="">` : ''}
-      <div class="nom">${esc(e.nombre)}</div>
-      <div class="pts">${t ? t.puntos + ' pts' : '—'}</div></button>`;
-  }).join('') + `</div>`;
+    return `<button class="eqfila" data-equipo="${e.id}">
+      <span class="eq-logo" style="background:${esc(e.color || '#CBDDD9')}">
+        ${e.logo_url ? `<img src="${esc(e.logo_url)}" alt="">` : ''}</span>
+      ${e.foto_url
+        ? `<img class="eq-foto" src="${esc(e.foto_url)}" alt="">`
+        : `<span class="eq-foto vacia">sin foto</span>`}
+      <span class="eq-datos">
+        <strong>${esc(e.nombre)}</strong>
+        <span>${t ? t.puntos + ' pts' : 'sin partidos'}</span>
+      </span></button>`;
+  }).join('');
 }
 
 /* Una dupla en una lista. Al tocarla se abre con la foto en grande
@@ -612,7 +628,10 @@ function detalleEquipo(id){
       <div><h3 style="margin:0">${esc(e.nombre)}</h3>
       ${e.grito ? `<p class="grito-chico">“${esc(e.grito)}”</p>` : ''}</div>
     </div>
-    ${e.descripcion ? `<div class="card">${esc(e.descripcion)}</div>` : ''}
+    ${e.foto_url || e.descripcion ? `<div class="card">
+      ${e.foto_url ? `<img class="foto-equipo" src="${esc(e.foto_url)}" alt="Equipo ${esc(e.nombre)}">` : ''}
+      ${e.descripcion ? `<p class="desc-equipo">${esc(e.descripcion)}</p>` : ''}
+    </div>` : ''}
     <div class="card"><h3>Duplas</h3>${ds.length
       ? [...ds].sort((a,b) => orden(a.categoria_id) - orden(b.categoria_id)).map(fichaDupla).join('')
       : '<p class="c">Todavía no hay duplas cargadas.</p>'}</div>
@@ -835,12 +854,21 @@ function admEquipos(){
         ${e.logo_url
           ? `<img src="${esc(e.logo_url)}" style="width:46px;height:46px;object-fit:contain">`
           : `<span class="sin-logo">sin logo</span>`}
-        <span style="font-size:12px;color:var(--gris)">Equipo ${e.orden}</span>
+        ${e.foto_url
+          ? `<img src="${esc(e.foto_url)}" style="width:62px;height:46px;object-fit:cover;border-radius:6px">`
+          : `<span class="sin-logo">sin foto</span>`}
+        <span style="font-size:12px;color:var(--gris);margin-left:auto">Equipo ${e.orden}</span>
       </div>
       <div style="margin-bottom:10px"><label class="lab">Nombre del equipo</label>
         <input type="text" class="e-nom" value="${esc(e.nombre)}" placeholder="Las Pitufas"></div>
       <div style="margin-bottom:10px"><label class="lab">Logo</label>
-        <input type="file" class="e-logo" accept="image/*"></div>
+        <input type="file" class="e-logo" accept="image/*">
+        <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+          Va en el círculo de cada jugadora del equipo. Mejor cuadrado y con fondo transparente.</p></div>
+      <div style="margin-bottom:10px"><label class="lab">Foto del equipo</label>
+        <input type="file" class="e-foto" accept="image/*">
+        <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+          La de las nueve juntas. Se ve en la lista de equipos y sobre la descripción.</p></div>
       <div style="margin-bottom:10px"><label class="lab">Color</label>
         <div class="fila" style="margin:0">
           <input type="color" class="e-col" value="${esc(e.color || '#007E76')}" style="width:54px;padding:3px">
@@ -1215,6 +1243,8 @@ function enlazar(){
       };
       const f = c.querySelector('.e-logo').files[0];
       if(f) cambios.logo_url = await subirFoto(f, 'logos');
+      const ff = c.querySelector('.e-foto').files[0];
+      if(ff) cambios.foto_url = await subirFoto(ff, 'equipos');
       const { error } = await sb.from('equipos').update(cambios).eq('id', id);
       if(error) throw error;
       await cargar(); aviso(msg, 'Guardado.'); setTimeout(pintar, 700);
