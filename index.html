@@ -180,6 +180,34 @@ tr:last-child td{border-bottom:0}
 .pj .duelo em{font-style:normal;color:var(--gris);font-weight:400;padding:0 4px}
 .pj .marca{display:inline-block;background:var(--lima);color:var(--tinta);font-size:10px;font-weight:700;
   letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border-radius:999px;margin-top:6px}
+
+/* Los dos lados de un partido, con el color del equipo adelante. */
+.lado{display:flex;align-items:center;gap:8px;min-width:0}
+.lado .punto{width:9px;height:9px;border-radius:50%;flex:none;border:1px solid rgba(0,0,0,.15)}
+.lado-n{font-weight:600;font-size:14.5px;line-height:1.25;min-width:0}
+.lado-e{font-size:11.5px;color:var(--gris);margin-left:auto;flex:none;padding-left:8px}
+.versus{font-size:11px;color:var(--gris);margin:3px 0 3px 17px;letter-spacing:.06em}
+
+/* La tarjeta grande del próximo partido de la jugadora. */
+.proximo{background:linear-gradient(150deg,var(--verde) 0%,var(--verde-hondo) 100%);
+  border-radius:16px;padding:20px 18px;margin-bottom:14px;color:#fff;text-align:center}
+.proximo .cuenta{display:inline-block;background:var(--lima);color:var(--tinta);font-size:12px;
+  font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:5px 14px;border-radius:999px}
+.proximo .cuando{margin:12px 0 0;font-size:13px;color:var(--claro)}
+.proximo .hora-grande{margin:2px 0 0;font-family:'IBM Plex Mono',monospace;font-size:34px;
+  font-weight:600;letter-spacing:-.02em}
+.proximo .hora-grande span{font-size:14px;font-weight:400;color:var(--claro);letter-spacing:0}
+.proximo .contra{display:flex;align-items:stretch;gap:10px;margin-top:16px;text-align:left}
+.proximo .contra-lado{flex:1;min-width:0;background:rgba(255,255,255,.12);border-radius:12px;padding:11px 12px}
+.proximo .contra-lado.der{text-align:right}
+.proximo .contra-lado .rot{display:block;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--claro);margin-bottom:4px}
+.proximo .contra-lado strong{display:block;font-size:15px;line-height:1.25}
+.proximo .contra-lado .eqn{display:block;font-size:11.5px;color:var(--claro);margin-top:3px}
+.proximo .contra-lado .punto{display:inline-block;width:8px;height:8px;border-radius:50%;
+  margin-right:5px;border:1px solid rgba(255,255,255,.4)}
+.proximo .contra-vs{align-self:center;font-size:12px;color:var(--claro);letter-spacing:.06em}
+.proximo .arenga{margin:14px 0 0;font-size:13.5px;font-style:italic;color:var(--claro)}
 .dupla{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--glass)}
 .dupla:last-child{border-bottom:0}
 .dupla.tocable{cursor:pointer}
@@ -234,6 +262,12 @@ tr:last-child td{border-bottom:0}
 .etq.resultados{background:#fff;color:var(--verde)}
 .etq.aviso{background:#FFD166;color:#5A3D00}
 .etq.galeria{background:#BDE4DE;color:var(--tinta)}
+.etq-lista{display:flex;flex-wrap:wrap;gap:8px}
+.etq-chip{display:inline-flex;align-items:center;gap:4px;background:var(--paper);
+  border:1px solid var(--linea);border-radius:999px;padding:3px 4px 3px 5px}
+.etq-chip button{border:0;background:transparent;color:var(--gris);font-size:16px;
+  line-height:1;cursor:pointer;padding:0 4px}
+.etq-chip button:hover{color:var(--alerta)}
 .portada{position:relative;border-radius:14px;overflow:hidden;background:#fff;margin-bottom:14px;cursor:pointer}
 .portada .foto{position:relative;aspect-ratio:16/10;background:var(--verde-hondo)}
 .portada .foto img{width:100%;height:100%;object-fit:cover;display:block}
@@ -309,14 +343,13 @@ tr:last-child td{border-bottom:0}
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-import * as XLSX from 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm';
 
 const URL_SB = 'https://efuivscdjjpxltytpgxf.supabase.co';
 const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[] };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[] };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -332,8 +365,14 @@ let noticiaAbierta = null;
 let jornadaProg = null;
 let editandoNoticia = null;
 let previa = null;
-const ETQS = ['Crónica','Resultados','Aviso','Galería'];
+/* Las etiquetas de las noticias viven en la base de datos (tabla
+   etiquetas) para que las administradoras puedan crear las suyas.
+   Si todavía no se corrió esquema-parte10.sql, se usan estas. */
+const ETQS_BASE = ['Crónica','Resultados','Aviso','Galería'];
+const etqs = () => D.etiquetas.length ? D.etiquetas.map(e => e.nombre) : ETQS_BASE;
 let yo = null;                // jugadora conectada
+let jorAdm = null;            // fecha abierta en el editor de programación
+let partidoEdit = null;       // partido que se está editando
 let filtroFecha = 'todas';
 let equipoAbierto = null;
 let duplaAbierta = null;
@@ -343,6 +382,22 @@ const esc = t => String(t ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;
 const cat = id => D.categorias.find(c => c.id === id)?.codigo ?? '';
 const eq  = id => D.equipos.find(e => e.id === id)?.nombre ?? '';
 const colorEq = id => D.equipos.find(e => e.id === id)?.color || '#CBDDD9';
+
+/* "Jopa y Jesu". Si la dupla todavía no tiene nombres, el equipo. */
+const nomDupla = id => {
+  const d = D.duplas.find(x => x.id === id);
+  if(!d) return 'Por definir';
+  const js = [d.jugadora_1, d.jugadora_2]
+    .map(i => D.jugadoras.find(j => j.id === i)?.nombre).filter(Boolean);
+  return js.length ? js.join(' y ') : (eq(d.equipo_id) || 'Por definir');
+};
+
+/* Las duplas de la jugadora conectada: una A/B puede además jugar
+   en la dupla B de su equipo, así que son varias, no una. */
+const misDuplas = () => !yo ? []
+  : D.duplas.filter(d => d.jugadora_1 === yo.jugadora_id || d.jugadora_2 === yo.jugadora_id)
+            .map(d => d.id);
+const esMio = p => { const m = misDuplas(); return m.includes(p.dupla_a) || m.includes(p.dupla_b); };
 const fotoDupla = url => url
   ? `<img src="${esc(url)}" alt="">`
   : `<div class="sinfoto-dupla" aria-hidden="true"></div>`;
@@ -382,6 +437,9 @@ async function cargar(){
     (await sb.from('noticias').select('*').order('publicada_en',{ascending:false})).data ?? []
   ]);
   D.diva = (await sb.from('diva').select('*').eq('id',1).maybeSingle()).data ?? null;
+  /* La tabla de etiquetas puede no existir todavía: si falla, se
+     siguen usando las cuatro de siempre y la app no se cae. */
+  D.etiquetas = (await sb.from('etiquetas').select('*').order('orden')).data ?? [];
   vincularFicha();
 }
 
@@ -557,7 +615,19 @@ function tarjetaPartido(p){
       <span class="cat">${esc(cat(p.categoria_id))}</span>
       <span style="font-size:12px;color:var(--gris)">${j?esc(j.nombre):''}</span>
       <span style="margin-left:auto">${marcador}</span></div>
-    <div style="margin-top:8px;font-weight:600">${esc(eq(p.equipo_a))} <span style="color:var(--gris);font-weight:400">vs</span> ${esc(eq(p.equipo_b))}</div>
+    ${ladoPartido(p.dupla_a, p.equipo_a)}
+    <div class="versus">vs</div>
+    ${ladoPartido(p.dupla_b, p.equipo_b)}
+  </div>`;
+}
+
+/* Un lado del partido: el punto del color del equipo, los dos
+   nombres, y abajo chiquito el equipo. */
+function ladoPartido(duplaId, equipoId){
+  return `<div class="lado">
+    <span class="punto" style="background:${esc(colorEq(equipoId))}"></span>
+    <span class="lado-n">${esc(nomDupla(duplaId))}</span>
+    <span class="lado-e">${esc(eq(equipoId))}</span>
   </div>`;
 }
 
@@ -601,11 +671,13 @@ function vProgramacion(){
     cuerpo = Object.entries(bloques).map(([hora, ps]) => `
       <div class="hora"><b>${esc(hora)}</b><span></span></div>
       ${ps.map(p => {
-        const mio = yo && (p.dupla_a === yo.dupla_id || p.dupla_b === yo.dupla_id);
+        const mio = esMio(p);
         return `<div class="pj ${mio?'mio':''}">
           <div class="arriba"><span class="cat">${esc(cat(p.categoria_id))}</span>
             ${p.cancha ? `<span class="cancha">Cancha ${esc(p.cancha)}</span>` : ''}</div>
-          <div class="duelo">${esc(eq(p.equipo_a))} <em>vs</em> ${esc(eq(p.equipo_b))}</div>
+          ${ladoPartido(p.dupla_a, p.equipo_a)}
+          <div class="versus">vs</div>
+          ${ladoPartido(p.dupla_b, p.equipo_b)}
           ${mio ? '<span class="marca">Te toca</span>' : ''}
         </div>`;
       }).join('')}`).join('');
@@ -738,10 +810,107 @@ function vPerfil(){
         : `<div class="vacio">Todavía no has jugado ningún partido.</div>`}`;
   }
 
-  const porJugar = mios.filter(p => p.estado !== 'jugado');
-  return `<h2 class="sec">Mis partidos</h2>${ficha}
-    ${porJugar.length ? porJugar.map(tarjetaPartido).join('')
-      : `<div class="vacio">No tienes partidos programados por ahora.</div>`}`;
+  const porJugar = mios.filter(p => p.estado !== 'jugado')
+    .sort((a,b) => cuando(a) - cuando(b));
+  return `<h2 class="sec">Mis partidos</h2>
+    ${porJugar.length ? proximoPartido(porJugar[0], ids) : ''}
+    ${ficha}
+    ${porJugar.length > 1
+      ? `<h2 class="sec">Lo que viene después</h2>${porJugar.slice(1).map(p => miniPartido(p, ids)).join('')}`
+      : porJugar.length ? '' : `<div class="vacio">No tienes partidos programados por ahora.</div>`}`;
+}
+
+/* Cuándo se juega un partido, como número, para poder ordenarlos. */
+function cuando(p){
+  const j = D.jornadas.find(x => x.id === p.jornada_id);
+  if(!j) return Infinity;
+  return new Date(j.fecha + 'T' + (p.hora ? p.hora.slice(0,5) : '00:00') + ':00').getTime();
+}
+
+/* Primera letra en mayúscula, el resto como viene. */
+const mayus = t => String(t ?? '').charAt(0).toUpperCase() + String(t ?? '').slice(1);
+
+/* Cuántos días faltan, en palabras. */
+function cuantoFalta(ms){
+  const dias = Math.ceil((ms - Date.now()) / 86400000);
+  if(dias < 0)  return 'ya pasó';
+  if(dias === 0) return '¡es hoy!';
+  if(dias === 1) return 'es mañana';
+  if(dias < 14) return `faltan ${dias} días`;
+  return `faltan ${Math.round(dias / 7)} semanas`;
+}
+
+/* La frase de ánimo cambia según la categoría, para que no sea
+   siempre la misma cuando la jugadora juega dos partidos. */
+const ARENGAS = [
+  'A dejarlo todo en la cancha.',
+  'Que tiemble la red.',
+  'Sonríe, que te están mirando.',
+  'Paciencia en el fondo y veneno en la volea.',
+  'La pared es tu amiga.',
+  'A ganar con estilo.',
+  'Tu dupla cuenta contigo.'
+];
+
+/* La tarjeta grande del próximo partido. Es lo primero que ve la
+   jugadora al entrar a Mis partidos. */
+function proximoPartido(p, ids){
+  const j = D.jornadas.find(x => x.id === p.jornada_id);
+  const miLadoA = ids.includes(p.dupla_a);
+  const miDupla = miLadoA ? p.dupla_a : p.dupla_b;
+  const rival   = miLadoA ? p.dupla_b : p.dupla_a;
+  const rivalEq = miLadoA ? p.equipo_b : p.equipo_a;
+  /* En la dupla A/B la jugadora prestada juega para el equipo de su
+     partner A, así que acá va el equipo de la dupla, no el suyo. */
+  const miEq    = miLadoA ? p.equipo_a : p.equipo_b;
+  const compa = (() => {
+    const d = D.duplas.find(x => x.id === miDupla);
+    if(!d) return null;
+    return [d.jugadora_1, d.jugadora_2].filter(i => i !== yo.jugadora_id)
+      .map(i => D.jugadoras.find(x => x.id === i)?.nombre).filter(Boolean)[0];
+  })();
+  const falta = cuantoFalta(cuando(p));
+  const arenga = ARENGAS[(p.id + p.categoria_id) % ARENGAS.length];
+
+  return `<div class="proximo">
+    <span class="cuenta">${esc(falta)}</span>
+    <p class="cuando">${j ? esc(mayus(fechaLarga(j.fecha))) : ''}</p>
+    <p class="hora-grande">${p.hora ? esc(p.hora.slice(0,5)) : 'hora por confirmar'}${
+      p.cancha ? ` <span>· cancha ${esc(p.cancha)}</span>` : ''}</p>
+    <div class="contra">
+      <div class="contra-lado">
+        <span class="rot">Categoría ${esc(cat(p.categoria_id))}</span>
+        <strong>Tú y ${esc(compa || 'tu dupla')}</strong>
+        <span class="eqn"><span class="punto" style="background:${esc(colorEq(miEq))}"></span>${esc(eq(miEq))}${
+          miEq !== yo.equipo_id ? ' · juegas prestada' : ''}</span>
+      </div>
+      <span class="contra-vs">vs</span>
+      <div class="contra-lado der">
+        <span class="rot">Al frente</span>
+        <strong>${esc(nomDupla(rival))}</strong>
+        <span class="eqn"><span class="punto" style="background:${esc(colorEq(rivalEq))}"></span>${esc(eq(rivalEq))}</span>
+      </div>
+    </div>
+    <p class="arenga">${esc(arenga)}</p>
+  </div>`;
+}
+
+/* Los partidos siguientes, en chico. */
+function miniPartido(p, ids){
+  const j = D.jornadas.find(x => x.id === p.jornada_id);
+  const miLadoA = ids.includes(p.dupla_a);
+  const rival   = miLadoA ? p.dupla_b : p.dupla_a;
+  const rivalEq = miLadoA ? p.equipo_b : p.equipo_a;
+  return `<div class="card"><div class="fila" style="margin:0">
+      <span class="cat">${esc(cat(p.categoria_id))}</span>
+      <span style="font-size:12px;color:var(--gris)">${j ? esc(j.nombre) : ''}</span>
+      <span class="mono" style="margin-left:auto;color:var(--gris)">${
+        p.hora ? esc(p.hora.slice(0,5)) : '—'}${p.cancha ? ' · cancha ' + esc(p.cancha) : ''}</span></div>
+    <div style="margin-top:8px;font-size:14px">
+      <span style="color:var(--gris)">contra</span>
+      <strong>${esc(nomDupla(rival))}</strong>
+      <span style="color:var(--gris)">· ${esc(eq(rivalEq))}</span></div>
+  </div>`;
 }
 
 /* --- DIVA · Decisora Imparcial de Validación y Arbitraje --- */
@@ -1077,8 +1246,30 @@ function admPlantel(){
 
 function admNoticias(){
   const n = editandoNoticia ? D.noticias.find(x => x.id === editandoNoticia) : null;
-  const ops = ETQS.map(e => `<option ${n && n.etiqueta===e ? 'selected':''}>${e}</option>`).join('');
+  const lista = etqs();
+  /* Si la noticia tiene una etiqueta que ya no está en la lista,
+     igual se muestra para no cambiársela sin querer. */
+  const todas = n?.etiqueta && !lista.includes(n.etiqueta) ? [n.etiqueta, ...lista] : lista;
+  const ops = todas.map(e => `<option ${n && n.etiqueta===e ? 'selected':''}>${esc(e)}</option>`).join('');
   return `<div class="card">
+      <h3>Etiquetas</h3>
+      <p style="font-size:13px;color:var(--gris);margin:0 0 12px">
+        Son las que aparecen en el menú de más arriba al escribir una noticia.
+        Puedes crear las que quieran: Reprogramación, Lesionadas, Asado, lo que sea.</p>
+      <div class="etq-lista">${D.etiquetas.length
+        ? D.etiquetas.map(e => `<span class="etq-chip">
+            <span class="etq ${clase(e.nombre)}">${esc(e.nombre)}</span>
+            <button class="et-borrar" data-id="${e.id}" data-nom="${esc(e.nombre)}"
+              title="Borrar" aria-label="Borrar ${esc(e.nombre)}">×</button></span>`).join('')
+        : `<p class="c" style="margin:0">Todavía usas las cuatro de siempre.
+            Corre esquema-parte10.sql para poder crear las tuyas.</p>`}</div>
+      <div class="fila" style="margin-top:12px">
+        <input type="text" id="et-nueva" placeholder="Reprogramación" maxlength="24" style="flex:1;min-width:140px">
+        <button class="btn claro" id="et-crear">Agregar</button>
+      </div>
+      <div id="et-msg"></div>
+    </div>
+    <div class="card">
       <h3>${n ? 'Editar noticia' : 'Nueva noticia'}</h3>
       <div style="margin-bottom:8px"><label class="lab">Etiqueta</label><select id="n-etq">${ops}</select></div>
       <div style="margin-bottom:8px"><label class="lab">Título</label>
@@ -1138,173 +1329,142 @@ function admExtra(){
 
 /* --- administración: cargar la programación desde Excel --- */
 
+/* Todas las duplas para los menús, agrupadas por categoría. */
+function opcionesDuplas(elegida){
+  return D.categorias.map(c => {
+    const ds = D.duplas.filter(d => d.categoria_id === c.id);
+    if(!ds.length) return '';
+    return `<optgroup label="Categoría ${esc(c.codigo)}">${ds.map(d =>
+      `<option value="${d.id}" ${d.id === elegida ? 'selected' : ''}>${
+        esc(nomDupla(d.id))} · ${esc(eq(d.equipo_id))}</option>`).join('')}</optgroup>`;
+  }).join('');
+}
+
 function admProgramacion(){
-  const jors = D.jornadas.map(j => `<option value="${j.id}">${esc(j.nombre)} · ${esc(j.fecha)}</option>`).join('');
-  return `<div class="card">
-      <h3>Cargar la programación de una fecha</h3>
-      <p style="font-size:13px;color:var(--gris);margin:0 0 12px">
-        Sube el Excel con los partidos. La app lo revisa, te muestra cómo quedó y recién ahí lo guardas.</p>
-      <button class="btn claro" id="pl-plantilla" style="margin-bottom:14px">Descargar plantilla</button>
-      <div style="margin-bottom:10px"><label class="lab">Fecha del torneo</label>
-        <select id="pl-jor">${jors}</select></div>
-      <div style="margin-bottom:10px"><label class="lab">Archivo</label>
-        <input type="file" id="pl-file" accept=".xlsx,.xls,.csv"></div>
-      <label style="font-size:13px;display:block;margin-bottom:12px">
-        <input type="checkbox" id="pl-reemplazar" checked> Reemplazar los partidos que ya tenga esa fecha</label>
-      <div id="pl-msg"></div>
-      <div id="pl-previa"></div>
-    </div>`;
+  if(!D.jornadas.length) return `<div class="vacio">Todavía no hay fechas del torneo creadas.</div>`;
+  if(jorAdm === null){
+    const hoy = new Date().toISOString().slice(0,10);
+    jorAdm = (D.jornadas.find(j => j.fecha >= hoy) || D.jornadas[0]).id;
+  }
+  const jor = D.jornadas.find(j => j.id === jorAdm) || D.jornadas[0];
+  const chips = D.jornadas.map(j => {
+    const n = D.partidos.filter(p => p.jornada_id === j.id).length;
+    return `<button class="chip ${jorAdm===j.id?'on':''}" data-jadm="${j.id}">${esc(j.nombre)}
+      <span style="opacity:.65">· ${n}</span></button>`;
+  }).join('');
+
+  const lista = D.partidos.filter(p => p.jornada_id === jorAdm)
+    .sort((a,b) => (a.hora||'99').localeCompare(b.hora||'99')
+                || String(a.cancha||'').localeCompare(String(b.cancha||'')));
+
+  const filas = lista.map(p => partidoEdit === p.id
+    ? formPartido(p)
+    : `<div class="card"><div class="fila" style="margin:0">
+        <span class="cat">${esc(cat(p.categoria_id))}</span>
+        <span class="mono" style="font-size:13px">${p.hora ? esc(p.hora.slice(0,5)) : '—'}</span>
+        <span style="font-size:12px;color:var(--gris)">${p.cancha ? 'cancha ' + esc(p.cancha) : 'sin cancha'}</span>
+        ${p.estado !== 'programado'
+          ? `<span class="etq aviso">${esc(p.estado)}</span>` : ''}
+        <button class="btn claro pa-editar" data-id="${p.id}" style="margin-left:auto">Editar</button>
+      </div>
+      <div style="margin-top:9px;font-size:14px;line-height:1.45">
+        <strong>${esc(nomDupla(p.dupla_a))}</strong>
+        <span style="color:var(--gris)"> (${esc(eq(p.equipo_a))}) vs </span>
+        <strong>${esc(nomDupla(p.dupla_b))}</strong>
+        <span style="color:var(--gris)"> (${esc(eq(p.equipo_b))})</span>
+      </div></div>`).join('');
+
+  return `<p class="nota">Acá se arregla la programación si algo cambia durante el torneo:
+      correr un partido de hora, moverlo de cancha, pasarlo a otra fecha, suspenderlo o
+      cambiar una dupla. Lo que guardes lo ven todas al tiro.</p>
+    <div class="chips">${chips}</div>
+    <p class="nota">${esc(jor.nombre)} · ${esc(fechaLarga(jor.fecha))} ·
+      ${lista.length} partido${lista.length===1?'':'s'}</p>
+    ${partidoEdit === 'nuevo' ? formPartido(null) : `
+      <button class="btn claro" id="pa-nuevo" style="margin-bottom:12px">Agregar un partido a esta fecha</button>`}
+    ${filas || `<div class="vacio">Esta fecha no tiene partidos.</div>`}`;
+}
+
+/* El formulario de un partido. Sirve igual para editar uno que
+   existe y para crear uno nuevo (p viene en null). */
+function formPartido(p){
+  const jors = D.jornadas.map(j =>
+    `<option value="${j.id}" ${(p ? p.jornada_id : jorAdm) === j.id ? 'selected' : ''}>${
+      esc(j.nombre)} · ${esc(fechaLarga(j.fecha))}</option>`).join('');
+  const cats = D.categorias.map(c =>
+    `<option value="${c.id}" ${p && p.categoria_id === c.id ? 'selected' : ''}>${esc(c.codigo)}</option>`).join('');
+  const estados = [['programado','Programado'],['jugado','Jugado'],
+                   ['suspendido','Suspendido'],['wo','Ganado por no presentarse']]
+    .map(([v,t]) => `<option value="${v}" ${p && p.estado === v ? 'selected' : ''}>${t}</option>`).join('');
+
+  return `<div class="card" id="pa-form" data-id="${p ? p.id : ''}">
+    <h3>${p ? 'Editar partido' : 'Partido nuevo'}</h3>
+    <div style="margin-bottom:10px"><label class="lab">Fecha del torneo</label>
+      <select id="pa-jor">${jors}</select></div>
+    <div class="fila">
+      <div style="flex:1;min-width:110px"><label class="lab">Hora</label>
+        <input type="time" id="pa-hora" value="${p && p.hora ? esc(p.hora.slice(0,5)) : ''}" step="900"></div>
+      <div style="flex:1;min-width:100px"><label class="lab">Cancha</label>
+        <input type="text" id="pa-cancha" value="${p ? esc(p.cancha ?? '') : ''}" placeholder="1"></div>
+    </div>
+    <div style="margin-bottom:10px"><label class="lab">Categoría</label>
+      <select id="pa-cat">${cats}</select></div>
+    <div style="margin-bottom:10px"><label class="lab">Dupla A</label>
+      <select id="pa-da">${opcionesDuplas(p?.dupla_a)}</select></div>
+    <div style="margin-bottom:10px"><label class="lab">Dupla B</label>
+      <select id="pa-db">${opcionesDuplas(p?.dupla_b)}</select></div>
+    <div style="margin-bottom:12px"><label class="lab">Estado</label>
+      <select id="pa-estado">${estados}</select>
+      <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+        Un partido suspendido no suma puntos y se ve marcado en la programación.</p></div>
+    <div class="fila">
+      <button class="btn lima" id="pa-guardar">${p ? 'Guardar cambios' : 'Crear partido'}</button>
+      <button class="btn claro" id="pa-cancelar">Cancelar</button>
+      ${p ? `<button class="btn claro" id="pa-borrar"
+        style="border-color:var(--alerta);color:var(--alerta);margin-left:auto">Borrar</button>` : ''}
+    </div>
+    <div id="pa-msg"></div>
+  </div>`;
+}
+
+async function guardarPartido(){
+  const id  = $('#pa-form').dataset.id;
+  const da  = +$('#pa-da').value, db = +$('#pa-db').value;
+  if(da === db) return problema($('#pa-msg'), new Error('Las dos duplas no pueden ser la misma.'));
+  const fila = {
+    jornada_id:   +$('#pa-jor').value,
+    categoria_id: +$('#pa-cat').value,
+    hora:         $('#pa-hora').value || null,
+    cancha:       $('#pa-cancha').value.trim() || null,
+    dupla_a: da, dupla_b: db,
+    estado:       $('#pa-estado').value
+  };
+  try{
+    const { error } = id
+      ? await sb.from('partidos').update(fila).eq('id', +id)
+      : await sb.from('partidos').insert(fila);
+    if(error) throw error;
+    jorAdm = fila.jornada_id;
+    partidoEdit = null;
+    await cargar();
+    pintar();
+  }catch(e){ problema($('#pa-msg'), e); }
+}
+
+async function borrarPartido(){
+  const id = $('#pa-form').dataset.id;
+  if(!id || !confirm('¿Borrar este partido de la programación?')) return;
+  try{
+    const { error } = await sb.from('partidos').delete().eq('id', +id);
+    if(error) throw error;
+    partidoEdit = null;
+    await cargar();
+    pintar();
+  }catch(e){ problema($('#pa-msg'), e); }
 }
 
 const norm = t => String(t ?? '').toLowerCase().normalize('NFD')
   .replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim();
-
-const COLS = {
-  hora:      ['hora','horario'],
-  cancha:    ['cancha','pista','court'],
-  categoria: ['categoria','cat','serie'],
-  equipoA:   ['equipo a','equipo 1','local','equipo local','dupla a','dupla 1'],
-  equipoB:   ['equipo b','equipo 2','visita','visitante','equipo visita','dupla b','dupla 2']
-};
-
-function columna(fila, nombres){
-  for(const k of Object.keys(fila)) if(nombres.includes(norm(k))) return fila[k];
-  return '';
-}
-
-function comoHora(v){
-  if(v === '' || v == null) return null;
-  if(v instanceof Date) return String(v.getHours()).padStart(2,'0')+':'+String(v.getMinutes()).padStart(2,'0');
-  if(typeof v === 'number'){
-    const min = Math.round(v * 24 * 60);
-    return String(Math.floor(min/60)).padStart(2,'0')+':'+String(min%60).padStart(2,'0');
-  }
-  const m = String(v).match(/(\d{1,2})[:.](\d{2})/);
-  return m ? m[1].padStart(2,'0')+':'+m[2] : null;
-}
-
-function revisar(filas){
-  return filas.map((f, i) => {
-    const r = { linea:i+2, hora:comoHora(columna(f,COLS.hora)),
-                cancha:String(columna(f,COLS.cancha) ?? '').trim() || null };
-    const cTxt = norm(columna(f, COLS.categoria));
-    const aTxt = norm(columna(f, COLS.equipoA));
-    const bTxt = norm(columna(f, COLS.equipoB));
-    const c = D.categorias.find(x => norm(x.codigo) === cTxt);
-    const a = D.equipos.find(x => norm(x.nombre) === aTxt);
-    const b = D.equipos.find(x => norm(x.nombre) === bTxt);
-    r.categoria = c; r.a = a; r.b = b;
-    r.texto = `${columna(f,COLS.equipoA)} vs ${columna(f,COLS.equipoB)}`;
-    if(!cTxt && !aTxt && !bTxt) r.error = 'vacía';
-    else if(!c) r.error = `categoría desconocida: ${columna(f,COLS.categoria)}`;
-    else if(!a) r.error = `equipo desconocido: ${columna(f,COLS.equipoA)}`;
-    else if(!b) r.error = `equipo desconocido: ${columna(f,COLS.equipoB)}`;
-    else if(a.id === b.id) r.error = 'un equipo no puede jugar contra sí mismo';
-    return r;
-  }).filter(r => r.error !== 'vacía');
-}
-
-function pintarPrevia(){
-  const buenas = previa.filter(r => !r.error);
-  const malas  = previa.filter(r => r.error);
-  $('#pl-previa').innerHTML = `
-    <div class="avisito ${malas.length?'mal':'bien'}">
-      ${buenas.length} partido${buenas.length===1?'':'s'} listo${buenas.length===1?'':'s'} para guardar${
-      malas.length ? ` · ${malas.length} con problemas` : ''}</div>
-    <div class="prev"><table><thead><tr><th>Línea</th><th>Hora</th><th>Cat.</th><th>Partido</th><th>Estado</th></tr></thead>
-      <tbody>${previa.map(r => `<tr>
-        <td>${r.linea}</td><td>${esc(r.hora ?? '—')}</td>
-        <td>${esc(r.categoria?.codigo ?? '—')}</td><td>${esc(r.texto)}</td>
-        <td class="${r.error?'mal':'bien'}">${r.error ? esc(r.error) : 'Correcto'}</td></tr>`).join('')}</tbody></table></div>
-    ${buenas.length ? `<button class="btn lima" id="pl-guardar">Guardar ${buenas.length} partidos</button>` : ''}`;
-  if($('#pl-guardar')) $('#pl-guardar').onclick = guardarProgramacion;
-}
-
-async function guardarProgramacion(){
-  const jorId = +$('#pl-jor').value;
-  const buenas = previa.filter(r => !r.error);
-  try{
-    if($('#pl-reemplazar').checked)
-      await sb.from('partidos').delete().eq('jornada_id', jorId);
-
-    /* la dupla de cada equipo y categoría tiene que existir; si no, se crea vacía */
-    const necesarias = [...new Set(buenas.flatMap(r =>
-      [`${r.a.id}-${r.categoria.id}`, `${r.b.id}-${r.categoria.id}`]))]
-      .map(k => { const [e,c] = k.split('-'); return { equipo_id:+e, categoria_id:+c }; });
-    await sb.from('duplas').upsert(necesarias, { onConflict:'equipo_id,categoria_id', ignoreDuplicates:true });
-
-    const { data: duplas } = await sb.from('duplas').select('*');
-    const buscar = (eqId, catId) => duplas.find(d => d.equipo_id===eqId && d.categoria_id===catId)?.id;
-
-    const filas = buenas.map(r => ({
-      jornada_id: jorId, categoria_id: r.categoria.id,
-      hora: r.hora, cancha: r.cancha,
-      dupla_a: buscar(r.a.id, r.categoria.id),
-      dupla_b: buscar(r.b.id, r.categoria.id),
-      estado: 'programado'
-    }));
-    const { error } = await sb.from('partidos').insert(filas);
-    if(error) throw error;
-
-    previa = null;
-    await cargar();
-    aviso($('#pl-msg'), `Listo: ${filas.length} partidos guardados.`);
-    setTimeout(() => { jornadaProg = jorId; pintar(); }, 900);
-  }catch(e){ problema($('#pl-msg'), e); }
-}
-
-function plantilla(){
-  const eqs = D.equipos.map(e => e.nombre);
-  const cats = D.categorias.map(c => c.codigo);
-  const cruces = [[0,5],[1,4],[2,3]];          // 1-6, 2-5, 3-4
-  const horas = ['18:00','19:00','20:00','21:00'];
-
-  const filas = [['Fecha','Hora','Cancha','Categoria','Equipo A','Equipo B']];
-  let n = 0;
-  for(const cat of cats){
-    for(const [i,j] of cruces){
-      if(n >= horas.length * 3) break;
-      filas.push(['1', horas[Math.floor(n/3)], String(n%3 + 1), cat,
-                  eqs[i] || `Equipo ${i+1}`, eqs[j] || `Equipo ${j+1}`]);
-      n++;
-    }
-  }
-
-  const guia = [
-    ['CÓMO LLENAR ESTA PLANTILLA'],
-    [''],
-    ['Cada fila es UN partido.'],
-    [''],
-    ['La dupla que juega se identifica con dos datos: el equipo y la categoría.'],
-    ['Por ejemplo, "Equipo 3" + "C+" corresponde a una sola dupla del torneo.'],
-    ['No hay que escribir nombres de jugadoras: la app las deduce sola.'],
-    [''],
-    ['COLUMNAS'],
-    ['Fecha', 'Referencial. La fecha real se elige en la app antes de subir el archivo.'],
-    ['Hora', 'Hora de inicio, por ejemplo 18:00. Sirve texto o celda con formato de hora.'],
-    ['Cancha', 'Número o nombre de la cancha.'],
-    ['Categoria', 'Tiene que ser una de estas: ' + cats.join(' · ')],
-    ['Equipo A', 'Nombre del equipo, tal como está escrito en la app.'],
-    ['Equipo B', 'Nombre del equipo rival.'],
-    [''],
-    ['EQUIPOS CARGADOS HOY EN LA APP'],
-    ...eqs.map(e => [e]),
-    [''],
-    ['Si más adelante les cambias el nombre a los equipos, usa los nombres nuevos.'],
-    ['La app avisa fila por fila si algún nombre no calza, antes de guardar nada.']
-  ];
-
-  const libro = XLSX.utils.book_new();
-  const hoja = XLSX.utils.aoa_to_sheet(filas);
-  hoja['!cols'] = [{wch:7},{wch:8},{wch:9},{wch:11},{wch:22},{wch:22}];
-  XLSX.utils.book_append_sheet(libro, hoja, 'Programación');
-
-  const hojaGuia = XLSX.utils.aoa_to_sheet(guia);
-  hojaGuia['!cols'] = [{wch:16},{wch:70}];
-  XLSX.utils.book_append_sheet(libro, hojaGuia, 'Instrucciones');
-
-  XLSX.writeFile(libro, 'programacion-batalla-2026.xlsx');
-}
 
 /* ============================================================
    ACCIONES
@@ -1534,19 +1694,39 @@ function enlazar(){
     await cargar(); pintar();
   });
 
-  if($('#pl-plantilla')) $('#pl-plantilla').onclick = plantilla;
-  if($('#pl-file')) $('#pl-file').onchange = async e => {
-    const f = e.target.files[0];
-    if(!f) return;
+  /* --- editor de la programación --- */
+  document.querySelectorAll('[data-jadm]').forEach(b => b.onclick = () => {
+    jorAdm = +b.dataset.jadm; partidoEdit = null; pintar();
+  });
+  document.querySelectorAll('.pa-editar').forEach(b => b.onclick = () => {
+    partidoEdit = +b.dataset.id; pintar();
+  });
+  if($('#pa-nuevo'))    $('#pa-nuevo').onclick    = () => { partidoEdit = 'nuevo'; pintar(); };
+  if($('#pa-cancelar')) $('#pa-cancelar').onclick = () => { partidoEdit = null; pintar(); };
+  if($('#pa-guardar'))  $('#pa-guardar').onclick  = guardarPartido;
+  if($('#pa-borrar'))   $('#pa-borrar').onclick   = borrarPartido;
+
+  /* --- etiquetas de las noticias --- */
+  if($('#et-crear')) $('#et-crear').onclick = async () => {
+    const nombre = $('#et-nueva').value.trim();
+    if(!nombre) return aviso($('#et-msg'), 'Escribe el nombre de la etiqueta.', true);
     try{
-      const libro = XLSX.read(await f.arrayBuffer(), { cellDates:true });
-      const hoja = libro.Sheets[libro.SheetNames[0]];
-      previa = revisar(XLSX.utils.sheet_to_json(hoja, { defval:'' }));
-      if(!previa.length) return aviso($('#pl-msg'), 'No encontré filas con datos en la primera hoja.', true);
-      $('#pl-msg').innerHTML = '';
-      pintarPrevia();
-    }catch(err){ aviso($('#pl-msg'), 'No se pudo leer el archivo: ' + err.message, true); }
+      const orden = (D.etiquetas.at(-1)?.orden ?? 0) + 1;
+      const { error } = await sb.from('etiquetas').insert({ nombre, orden });
+      if(error) throw error;
+      await cargar(); pintar();
+    }catch(e){ problema($('#et-msg'), e); }
   };
+  document.querySelectorAll('.et-borrar').forEach(b => b.onclick = async () => {
+    const usada = D.noticias.filter(n => n.etiqueta === b.dataset.nom).length;
+    if(usada && !confirm(`${usada} noticia${usada===1?'':'s'} usa${usada===1?'':'n'} esta etiqueta. `
+      + 'Se van a quedar con la etiqueta escrita, pero ya no vas a poder elegirla. ¿Borrarla igual?')) return;
+    try{
+      const { error } = await sb.from('etiquetas').delete().eq('id', +b.dataset.id);
+      if(error) throw error;
+      await cargar(); pintar();
+    }catch(e){ problema($('#et-msg'), e); }
+  });
 
   if($('#n-cancelar')) $('#n-cancelar').onclick = () => { editandoNoticia = null; pintar(); };
 
