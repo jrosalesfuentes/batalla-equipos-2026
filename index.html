@@ -16,6 +16,10 @@
   --gris:#5C7B77; --linea:#CBDDD9; --alerta:#D9482F;
 }
 *{box-sizing:border-box}
+/* Que nada empuje la página hacia los lados en un teléfono: lo que
+   no quepa se desplaza dentro de su propia caja, no moviendo todo. */
+html,body{max-width:100%;overflow-x:hidden}
+img{max-width:100%}
 body{margin:0;background:var(--verde);color:var(--tinta);font-family:'Poppins',system-ui,sans-serif;font-size:15px;line-height:1.45}
 input,button,select,textarea{font-family:inherit;font-size:15px}
 .mono{font-family:'IBM Plex Mono',monospace}
@@ -157,6 +161,10 @@ textarea{min-height:80px;resize:vertical}
 .desc-equipo{margin:0;line-height:1.55;white-space:pre-wrap}
 
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;margin-bottom:8px}
+.tabla-caja{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px;border-radius:12px}
+.tabla-caja table{margin-bottom:0;min-width:max-content}
+.tabla-caja th:first-child,.tabla-caja td:first-child{position:sticky;left:0;background:#fff}
+.tabla-caja thead th:first-child{background:var(--glass)}
 th{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--gris);padding:8px 5px;text-align:right;border-bottom:1px solid var(--linea);white-space:nowrap}
 th:nth-child(2){text-align:left}
 td{padding:8px 5px;border-bottom:1px solid var(--glass);text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;white-space:nowrap}
@@ -277,7 +285,7 @@ tr:last-child td{border-bottom:0}
 .capitana strong{font-size:16px;line-height:1.2}
 
 /* --- Los auspiciadores --- */
-.auspicios{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:10px}
+.auspicios{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
 .auspicio{background:#fff;border-radius:13px;padding:14px 12px;text-align:center;
   text-decoration:none;color:var(--tinta);display:flex;flex-direction:column;align-items:center;
   gap:8px;justify-content:flex-start}
@@ -288,6 +296,18 @@ a.auspicio:hover{background:var(--paper)}
   justify-content:center}
 .auspicio strong{font-size:13.5px;line-height:1.25}
 .auspicio span{font-size:11.5px;color:var(--gris);line-height:1.35}
+
+/* --- Cómo va un equipo --- */
+.marcha{display:flex;gap:8px;background:#fff;border-radius:13px;padding:13px 10px;margin-bottom:12px}
+.marcha div{flex:1;text-align:center;min-width:0}
+.marcha b{display:block;font-family:'IBM Plex Mono',monospace;font-size:22px;line-height:1.1}
+.marcha span{display:block;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gris);margin-top:3px}
+.marcha .pts-eq b{color:var(--verde)}
+.veredicto-chip{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:3px 9px;border-radius:999px}
+.veredicto-chip.gano{background:var(--lima);color:var(--tinta)}
+.veredicto-chip.perdio{background:var(--glass);color:var(--gris)}
 
 .desliza{font-size:11.5px;color:var(--claro);margin:8px 0 0;text-align:right}
 @media (min-width:620px){ .desliza{display:none} }
@@ -355,7 +375,7 @@ a.auspicio:hover{background:var(--paper)}
 .nombre strong{font-size:15px}
 .nombre span{font-size:12px;color:var(--gris)}
 .sinres{font-size:13px;color:var(--gris);padding:10px 4px;margin:0}
-.muro{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px}
+.muro{display:grid;grid-template-columns:repeat(auto-fill,minmax(134px,1fr));gap:10px}
 .mural{background:#fff;border-radius:12px;overflow:hidden;cursor:pointer}
 .mural img,.mural .sinfoto{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--glass)}
 .mural .pie{padding:9px 10px 11px;display:flex;flex-direction:column;gap:2px}
@@ -749,13 +769,13 @@ function ladoPartido(duplaId, equipoId){
 }
 
 function tablaPos(lista, etiqueta){
-  return `<table><thead><tr><th>#</th><th>${etiqueta}</th><th>PJ</th><th>G</th><th>P</th>
+  return `<div class="tabla-caja"><table><thead><tr><th>#</th><th>${etiqueta}</th><th>PJ</th><th>G</th><th>P</th>
     <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Pts</th></tr></thead><tbody>` +
     lista.map((f,i) => `<tr ${f.equipo_id&&etiqueta==='Equipo'?`data-equipo="${f.equipo_id}" style="cursor:pointer"`:''}><td class="pos">${i+1}</td>
       <td>${esc(f.nombre ?? f.equipo)}</td><td>${f.pj}</td><td>${f.pg}</td><td>${f.pp}</td>
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
-      <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table>`;
+      <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table></div>`;
 }
 
 /* El título grande de una fecha: el número arriba y la fecha del
@@ -959,8 +979,65 @@ function detalleEquipo(id){
     <div class="card"><h3>Duplas</h3>${ds.length
       ? [...ds].sort((a,b) => orden(a.categoria_id) - orden(b.categoria_id)).map(fichaDupla).join('')
       : '<p class="c">Todavía no hay duplas cargadas.</p>'}</div>
-    <h2 class="sec">Partidos</h2>
-    ${ps.length ? ps.map(x => tarjetaPartido(x)).join('') : `<div class="vacio">Sin partidos programados.</div>`}`;
+    ${partidosDelEquipo(id, ps)}`;
+}
+
+/* Lo que el equipo lleva jugado, y lo que le viene. Se mira desde
+   el equipo: si ganó o perdió cada partido, y cuántos puntos sacó. */
+function partidosDelEquipo(id, ps){
+  const jugados = ps.filter(p => p.estado === 'jugado' && p.set1_a != null)
+    .sort((a, b) => cuando(b) - cuando(a));
+  const vienen = ps.filter(p => p.estado !== 'jugado')
+    .sort((a, b) => cuando(a) - cuando(b));
+  const t = D.tabla.find(x => x.equipo_id === id);
+
+  const resumen = jugados.length ? `<div class="marcha">
+      <div><b>${jugados.length}</b><span>jugados</span></div>
+      <div><b>${t ? t.pg : 0}</b><span>ganados</span></div>
+      <div><b>${t ? t.pp : 0}</b><span>perdidos</span></div>
+      <div class="pts-eq"><b>${t ? t.puntos : 0}</b><span>puntos</span></div>
+    </div>` : '';
+
+  return `<h2 class="sec">Lo jugado</h2>
+    ${resumen}
+    ${jugados.length
+      ? jugados.map(p => tarjetaEquipo(p, id)).join('')
+      : `<div class="vacio">Todavía no juegan ningún partido.<br>
+          Acá van a ir apareciendo sus resultados, fecha a fecha.</div>`}
+    ${vienen.length ? `<h2 class="sec">Lo que viene</h2>
+      ${vienen.map(p => tarjetaEquipo(p, id)).join('')}` : ''}`;
+}
+
+/* Un partido visto desde un equipo: primero su dupla, y si ganó. */
+function tarjetaEquipo(p, id){
+  const mio = p.equipo_a === id;
+  const miDupla = mio ? p.dupla_a : p.dupla_b;
+  const suDupla = mio ? p.dupla_b : p.dupla_a;
+  const suEquipo = mio ? p.equipo_b : p.equipo_a;
+  const j = D.jornadas.find(x => x.id === p.jornada_id);
+  const jugado = p.estado === 'jugado' && p.set1_a != null;
+  let gano = null;
+  if(jugado){
+    const c = cuentaPartido(p, p.es_final);
+    gano = mio ? c.setsA > c.setsB : c.setsB > c.setsA;
+  }
+  return `<div class="card">
+    <div class="fila" style="margin:0">
+      <span class="cat">${esc(cat(p.categoria_id))}</span>
+      <span style="font-size:12px;color:var(--gris)">${j ? esc(j.nombre) : ''}</span>
+      ${jugado
+        ? `<span class="veredicto-chip ${gano ? 'gano' : 'perdio'}">${gano ? 'Ganado' : 'Perdido'}</span>`
+        : `<span class="mono" style="font-size:12px;color:var(--gris)">${
+            p.hora ? esc(p.hora.slice(0,5)) : ''}${p.cancha ? ' · cancha ' + esc(p.cancha) : ''}</span>`}
+      ${jugado ? `<span class="mono" style="margin-left:auto;font-weight:700">${esc(marcadorTexto(p))}</span>` : ''}
+    </div>
+    <div style="margin-top:9px;font-size:14px;line-height:1.45">
+      <strong>${esc(nomDupla(miDupla))}</strong>
+      <span style="color:var(--gris)"> contra </span>
+      <strong>${esc(nomDupla(suDupla))}</strong>
+      <span style="color:var(--gris)"> · ${esc(eq(suEquipo))}</span>
+    </div>
+  </div>`;
 }
 
 /* --- perfil de la jugadora: partidos y resultados --- */
@@ -1002,10 +1079,10 @@ function vPerfil(){
     const mias = D.ranking.filter(r => ids.includes(r.dupla_id));
     return `<h2 class="sec">Mis resultados</h2>${ficha}
       ${mias.map(mias => `<div class="card"><h3>Tu dupla en la categoría ${esc(mias.categoria)}</h3>
-        <table><thead><tr><th>PJ</th><th style="text-align:right">Ganados</th><th>Perdidos</th><th>±S</th><th>±G</th><th>Pts</th></tr></thead>
+        <div class="tabla-caja"><table><thead><tr><th>PJ</th><th style="text-align:right">Ganados</th><th>Perdidos</th><th>±S</th><th>±G</th><th>Pts</th></tr></thead>
         <tbody><tr><td>${mias.pj}</td><td>${mias.pg}</td><td>${mias.pp}</td>
         <td>${signo(mias.dif_sets)}</td><td>${signo(mias.dif_games)}</td>
-        <td class="pts">${mias.puntos}</td></tr></tbody></table></div>`).join('')}
+        <td class="pts">${mias.puntos}</td></tr></tbody></table></div></div>`).join('')}
       ${jugados.length ? jugados.map(x => tarjetaPartido(x)).join('')
         : `<div class="vacio">Todavía no has jugado ningún partido.</div>`}`;
   }
@@ -2489,6 +2566,77 @@ sb.auth.onAuthStateChange((evento) => {
     if(vista === 'admin') pintar(); }
 });
 
+/* ============================================================
+   MANTENERSE AL DÍA
+   La app queda abierta en el teléfono durante días. Sin esto,
+   una jugadora seguiría viendo la programación o las noticias
+   del momento en que la abrió por última vez.
+   ============================================================ */
+
+let refrescando = false;
+let ultimoRefresco = Date.now();
+
+/* Vuelve a pedir todo y repinta, cuidando de no interrumpir algo
+   que la administradora esté escribiendo. */
+async function refrescar(){
+  if(refrescando || document.hidden) return;
+  /* Si hay un formulario abierto, esperamos: repintar le borraría
+     lo que lleva escrito. */
+  if(partidoEdit || resultadoEdit || auspicioEdit || editandoNoticia || respondiendo) return;
+  const activo = document.activeElement;
+  if(activo && ['INPUT','TEXTAREA','SELECT'].includes(activo.tagName)) return;
+
+  refrescando = true;
+  try{
+    const antes = huella();
+    await cargar();
+    ultimoRefresco = Date.now();
+    /* Solo repintamos si de verdad cambió algo: así no se mueve la
+       pantalla bajo el dedo de alguien que está leyendo. */
+    if(huella() !== antes){
+      const y = window.scrollY;
+      pintar();
+      window.scrollTo(0, y);
+    }
+  }catch(e){ /* sin señal: se reintenta en el próximo turno */ }
+  refrescando = false;
+}
+
+/* Un resumen corto de lo que se ve en pantalla, para saber si hubo
+   cambios sin comparar todo dato por dato. */
+function huella(){
+  const p = D.partidos.map(x => `${x.id}.${x.jornada_id}.${x.hora}.${x.cancha}.${x.estado}.${x.set1_a}-${x.set1_b}.${x.set2_a}-${x.set2_b}.${x.stb_a}`).join('|');
+  const n = D.noticias.map(x => `${x.id}.${x.publicada}.${x.destacada}.${x.titulo}.${x.portada_url}`).join('|');
+  const q = D.preguntas.map(x => `${x.id}.${x.respuesta ? 1 : 0}`).join('|');
+  const e = D.equipos.map(x => `${x.id}.${x.nombre}.${x.logo_url}.${x.foto_url}.${x.capitana}.${x.grito}`).join('|');
+  const d = D.duplas.map(x => `${x.id}.${x.jugadora_1}.${x.jugadora_2}.${x.foto_url}`).join('|');
+  const t = D.tabla.map(x => `${x.equipo_id}.${x.puntos}`).join('|');
+  const v = D.diva ? `${D.diva.nombre}.${D.diva.foto_url}.${D.diva.logo_url}.${D.diva.reglamento_url}.${D.diva.descripcion}` : '';
+  return [p, n, q, e, d, t, v].join('#');
+}
+
+/* Tres momentos: al volver a la app, al tocar la pantalla después
+   de un rato, y cada dos minutos mientras esté a la vista. */
+function mantenerAlDia(){
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) refrescar(); });
+  window.addEventListener('focus', refrescar);
+  window.addEventListener('online', refrescar);
+  setInterval(refrescar, 120000);
+
+  /* Tirar hacia abajo estando arriba del todo también actualiza. */
+  let parte = null;
+  window.addEventListener('touchstart', e => {
+    parte = window.scrollY <= 0 ? e.touches[0].clientY : null;
+  }, { passive:true });
+  window.addEventListener('touchend', e => {
+    if(parte === null) return;
+    const tiron = (e.changedTouches[0].clientY - parte);
+    parte = null;
+    if(tiron > 90 && Date.now() - ultimoRefresco > 3000) refrescar();
+  }, { passive:true });
+}
+
+
 /* ---------- arranque ---------- */
 (async function(){
   try{
@@ -2498,6 +2646,7 @@ sb.auth.onAuthStateChange((evento) => {
     if(yo){ vista = 'perfil'; subPerfil = 'partidos'; }
     else if(sesion){ vista = 'admin'; subAdm = 'equipos'; }
     pintar();
+    mantenerAlDia();
   }catch(e){
     $('#pantalla').className = '';
     $('#pantalla').innerHTML = `<div class="vacio">No se pudo conectar con la base de datos.<br><br>
