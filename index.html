@@ -1309,7 +1309,7 @@ function miniPartido(p, ids){
    ============================================================ */
 
 const APP_ONESIGNAL = 'bcb1e335-ecd1-4dda-8e6b-ea66dd455587';
-let avisos = { listo:false, suscrita:false, permiso:'default' };
+let avisos = { listo:false, suscrita:false, permiso:'default', falla:null };
 
 /* ¿Está instalada en la pantalla de inicio? En iPhone los avisos
    solo funcionan así, no desde una pestaña de Safari. */
@@ -1319,20 +1319,40 @@ const esIPhone = () => /iPad|iPhone|iPod/.test(navigator.userAgent)
   || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
 function arrancarAvisos(){
+  /* Si el SDK no llega en 12 segundos, lo damos por perdido y la
+     pantalla lo dice, en vez de dejar un botón muerto. */
+  setTimeout(() => {
+    if(!avisos.listo){
+      avisos.listo = true;
+      avisos.falla = 'No se pudo cargar el servicio de notificaciones. Puede ser la señal, '
+        + 'o un bloqueador de publicidad en el navegador.';
+      if(vista === 'avisos') pintar();
+    }
+  }, 12000);
+
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   window.OneSignalDeferred.push(async OneSignal => {
     try{
       await OneSignal.init({ appId: APP_ONESIGNAL, allowLocalhostAsSecureOrigin: true });
+      window.__OneSignal = OneSignal;
       const mirar = () => {
-        avisos = { listo:true,
-          suscrita: !!OneSignal.User?.PushSubscription?.optedIn,
-          permiso: OneSignal.Notifications?.permission ? 'granted' : Notification?.permission || 'default' };
+        let permiso = 'default';
+        try{
+          permiso = OneSignal.Notifications?.permission ? 'granted'
+            : (window.Notification ? window.Notification.permission : 'nosoportado');
+        }catch(e){ permiso = 'nosoportado'; }
+        avisos = { listo:true, falla:null,
+          suscrita: !!OneSignal.User?.PushSubscription?.optedIn, permiso };
         if(vista === 'avisos') pintar();
       };
       mirar();
       OneSignal.User.PushSubscription.addEventListener('change', mirar);
-      window.__OneSignal = OneSignal;
-    }catch(e){ avisos.listo = true; }
+      OneSignal.Notifications.addEventListener('permissionChange', mirar);
+    }catch(e){
+      avisos.listo = true;
+      avisos.falla = 'El servicio de notificaciones no arrancó: ' + (e.message || e);
+      if(vista === 'avisos') pintar();
+    }
   });
 }
 
@@ -1362,15 +1382,30 @@ async function avisarATodas(titulo, mensaje){
 }
 
 async function pedirAvisos(){
+  const caja = $('#av-estado');
   const OneSignal = window.__OneSignal;
-  if(!OneSignal) return;
+  if(!OneSignal)
+    return aviso(caja, 'El servicio de notificaciones todavía no carga. Espera unos segundos '
+      + 'y vuelve a intentar.', true);
+  const boton = $('#av-boton');
+  if(boton){ boton.disabled = true; boton.textContent = 'Un momento…'; }
   try{
-    if(avisos.suscrita) await OneSignal.User.PushSubscription.optOut();
-    else {
+    if(avisos.suscrita){
+      await OneSignal.User.PushSubscription.optOut();
+      aviso(caja, 'Listo, no te vamos a molestar más.');
+    } else {
       await OneSignal.Notifications.requestPermission();
       await OneSignal.User.PushSubscription.optIn();
+      const ok = !!OneSignal.User?.PushSubscription?.optedIn;
+      aviso(caja, ok ? 'Listo, te vamos a avisar.'
+        : 'No quedó activado. Puede que lo hayas rechazado, o que tu navegador los tenga '
+          + 'bloqueados para esta página.', !ok);
     }
-  }catch(e){ /* si lo rechazan, no hay nada que hacer desde acá */ }
+  }catch(e){
+    aviso(caja, 'No se pudo: ' + (e.message || e), true);
+  }
+  if(boton) boton.disabled = false;
+  setTimeout(() => { if(vista === 'avisos') pintar(); }, 1500);
 }
 
 function vAvisos(){
@@ -1391,11 +1426,21 @@ function vAvisos(){
         <p class="texto">${avisos.suscrita
           ? 'Te vamos a avisar cuando publiquemos una noticia, carguemos los resultados de una fecha o cambie algo de la programación.'
           : 'Activa los avisos y te llegan al teléfono los resultados, las noticias y los cambios de programación. Sin spam: solo lo del torneo.'}</p>
-        <button class="btn ${avisos.suscrita ? 'claro' : 'lima'}" id="av-boton" style="margin-top:12px">
-          ${avisos.suscrita ? 'Apagar los avisos' : 'Activar los avisos'}</button>
+        <button class="btn ${avisos.suscrita ? 'claro' : 'lima'}" id="av-boton"
+          style="margin-top:12px" ${avisos.listo ? '' : 'disabled'}>
+          ${!avisos.listo ? 'Preparando…' : avisos.suscrita ? 'Apagar los avisos' : 'Activar los avisos'}</button>
+        <div id="av-estado"></div>
+        ${avisos.falla ? `<p class="texto" style="margin-top:12px;color:var(--alerta)">${esc(avisos.falla)}</p>` : ''}
         ${avisos.permiso === 'denied' ? `<p class="texto" style="margin-top:12px;color:var(--alerta)">
-          Tu teléfono los tiene bloqueados para esta app. Hay que permitirlos en los ajustes
-          del navegador y volver acá.</p>` : ''}
+          Tu navegador los tiene bloqueados para esta página. Hay que permitirlos en sus ajustes
+          y volver acá.</p>` : ''}
+        ${avisos.permiso === 'nosoportado' ? `<p class="texto" style="margin-top:12px;color:var(--alerta)">
+          Este navegador no admite avisos. En iPhone hay que instalar la app en la pantalla de
+          inicio; en computador, usar Chrome, Edge o Firefox.</p>` : ''}
+        <p class="texto" style="margin-top:14px;font-size:11.5px;color:var(--gris)">
+          Estado: ${avisos.listo ? 'servicio listo' : 'cargando'} ·
+          permiso ${esc(avisos.permiso)} ·
+          ${avisos.suscrita ? 'suscrita' : 'sin suscribir'}</p>
       </div>`}
     <div class="card">
       <h3>¿Qué te va a llegar?</h3>
