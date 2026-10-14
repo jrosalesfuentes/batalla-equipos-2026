@@ -254,13 +254,13 @@ tr:last-child td{border-bottom:0}
 /* Sin ajuste magnético: con él el navegador empujaba la columna de
    la hora fuera de la pantalla al abrir la pantalla. */
 .parrilla-caja{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:5px}
-.parrilla{display:grid;grid-template-columns:54px repeat(var(--canchas), minmax(172px, 1fr));
+.parrilla{display:grid;grid-template-columns:62px repeat(var(--canchas), minmax(172px, 1fr));
   gap:6px;min-width:min-content}
 .parrilla .cab{background:var(--verde-hondo);color:#fff;font-size:11px;font-weight:700;
   letter-spacing:.09em;text-transform:uppercase;text-align:center;padding:9px 6px;
   border-radius:9px;display:flex;align-items:center;justify-content:center;line-height:1.15}
 .parrilla .hcol{position:sticky;left:0;z-index:2;background:var(--lima);color:var(--tinta);
-  font-family:'IBM Plex Mono',monospace;font-size:14px;font-weight:600;
+  font-family:'IBM Plex Mono',monospace;font-size:13.5px;font-weight:600;overflow-wrap:anywhere;
   display:flex;align-items:center;justify-content:center;border-radius:9px;
   padding:6px 2px;text-align:center;line-height:1.15}
 .parrilla .hcol.cab{background:var(--verde-hondo);color:#fff;font-family:inherit;font-size:11px}
@@ -835,6 +835,11 @@ function tituloFecha(jor, cola){
   </div>`;
 }
 
+/* Cómo se le dice a cada estado en pantalla. */
+const ESTADOS = { programado:'', jugado:'', suspendido:'suspendido',
+                  pendiente:'por reprogramar', wo:'no se presentaron' };
+const rotuloEstado = p => ESTADOS[p.estado] || '';
+
 /* La parrilla de la fecha: las horas abajo a la izquierda y una
    columna por cancha, como el cuadro que arman las organizadoras.
    En el teléfono la columna de la hora queda fija y las canchas se
@@ -842,22 +847,22 @@ function tituloFecha(jor, cola){
 function parrilla(lista){
   const canchas = [...new Set(lista.map(p => p.cancha).filter(Boolean))]
     .sort((a,b) => String(a).localeCompare(String(b), 'es', { numeric:true }));
-  const horas = [...new Set(lista.map(p => p.hora ? p.hora.slice(0,5) : 'Por confirmar'))].sort();
+  const horas = [...new Set(lista.map(p => p.hora ? p.hora.slice(0,5) : 'Por definir'))].sort();
   if(!canchas.length) canchas.push(null);
 
   const celdas = horas.map(h => {
     const fila = canchas.map(c => {
-      const p = lista.find(x => (x.hora ? x.hora.slice(0,5) : 'Por confirmar') === h
+      const p = lista.find(x => (x.hora ? x.hora.slice(0,5) : 'Por definir') === h
                              && (c === null || x.cancha === c));
       if(!p) return `<div class="celda libre">—</div>`;
       const jugado = p.estado === 'jugado' && p.set1_a != null;
       const gA = jugado && cuentaPartido(p, p.es_final).setsA > cuentaPartido(p, p.es_final).setsB;
-      return `<div class="celda ${esMio(p) ? 'mio' : ''} ${p.estado === 'suspendido' ? 'suspendido' : ''}">
+      return `<div class="celda ${esMio(p) ? 'mio' : ''} ${rotuloEstado(p) ? 'suspendido' : ''}">
         <span class="cat">${esc(cat(p.categoria_id))}</span>
         ${ladoParrilla(p.dupla_a, ladoA(p), jugado && gA)}
         <div class="medio">${jugado
           ? `<span class="res">${esc(marcadorTexto(p))}</span>`
-          : p.estado === 'suspendido' ? '<span class="susp">suspendido</span>' : 'vs'}</div>
+          : rotuloEstado(p) ? `<span class="susp">${esc(rotuloEstado(p))}</span>` : 'vs'}</div>
         ${ladoParrilla(p.dupla_b, ladoB(p), jugado && !gA)}
         ${esMio(p) ? '<span class="tetoca">Te toca</span>' : ''}
       </div>`;
@@ -922,6 +927,7 @@ function resumenFecha(jor, lista){
   const cats = D.categorias.filter(c => lista.some(p => p.categoria_id === c.id)).map(c => c.codigo);
   const falta = cuantoFalta(new Date(jor.fecha + 'T' + (horas[0] || '12:00') + ':00').getTime());
 
+  const pendientes = lista.filter(x => x.estado === 'pendiente').length;
   const mios = lista.filter(esMio).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
   const mio = mios.length
     ? `<p class="tuyo">${mios.map(p =>
@@ -932,7 +938,9 @@ function resumenFecha(jor, lista){
   return `<div class="resumen">
     <span class="cuenta">${esc(falta)}</span>
     <p class="cuando">${esc(mayus(fechaLarga(jor.fecha)))}</p>
-    <p class="cifra">${lista.length} partido${lista.length===1?'':'s'}</p>
+    <p class="cifra">${lista.length - pendientes} partido${lista.length - pendientes===1?'':'s'}</p>
+    ${pendientes ? `<p class="detalle" style="color:var(--lima)">
+      + ${pendientes} por reprogramar</p>` : ''}
     <p class="detalle">${horas.length ? esc(horas[0]) + ' a ' + esc(ultimaHora(horas)) : 'horario por confirmar'}${
       canchas ? ` · ${canchas} cancha${canchas===1?'':'s'}` : ''}${
       cats.length ? ` · ${esc(cats.join(' · '))}` : ''}</p>
@@ -1885,8 +1893,8 @@ function admProgramacion(){
         <span class="cat">${esc(cat(p.categoria_id))}</span>
         <span class="mono" style="font-size:13px">${p.hora ? esc(p.hora.slice(0,5)) : '—'}</span>
         <span style="font-size:12px;color:var(--gris)">${p.cancha ? 'cancha ' + esc(p.cancha) : 'sin cancha'}</span>
-        ${p.estado !== 'programado' && !jugado
-          ? `<span class="etq aviso">${esc(p.estado)}</span>` : ''}
+        ${rotuloEstado(p) && !jugado
+          ? `<span class="etq aviso">${esc(rotuloEstado(p))}</span>` : ''}
         <button class="btn claro pa-editar" data-id="${p.id}" style="margin-left:auto">Editar</button>
       </div>
       <div style="margin-top:9px;font-size:14px;line-height:1.45">
@@ -1924,7 +1932,8 @@ function formPartido(p){
   const cats = D.categorias.map(c =>
     `<option value="${c.id}" ${p && p.categoria_id === c.id ? 'selected' : ''}>${esc(c.codigo)}</option>`).join('');
   const estados = [['programado','Programado'],['jugado','Jugado'],
-                   ['suspendido','Suspendido'],['wo','Ganado por no presentarse']]
+                   ['pendiente','Pendiente de reprogramar'],['suspendido','Suspendido'],
+                   ['wo','Ganado por no presentarse']]
     .map(([v,t]) => `<option value="${v}" ${p && p.estado === v ? 'selected' : ''}>${t}</option>`).join('');
 
   return `<div class="card" id="pa-form" data-id="${p ? p.id : ''}">
@@ -1946,7 +1955,8 @@ function formPartido(p){
     <div style="margin-bottom:12px"><label class="lab">Estado</label>
       <select id="pa-estado">${estados}</select>
       <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
-        Un partido suspendido no suma puntos y se ve marcado en la programación.</p></div>
+        Un partido pendiente o suspendido no suma puntos y se ve marcado en la programación.
+        Para reprogramar uno pendiente, ponle fecha y hora y déjalo en Programado.</p></div>
     <div class="fila">
       <button class="btn lima" id="pa-guardar">${p ? 'Guardar cambios' : 'Crear partido'}</button>
       <button class="btn claro" id="pa-cancelar">Cancelar</button>
