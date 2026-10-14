@@ -337,6 +337,7 @@ tr:last-child td{border-bottom:0}
 .veredicto-chip.perdio{background:var(--glass);color:var(--gris)}
 
 /* La pastilla del tirón para actualizar. */
+.elegido{display:block;font-size:12px;color:var(--verde);font-weight:600;margin-top:5px}
 .pasos{margin:10px 0 0;padding-left:20px;line-height:1.6;font-size:14px}
 .pasos li{margin-bottom:5px}
 .tiron{position:fixed;top:0;left:50%;z-index:20;transform:translate(-50%,-60px);opacity:0;
@@ -1324,8 +1325,7 @@ function arrancarAvisos(){
   setTimeout(() => {
     if(!avisos.listo){
       avisos.listo = true;
-      avisos.falla = 'No se pudo cargar el servicio de notificaciones. Puede ser la señal, '
-        + 'o un bloqueador de publicidad en el navegador.';
+      avisos.falla = 'El servicio no cargó. Puede ser la señal, o un bloqueador en el navegador.';
       if(vista === 'avisos') pintar();
     }
   }, 12000);
@@ -1402,7 +1402,8 @@ async function pedirAvisos(){
           + 'bloqueados para esta página.', !ok);
     }
   }catch(e){
-    aviso(caja, 'No se pudo: ' + (e.message || e), true);
+    aviso(caja, sesion ? 'No se pudo: ' + (e.message || e)
+      : 'No se pudieron activar ahora. Inténtalo de nuevo en un rato.', true);
   }
   if(boton) boton.disabled = false;
   setTimeout(() => { if(vista === 'avisos') pintar(); }, 1500);
@@ -1426,21 +1427,24 @@ function vAvisos(){
         <p class="texto">${avisos.suscrita
           ? 'Te vamos a avisar cuando publiquemos una noticia, carguemos los resultados de una fecha o cambie algo de la programación.'
           : 'Activa los avisos y te llegan al teléfono los resultados, las noticias y los cambios de programación. Sin spam: solo lo del torneo.'}</p>
-        <button class="btn ${avisos.suscrita ? 'claro' : 'lima'}" id="av-boton"
-          style="margin-top:12px" ${avisos.listo ? '' : 'disabled'}>
-          ${!avisos.listo ? 'Preparando…' : avisos.suscrita ? 'Apagar los avisos' : 'Activar los avisos'}</button>
+        ${avisos.falla && !sesion
+          ? `<p class="texto" style="margin-top:12px">Los avisos no están disponibles en este
+              momento. Vuelve a entrar más rato.</p>`
+          : `<button class="btn ${avisos.suscrita ? 'claro' : 'lima'}" id="av-boton"
+              style="margin-top:12px" ${avisos.listo ? '' : 'disabled'}>
+              ${!avisos.listo ? 'Preparando…' : avisos.suscrita ? 'Apagar los avisos' : 'Activar los avisos'}</button>`}
         <div id="av-estado"></div>
-        ${avisos.falla ? `<p class="texto" style="margin-top:12px;color:var(--alerta)">${esc(avisos.falla)}</p>` : ''}
         ${avisos.permiso === 'denied' ? `<p class="texto" style="margin-top:12px;color:var(--alerta)">
           Tu navegador los tiene bloqueados para esta página. Hay que permitirlos en sus ajustes
           y volver acá.</p>` : ''}
         ${avisos.permiso === 'nosoportado' ? `<p class="texto" style="margin-top:12px;color:var(--alerta)">
           Este navegador no admite avisos. En iPhone hay que instalar la app en la pantalla de
           inicio; en computador, usar Chrome, Edge o Firefox.</p>` : ''}
-        <p class="texto" style="margin-top:14px;font-size:11.5px;color:var(--gris)">
-          Estado: ${avisos.listo ? 'servicio listo' : 'cargando'} ·
-          permiso ${esc(avisos.permiso)} ·
-          ${avisos.suscrita ? 'suscrita' : 'sin suscribir'}</p>
+        ${sesion ? `<p class="texto" style="margin-top:14px;font-size:11.5px;color:var(--gris);
+          border-top:1px solid var(--linea);padding-top:10px">
+          Solo lo ves tú, como administradora · ${avisos.listo ? 'servicio listo' : 'cargando'} ·
+          permiso ${esc(avisos.permiso)} · ${avisos.suscrita ? 'suscrita' : 'sin suscribir'}
+          ${avisos.falla ? '<br>' + esc(avisos.falla) : ''}</p>` : ''}
       </div>`}
     <div class="card">
       <h3>¿Qué te va a llegar?</h3>
@@ -1798,7 +1802,8 @@ function admEquipos(){
         <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
           Aparece arriba de la descripción al abrir el equipo.</p></div>
       <div style="margin-bottom:10px"><label class="lab">Foto de la capitana</label>
-        <input type="file" class="e-capfoto" accept="image/*"></div>
+        <input type="file" class="e-capfoto" accept="image/*">
+        <span class="elegido"></span></div>
       <div style="margin-bottom:10px"><label class="lab">Descripción</label>
         <textarea class="e-desc" maxlength="1000">${esc(e.descripcion ?? '')}</textarea></div>
       <div style="margin-bottom:12px"><label class="lab">Grito</label>
@@ -2598,6 +2603,12 @@ function enlazar(){
     vista = 'admin'; subAdm = 'equipos'; pintar();
   };
 
+  /* Confirmación a la vista de que el archivo quedó elegido. */
+  document.querySelectorAll('#pantalla input[type=file]').forEach(i => i.onchange = () => {
+    const señal = i.parentElement.querySelector('.elegido');
+    if(señal) señal.textContent = i.files?.[0] ? '✓ ' + i.files[0].name : '';
+  });
+
   document.querySelectorAll('.e-guardar').forEach(b => b.onclick = async () => {
     const c = b.closest('[data-eqedit]'), id = +c.dataset.eqedit, msg = c.querySelector('.e-msg');
     try{
@@ -2940,11 +2951,18 @@ let ultimoRefresco = Date.now();
    que la administradora esté escribiendo. */
 async function refrescar(aLaFuerza){
   if(refrescando || document.hidden) return;
-  /* Si hay un formulario abierto, esperamos: repintar le borraría
-     lo que lleva escrito. */
+  /* Nada de repintar mientras alguien está llenando algo: se le
+     borraría lo escrito o la foto que acaba de elegir. */
+  if(vista === 'admin') return;
   if(partidoEdit || resultadoEdit || auspicioEdit || editandoNoticia || respondiendo) return;
   const activo = document.activeElement;
   if(activo && ['INPUT','TEXTAREA','SELECT'].includes(activo.tagName)) return;
+  /* Un campo de archivo con algo elegido es sagrado: al volver del
+     selector de fotos del teléfono, repintar lo vaciaría. */
+  if([...document.querySelectorAll('input[type=file]')].some(i => i.files && i.files.length)) return;
+  /* Y tampoco si hay texto escrito sin guardar. */
+  if([...document.querySelectorAll('#pantalla input[type=text], #pantalla textarea')]
+      .some(i => i.value.trim())) return;
 
   refrescando = true;
   try{
