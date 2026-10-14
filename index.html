@@ -29,6 +29,15 @@ input,button,select,textarea{font-family:inherit;font-size:15px;color:inherit}
    y al tocar deja un recuadro azul de selección. */
 button{color:inherit;-webkit-appearance:none;appearance:none}
 html{-webkit-tap-highlight-color:transparent}
+/* En el teléfono, tocar algo no lo tiñe ni lo apaga: abre y listo.
+   Los efectos de "mouse encima" quedan solo para el computador, que
+   si no iOS los deja pegados después de tocar. */
+.eqfila,.nombre,.dupla.tocable,.reglamento,.auspicio,.chip,.btn,.celda,.cajon a{
+  transition:none}
+.eqfila:active,.eqfila:focus,.nombre:active,.nombre:focus,
+.dupla.tocable:active,.reglamento:active,.auspicio:active{
+  opacity:1;filter:none;background:#fff}
+.chip:active,.btn:active,.cajon a:active{opacity:1;filter:none}
 body,button,a,.chip,.eqfila,.nombre,.dupla,.celda,.auspicio,.marcha,.cajon,.barra,.cab{
   -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 /* Lo que sí se puede copiar: los textos de verdad. */
@@ -63,7 +72,7 @@ p,.texto,.desc-equipo,.desc-dupla,.cuerpo-noticia,td,th,input,textarea,select{
 .navbar svg{width:19px;height:19px;flex:none}
 .insta{display:flex;align-items:center;gap:9px;margin:26px 20px 0;padding-top:16px;
   border-top:1px solid rgba(255,255,255,.16);color:var(--claro);text-decoration:none;font-size:13px}
-.insta:hover{color:var(--lima)}
+@media (hover:hover){ .insta:hover{color:var(--lima)} }
 .insta svg{width:19px;height:19px;flex:none}
 .velo{position:fixed;inset:0;background:rgba(5,59,55,.55);opacity:0;pointer-events:none;transition:opacity .2s;z-index:8}
 .velo.abierto{opacity:1;pointer-events:auto}
@@ -71,7 +80,7 @@ p,.texto,.desc-equipo,.desc-dupla,.cuerpo-noticia,td,th,input,textarea,select{
 .cajon.abierto{transform:translateX(0)}
 .cajon h2{color:#fff;font-size:13px;letter-spacing:.06em;margin:20px 20px 6px;font-weight:700}
 .cajon a{display:block;padding:11px 20px;color:var(--glass);text-decoration:none;font-weight:400;cursor:pointer;border-left:4px solid transparent}
-.cajon a:hover{background:rgba(255,255,255,.07)}
+@media (hover:hover){ .cajon a:hover{background:rgba(255,255,255,.07)} }
 .cajon a.activo{border-left-color:var(--lima);color:var(--lima)}
 .cerrar{position:absolute;top:12px;right:14px;background:transparent;border:0;color:#fff;font-size:24px;cursor:pointer;line-height:1}
 
@@ -91,7 +100,7 @@ input[type=text],input[type=email],input[type=password],input[type=number],selec
   width:100%;padding:9px 11px;border:1px solid var(--linea);border-radius:8px;background:#fff}
 textarea{min-height:80px;resize:vertical}
 .btn{padding:10px 15px;border:0;border-radius:8px;background:var(--tinta);color:#fff;font-weight:600;cursor:pointer}
-.btn:hover{background:var(--verde-hondo)}
+@media (hover:hover){ .btn:hover{background:var(--verde-hondo)} }
 .btn.claro{background:#fff;color:var(--tinta);border:1px solid var(--linea)}
 .btn.lima{background:var(--lima);color:var(--tinta)}
 .btn:disabled{opacity:.5;cursor:default}
@@ -135,7 +144,7 @@ textarea{min-height:80px;resize:vertical}
   background:var(--linea);border-radius:2px;margin:16px auto 15px}
 .reglamento{display:flex;align-items:center;gap:11px;background:#fff;border-radius:12px;
   padding:14px;margin-bottom:12px;text-decoration:none;color:var(--tinta)}
-.reglamento:hover{background:var(--paper)}
+@media (hover:hover){ .reglamento:hover{background:var(--paper)} }
 .reglamento svg{width:26px;height:26px;flex:none;color:var(--verde)}
 .reglamento strong{display:block;font-size:15px}
 .reglamento span{font-size:12.5px;color:var(--gris)}
@@ -160,7 +169,7 @@ textarea{min-height:80px;resize:vertical}
 .rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
 .eqfila{display:flex;align-items:center;gap:11px;width:100%;background:#fff;border:0;
   border-radius:12px;padding:11px;margin-bottom:9px;cursor:pointer;font-family:inherit;text-align:left}
-.eqfila:hover{background:var(--paper)}
+@media (hover:hover){ .eqfila:hover{background:var(--paper)} }
 .eq-logo{width:48px;height:48px;border-radius:10px;flex:none;display:flex;align-items:center;
   justify-content:center;overflow:hidden}
 .eq-logo img{width:100%;height:100%;object-fit:contain}
@@ -303,7 +312,7 @@ tr:last-child td{border-bottom:0}
 .auspicio{background:#fff;border-radius:13px;padding:14px 12px;text-align:center;
   text-decoration:none;color:var(--tinta);display:flex;flex-direction:column;align-items:center;
   gap:8px;justify-content:flex-start}
-a.auspicio:hover{background:var(--paper)}
+@media (hover:hover){ a.auspicio:hover{background:var(--paper)} }
 .auspicio img{width:100%;height:76px;object-fit:contain;display:block}
 .auspicio .sin-logo-aus{width:72px;height:72px;border-radius:14px;background:var(--glass);
   color:var(--verde);font-size:30px;font-weight:700;display:flex;align-items:center;
@@ -358,7 +367,7 @@ a.auspicio:hover{background:var(--paper)}
 .dupla{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--glass)}
 .dupla:last-child{border-bottom:0}
 .dupla.tocable{cursor:pointer}
-.dupla.tocable:hover{background:var(--paper)}
+@media (hover:hover){ .dupla.tocable:hover{background:var(--paper)} }
 .dupla .flecha{color:var(--gris);font-size:19px;line-height:1;margin-left:auto;padding-left:8px;
   transition:transform .18s}
 .dupla .flecha.arriba{transform:rotate(180deg)}
@@ -381,12 +390,12 @@ a.auspicio:hover{background:var(--paper)}
 .btn.grande{padding:14px 26px;font-size:16px;border-radius:10px}
 .enlace{background:none;border:0;color:var(--claro);font-family:inherit;font-size:13.5px;
   cursor:pointer;text-decoration:underline;text-underline-offset:3px;padding:6px 2px}
-.enlace:hover{color:var(--lima)}
+@media (hover:hover){ .enlace:hover{color:var(--lima)} }
 .lista-nombres{margin-top:10px;max-height:330px;overflow-y:auto}
 .nombre{display:flex;align-items:center;gap:11px;width:100%;
   background:#fff;border:0;border-bottom:1px solid var(--glass);padding:9px 4px;
   text-align:left;cursor:pointer;font-family:inherit}
-.nombre:hover{background:var(--paper)}
+@media (hover:hover){ .nombre:hover{background:var(--paper)} }
 .avatar{width:52px;height:52px;border-radius:11px;flex:none;display:flex;
   align-items:center;justify-content:center;font-size:24px;font-weight:700;line-height:1}
 .avatar.chico{width:38px;height:38px;font-size:17px;border-radius:9px}
@@ -414,7 +423,7 @@ a.auspicio:hover{background:var(--paper)}
   border:1px solid var(--linea);border-radius:999px;padding:3px 4px 3px 5px}
 .etq-chip button{border:0;background:transparent;color:var(--gris);font-size:16px;
   line-height:1;cursor:pointer;padding:0 4px}
-.etq-chip button:hover{color:var(--alerta)}
+@media (hover:hover){ .etq-chip button:hover{color:var(--alerta)} }
 .portada{position:relative;border-radius:14px;overflow:hidden;background:#fff;margin-bottom:14px;cursor:pointer}
 .portada .foto{position:relative;aspect-ratio:16/10;background:var(--verde-hondo)}
 .portada .foto img{width:100%;height:100%;object-fit:cover;display:block}
