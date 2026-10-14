@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Batalla">
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://efuivscdjjpxltytpgxf.supabase.co" crossorigin>
@@ -333,6 +334,8 @@ tr:last-child td{border-bottom:0}
 .veredicto-chip.perdio{background:var(--glass);color:var(--gris)}
 
 /* La pastilla del tirón para actualizar. */
+.pasos{margin:10px 0 0;padding-left:20px;line-height:1.6;font-size:14px}
+.pasos li{margin-bottom:5px}
 .tiron{position:fixed;top:0;left:50%;z-index:20;transform:translate(-50%,-60px);opacity:0;
   background:var(--verde-hondo);color:#fff;font-size:12.5px;font-weight:600;
   padding:8px 18px;border-radius:999px;box-shadow:0 4px 14px rgba(5,59,55,.3);
@@ -476,6 +479,7 @@ tr:last-child td{border-bottom:0}
   <a data-vista="perfil" data-sub="partidos">Mis partidos</a>
   <a data-vista="perfil" data-sub="resultados">Mis resultados</a>
   <h2>El torneo</h2>
+  <a data-vista="avisos">Avisos al teléfono</a>
   <a data-vista="auspiciadores">Auspiciadores</a>
   <h2>Acceso</h2>
   <a data-vista="entrar" id="lnk-entrar">Iniciar sesión</a>
@@ -751,7 +755,7 @@ function pintar(){
   p.className = '';
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
               noticias:vNoticias, diva:vDiva, entrar:vEntrar, admin:vAdmin,
-              auspiciadores:vAuspiciadores }[vista] ?? vResultados;
+              auspiciadores:vAuspiciadores, avisos:vAvisos }[vista] ?? vResultados;
   const puerta = vista === 'entrar';
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
@@ -1294,6 +1298,105 @@ function miniPartido(p, ids){
   </div>`;
 }
 
+/* ============================================================
+   AVISOS AL TELÉFONO
+   El permiso lo pide OneSignal. Acá solo preguntamos cómo está
+   la cosa y ofrecemos el botón para activarlo o apagarlo.
+   ============================================================ */
+
+const APP_ONESIGNAL = 'bcb1e335-ecd1-4dda-8e6b-ea66dd455587';
+let avisos = { listo:false, suscrita:false, permiso:'default' };
+
+/* ¿Está instalada en la pantalla de inicio? En iPhone los avisos
+   solo funcionan así, no desde una pestaña de Safari. */
+const instalada = () => window.matchMedia('(display-mode: standalone)').matches
+  || window.navigator.standalone === true;
+const esIPhone = () => /iPad|iPhone|iPod/.test(navigator.userAgent)
+  || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+function arrancarAvisos(){
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  window.OneSignalDeferred.push(async OneSignal => {
+    try{
+      await OneSignal.init({ appId: APP_ONESIGNAL, allowLocalhostAsSecureOrigin: true });
+      const mirar = () => {
+        avisos = { listo:true,
+          suscrita: !!OneSignal.User?.PushSubscription?.optedIn,
+          permiso: OneSignal.Notifications?.permission ? 'granted' : Notification?.permission || 'default' };
+        if(vista === 'avisos') pintar();
+      };
+      mirar();
+      OneSignal.User.PushSubscription.addEventListener('change', mirar);
+      window.__OneSignal = OneSignal;
+    }catch(e){ avisos.listo = true; }
+  });
+}
+
+/* Le pide a Netlify que mande el aviso. La clave de OneSignal vive
+   allá, nunca acá: esta app la puede leer cualquiera. */
+async function avisarATodas(titulo, mensaje){
+  try{
+    const { data } = await sb.auth.getSession();
+    const token = data?.session?.access_token;
+    if(!token) return { ok:false, mensaje:'tu sesión de administradora no está activa' };
+    const r = await fetch('/api/avisar', {
+      method:'POST',
+      headers:{ 'content-type':'application/json', authorization:`Bearer ${token}` },
+      body: JSON.stringify({ titulo, mensaje })
+    });
+    const res = await r.json().catch(() => ({}));
+    return { ok: r.ok, mensaje: res.mensaje || ('error ' + r.status) };
+  }catch(e){ return { ok:false, mensaje:e.message }; }
+}
+
+async function pedirAvisos(){
+  const OneSignal = window.__OneSignal;
+  if(!OneSignal) return;
+  try{
+    if(avisos.suscrita) await OneSignal.User.PushSubscription.optOut();
+    else {
+      await OneSignal.Notifications.requestPermission();
+      await OneSignal.User.PushSubscription.optIn();
+    }
+  }catch(e){ /* si lo rechazan, no hay nada que hacer desde acá */ }
+}
+
+function vAvisos(){
+  const falta = esIPhone() && !instalada();
+  return `<h2 class="sec">Avisos</h2>
+    ${falta ? `<div class="card">
+        <h3>Primero instala la app</h3>
+        <p class="texto">En iPhone los avisos solo llegan si la app está en tu pantalla de
+        inicio. Es un minuto:</p>
+        <ol class="pasos">
+          <li>Toca el botón de compartir de Safari, el cuadrito con la flecha hacia arriba.</li>
+          <li>Baja y elige <b>Agregar a inicio</b>.</li>
+          <li>Abre la app desde el ícono nuevo y vuelve a esta pantalla.</li>
+        </ol>
+      </div>`
+      : `<div class="card">
+        <h3>${avisos.suscrita ? 'Tienes los avisos activados' : 'Entérate al tiro'}</h3>
+        <p class="texto">${avisos.suscrita
+          ? 'Te vamos a avisar cuando publiquemos una noticia, carguemos los resultados de una fecha o cambie algo de la programación.'
+          : 'Activa los avisos y te llegan al teléfono los resultados, las noticias y los cambios de programación. Sin spam: solo lo del torneo.'}</p>
+        <button class="btn ${avisos.suscrita ? 'claro' : 'lima'}" id="av-boton" style="margin-top:12px">
+          ${avisos.suscrita ? 'Apagar los avisos' : 'Activar los avisos'}</button>
+        ${avisos.permiso === 'denied' ? `<p class="texto" style="margin-top:12px;color:var(--alerta)">
+          Tu teléfono los tiene bloqueados para esta app. Hay que permitirlos en los ajustes
+          del navegador y volver acá.</p>` : ''}
+      </div>`}
+    <div class="card">
+      <h3>¿Qué te va a llegar?</h3>
+      <ul class="pasos">
+        <li>Las noticias que publiquen las organizadoras.</li>
+        <li>Los resultados cuando se cierre una fecha.</li>
+        <li>Reprogramaciones y avisos de la DIVA.</li>
+      </ul>
+      <p class="texto" style="margin-top:10px;color:var(--gris);font-size:13px">
+        Nunca vas a recibir avisos de otra cosa, y los puedes apagar cuando quieras desde acá.</p>
+    </div>`;
+}
+
 /* --- auspiciadores --- */
 /* Los logos vienen dentro de la base de datos y pesan. No tiene
    sentido bajarlos cada vez que alguien abre la app: se traen la
@@ -1719,6 +1822,8 @@ function admNoticias(){
       <div class="fila"><input type="file" id="n-foto" accept="image/*">
         <label style="font-size:13px"><input type="checkbox" id="n-pub" ${n?.publicada?'checked':''}> Publicada</label>
         <label style="font-size:13px"><input type="checkbox" id="n-des" ${n?.destacada?'checked':''}> Portada</label></div>
+      <label style="font-size:13px;display:block;margin:4px 0 10px">
+        <input type="checkbox" id="n-avisar" ${n ? '' : 'checked'}> Avisar al teléfono de las jugadoras</label>
       ${n?.portada_url ? '<p style="font-size:12px;color:var(--gris);margin:0 0 10px">Ya tiene foto. Sube otra solo si la quieres cambiar.</p>' : ''}
       <div class="fila"><button class="btn lima" id="n-guardar">${n ? 'Guardar cambios' : 'Publicar noticia'}</button>
         ${n ? '<button class="btn claro" id="n-cancelar">Cancelar</button>' : ''}</div>
@@ -2540,6 +2645,7 @@ function enlazar(){
 
   if($('#pa-nuevo'))    $('#pa-nuevo').onclick    = () => { partidoEdit = 'nuevo'; pintar(); };
   if($('#pa-excel'))    $('#pa-excel').onclick    = excelRespaldo;
+  if($('#av-boton'))    $('#av-boton').onclick    = pedirAvisos;
 
   /* --- auspiciadores --- */
   if($('#au-crear')) $('#au-crear').onclick = async () => {
@@ -2642,8 +2748,17 @@ function enlazar(){
       if(fila.destacada) await sb.from('noticias').update({ destacada:false })
         .neq('id', editandoNoticia ?? 0).eq('destacada', true);
 
+      /* El aviso al teléfono va solo si la noticia quedó publicada. */
+      let recado = 'Guardado.';
+      if(pub && $('#n-avisar')?.checked){
+        const r = await avisarATodas(fila.titulo, fila.bajada || 'Entra a leerla.');
+        recado = r.ok ? 'Guardado y avisado.' : 'Guardado, pero el aviso falló: ' + r.mensaje;
+      }
+
       editandoNoticia = null;
-      await cargar(); pintar();
+      await cargar();
+      aviso($('#n-msg'), recado);
+      setTimeout(pintar, 900);
     }catch(e){ problema($('#n-msg'), e); }
   };
 
@@ -2794,6 +2909,7 @@ function tironParaActualizar(){
     else if(sesion){ vista = 'admin'; subAdm = 'equipos'; }
     pintar();
     mantenerAlDia();
+    arrancarAvisos();
     /* El resto llega en segundo plano y la pantalla se completa sola. */
     cargarResto().then(pintar).catch(() => {});
   }catch(e){
