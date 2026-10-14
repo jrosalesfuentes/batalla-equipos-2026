@@ -8,8 +8,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Batalla">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://efuivscdjjpxltytpgxf.supabase.co" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;700&display=swap">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;700&display=swap');
 :root{
   --verde:#007E76; --verde-hondo:#00655E; --lima:#D7DE69;
   --tinta:#053B37; --claro:#9ED8D1; --glass:#DCEAE7;
@@ -514,6 +517,13 @@ const cat = id => D.categorias.find(c => c.id === id)?.codigo ?? '';
 const eq  = id => D.equipos.find(e => e.id === id)?.nombre ?? '';
 const colorEq = id => D.equipos.find(e => e.id === id)?.color || '#CBDDD9';
 
+/* El equipo de cada lado de un partido. La base lo guarda aparte,
+   pero si por lo que sea quedó vacío, se saca de la dupla: así la
+   app nunca muestra un partido sin equipo. */
+const eqDupla = duplaId => D.duplas.find(d => d.id === duplaId)?.equipo_id ?? null;
+const ladoA = p => p.equipo_a ?? eqDupla(p.dupla_a);
+const ladoB = p => p.equipo_b ?? eqDupla(p.dupla_b);
+
 /* "Jopa y Jesu". Si la dupla todavía no tiene nombres, el equipo. */
 const nomDupla = id => {
   const d = D.duplas.find(x => x.id === id);
@@ -561,21 +571,39 @@ const fechaLarga = f => new Date(f + 'T12:00:00')
   .toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long' });
 
 /* ---------- datos ---------- */
-async function cargar(){
-  const t = async (n, o) => (await sb.from(n).select('*').order(o ?? 'id')).data ?? [];
-  [D.categorias, D.equipos, D.jugadoras, D.duplas, D.jornadas] = await Promise.all([
-    t('categorias','orden'), t('equipos','orden'), t('jugadoras','nombre'), t('duplas'), t('jornadas','numero')
+const t = async (n, o) => (await sb.from(n).select('*').order(o ?? 'id')).data ?? [];
+
+/* Lo indispensable para dibujar cualquier pantalla. Van todas las
+   consultas juntas, no una detrás de otra: en un teléfono con poca
+   señal, cada ida y vuelta al servidor se nota. */
+async function cargarBase(){
+  const [cat, eqs, jug, dup, jor, par] = await Promise.all([
+    t('categorias','orden'), t('equipos','orden'), t('jugadoras','nombre'),
+    t('duplas'), t('jornadas','numero'), t('partidos')
   ]);
-  [D.partidos, D.tabla, D.ranking, D.ajustes, D.preguntas, D.noticias] = await Promise.all([
-    t('partidos'), t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
-    (await sb.from('preguntas').select('*').order('creada_en',{ascending:false})).data ?? [],
-    (await sb.from('noticias').select('*').order('publicada_en',{ascending:false})).data ?? []
-  ]);
-  D.diva = (await sb.from('diva').select('*').eq('id',1).maybeSingle()).data ?? null;
-  /* La tabla de etiquetas puede no existir todavía: si falla, se
-     siguen usando las cuatro de siempre y la app no se cae. */
-  D.etiquetas = (await sb.from('etiquetas').select('*').order('orden')).data ?? [];
+  D.categorias = cat; D.equipos = eqs; D.jugadoras = jug;
+  D.duplas = dup; D.jornadas = jor; D.partidos = par;
   vincularFicha();
+}
+
+/* Lo demás: tablas calculadas, noticias, la DIVA. Se pide después
+   de haber pintado, así la app aparece antes. */
+async function cargarResto(){
+  const [tab, ran, aju, pre, not, div, etq] = await Promise.all([
+    t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
+    sb.from('preguntas').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
+    sb.from('noticias').select('*').order('publicada_en',{ascending:false}).then(r => r.data ?? []),
+    sb.from('diva').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
+    /* La tabla de etiquetas puede no existir todavía: si falla, se
+       siguen usando las cuatro de siempre y la app no se cae. */
+    t('etiquetas','orden')
+  ]);
+  D.tabla = tab; D.ranking = ran; D.ajustes = aju;
+  D.preguntas = pre; D.noticias = not; D.diva = div; D.etiquetas = etq;
+}
+
+async function cargar(){
+  await Promise.all([cargarBase(), cargarResto()]);
 }
 
 /* Si la administradora también juega, cargamos su perfil de jugadora
@@ -752,9 +780,9 @@ function tarjetaPartido(p, sinFecha){
       <span class="cat">${esc(cat(p.categoria_id))}</span>
       <span style="font-size:12px;color:var(--gris)">${j?esc(j.nombre):''}</span>
       <span style="margin-left:auto">${marcador}</span></div>
-    ${ladoPartido(p.dupla_a, p.equipo_a)}
+    ${ladoPartido(p.dupla_a, ladoA(p))}
     <div class="versus">vs</div>
-    ${ladoPartido(p.dupla_b, p.equipo_b)}
+    ${ladoPartido(p.dupla_b, ladoB(p))}
   </div>`;
 }
 
@@ -808,11 +836,11 @@ function parrilla(lista){
       const gA = jugado && cuentaPartido(p, p.es_final).setsA > cuentaPartido(p, p.es_final).setsB;
       return `<div class="celda ${esMio(p) ? 'mio' : ''} ${p.estado === 'suspendido' ? 'suspendido' : ''}">
         <span class="cat">${esc(cat(p.categoria_id))}</span>
-        ${ladoParrilla(p.dupla_a, p.equipo_a, jugado && gA)}
+        ${ladoParrilla(p.dupla_a, ladoA(p), jugado && gA)}
         <div class="medio">${jugado
           ? `<span class="res">${esc(marcadorTexto(p))}</span>`
           : p.estado === 'suspendido' ? '<span class="susp">suspendido</span>' : 'vs'}</div>
-        ${ladoParrilla(p.dupla_b, p.equipo_b, jugado && !gA)}
+        ${ladoParrilla(p.dupla_b, ladoB(p), jugado && !gA)}
         ${esMio(p) ? '<span class="tetoca">Te toca</span>' : ''}
       </div>`;
     }).join('');
@@ -957,7 +985,7 @@ function detalleEquipo(id){
      una jugadora B no la cuenta como dupla suya: esa B sigue siendo de su
      equipo en su propia dupla B. */
   const ds = D.duplas.filter(d => d.equipo_id === id);
-  const ps = D.partidos.filter(p => p.equipo_a === id || p.equipo_b === id);
+  const ps = D.partidos.filter(p => ladoA(p) === id || ladoB(p) === id);
   const orden = c => D.categorias.find(x => x.id === c)?.orden ?? 9;
   return `<h2 class="sec">Equipos</h2>${chipsEquipos(id)}
     <div class="cabeza-eq">
@@ -1010,10 +1038,10 @@ function partidosDelEquipo(id, ps){
 
 /* Un partido visto desde un equipo: primero su dupla, y si ganó. */
 function tarjetaEquipo(p, id){
-  const mio = p.equipo_a === id;
+  const mio = ladoA(p) === id;
   const miDupla = mio ? p.dupla_a : p.dupla_b;
   const suDupla = mio ? p.dupla_b : p.dupla_a;
-  const suEquipo = mio ? p.equipo_b : p.equipo_a;
+  const suEquipo = mio ? ladoB(p) : ladoA(p);
   const j = D.jornadas.find(x => x.id === p.jornada_id);
   const jugado = p.estado === 'jugado' && p.set1_a != null;
   let gano = null;
@@ -1136,10 +1164,10 @@ function proximoPartido(p, ids){
   const miLadoA = ids.includes(p.dupla_a);
   const miDupla = miLadoA ? p.dupla_a : p.dupla_b;
   const rival   = miLadoA ? p.dupla_b : p.dupla_a;
-  const rivalEq = miLadoA ? p.equipo_b : p.equipo_a;
+  const rivalEq = miLadoA ? ladoB(p) : ladoA(p);
   /* En la dupla A/B la jugadora prestada juega para el equipo de su
      partner A, así que acá va el equipo de la dupla, no el suyo. */
-  const miEq    = miLadoA ? p.equipo_a : p.equipo_b;
+  const miEq    = miLadoA ? ladoA(p) : ladoB(p);
   const compa = (() => {
     const d = D.duplas.find(x => x.id === miDupla);
     if(!d) return null;
@@ -1177,7 +1205,7 @@ function miniPartido(p, ids){
   const j = D.jornadas.find(x => x.id === p.jornada_id);
   const miLadoA = ids.includes(p.dupla_a);
   const rival   = miLadoA ? p.dupla_b : p.dupla_a;
-  const rivalEq = miLadoA ? p.equipo_b : p.equipo_a;
+  const rivalEq = miLadoA ? ladoB(p) : ladoA(p);
   return `<div class="card"><div class="fila" style="margin:0">
       <span class="cat">${esc(cat(p.categoria_id))}</span>
       <span style="font-size:12px;color:var(--gris)">${j ? esc(j.nombre) : ''}</span>
@@ -1804,9 +1832,9 @@ function admProgramacion(){
       </div>
       <div style="margin-top:9px;font-size:14px;line-height:1.45">
         <strong>${esc(nomDupla(p.dupla_a))}</strong>
-        <span style="color:var(--gris)"> (${esc(eq(p.equipo_a))}) vs </span>
+        <span style="color:var(--gris)"> (${esc(eq(ladoA(p)))}) vs </span>
         <strong>${esc(nomDupla(p.dupla_b))}</strong>
-        <span style="color:var(--gris)"> (${esc(eq(p.equipo_b))})</span>
+        <span style="color:var(--gris)"> (${esc(eq(ladoB(p)))})</span>
       </div>
       <div class="fila" style="margin:10px 0 0">
         ${jugado ? `<span class="mono" style="font-weight:700">${esc(marcadorTexto(p))}</span>` : ''}
@@ -1938,12 +1966,12 @@ function formResultado(p){
     <div class="rejilla">
       <span></span><span class="rot">Set 1</span><span class="rot">Set 2</span><span class="rot">Súper TB</span>
       <div class="rn">${esc(nomDupla(p.dupla_a))}
-        <span><i style="background:${esc(colorEq(p.equipo_a))}"></i>${esc(eq(p.equipo_a))}</span></div>
+        <span><i style="background:${esc(colorEq(ladoA(p)))}"></i>${esc(eq(ladoA(p)))}</span></div>
       <input type="number" id="r-1a" inputmode="numeric" min="0" max="9"  value="${n(p.set1_a)}">
       <input type="number" id="r-2a" inputmode="numeric" min="0" max="9"  value="${n(p.set2_a)}">
       <input type="number" id="r-sa" inputmode="numeric" min="0" max="30" value="${n(p.stb_a)}">
       <div class="rn">${esc(nomDupla(p.dupla_b))}
-        <span><i style="background:${esc(colorEq(p.equipo_b))}"></i>${esc(eq(p.equipo_b))}</span></div>
+        <span><i style="background:${esc(colorEq(ladoB(p)))}"></i>${esc(eq(ladoB(p)))}</span></div>
       <input type="number" id="r-1b" inputmode="numeric" min="0" max="9"  value="${n(p.set1_b)}">
       <input type="number" id="r-2b" inputmode="numeric" min="0" max="9"  value="${n(p.set2_b)}">
       <input type="number" id="r-sb" inputmode="numeric" min="0" max="30" value="${n(p.stb_b)}">
@@ -1979,8 +2007,8 @@ function previaResultado(){
       <strong>Gana ${esc(nomDupla(gana === 'a' ? p.dupla_a : p.dupla_b))}</strong>
       <span>${c.setsA}-${c.setsB} en sets</span>
       <div class="reparto">
-        <span>${esc(eq(p.equipo_a))} <b>${c.puntosA}</b></span>
-        <span>${esc(eq(p.equipo_b))} <b>${c.puntosB}</b></span>
+        <span>${esc(eq(ladoA(p)))} <b>${c.puntosA}</b></span>
+        <span>${esc(eq(ladoB(p)))} <b>${c.puntosB}</b></span>
       </div></div>`
       : `<div class="avisito mal">Con estos números el partido queda empatado en sets.</div>`}
     ${r.length ? `<div class="avisito mal">${r.map(esc).join('<br>')}</div>` : ''}`;
@@ -2104,7 +2132,7 @@ async function armarExcel(){
       det.push([
         j.nombre, j.fecha, p.hora ? p.hora.slice(0,5) : '', p.cancha ?? '',
         cat(p.categoria_id),
-        nomDupla(p.dupla_a), eq(p.equipo_a), nomDupla(p.dupla_b), eq(p.equipo_b),
+        nomDupla(p.dupla_a), eq(ladoA(p)), nomDupla(p.dupla_b), eq(ladoB(p)),
         p.set1_a != null ? `${p.set1_a}-${p.set1_b}` : '',
         p.set2_a != null ? `${p.set2_a}-${p.set2_b}` : '',
         p.stb_a  != null ? `${p.stb_a}-${p.stb_b}`   : '',
@@ -2641,12 +2669,14 @@ function mantenerAlDia(){
 (async function(){
   try{
     await revisarSesion();
-    await cargar();
+    await cargarBase();
     /* quien ya entró alguna vez va directo a lo suyo */
     if(yo){ vista = 'perfil'; subPerfil = 'partidos'; }
     else if(sesion){ vista = 'admin'; subAdm = 'equipos'; }
     pintar();
     mantenerAlDia();
+    /* El resto llega en segundo plano y la pantalla se completa sola. */
+    cargarResto().then(pintar).catch(() => {});
   }catch(e){
     $('#pantalla').className = '';
     $('#pantalla').innerHTML = `<div class="vacio">No se pudo conectar con la base de datos.<br><br>
