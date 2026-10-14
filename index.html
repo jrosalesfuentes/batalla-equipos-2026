@@ -109,6 +109,9 @@ textarea{min-height:80px;resize:vertical}
 .chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .chip{padding:7px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:transparent;color:#fff;font-size:13px;cursor:pointer}
 .chip.on{background:var(--lima);color:var(--tinta);border-color:var(--lima);font-weight:600}
+/* Las mismas pastillas, pero cuando van dentro de una tarjeta blanca. */
+.chip.enblanco{color:var(--verde);border-color:var(--linea);background:var(--paper)}
+.chip.enblanco:active{background:var(--glass)}
 
 .chip .punto{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;
   vertical-align:middle;border:1px solid rgba(0,0,0,.15)}
@@ -490,6 +493,7 @@ tr:last-child td{border-bottom:0}
     <a data-adm="plantel">Jugadoras y duplas</a>
     <a data-adm="programacion">Programación</a>
     <a data-adm="noticias">Noticias</a>
+    <a data-adm="mensaje">Mandar un aviso</a>
     <a data-adm="auspicio">Auspiciadores</a>
     <a data-adm="extra">Puntos extra</a>
   </div>
@@ -1339,13 +1343,21 @@ async function avisarATodas(titulo, mensaje){
     const { data } = await sb.auth.getSession();
     const token = data?.session?.access_token;
     if(!token) return { ok:false, mensaje:'tu sesión de administradora no está activa' };
-    const r = await fetch('/api/avisar', {
-      method:'POST',
-      headers:{ 'content-type':'application/json', authorization:`Bearer ${token}` },
-      body: JSON.stringify({ titulo, mensaje })
-    });
+    /* Netlify publica la función en dos direcciones según cómo
+       quedó configurada. Probamos las dos. */
+    let r = null;
+    for(const donde of ['/api/avisar', '/.netlify/functions/avisar']){
+      r = await fetch(donde, {
+        method:'POST',
+        headers:{ 'content-type':'application/json', authorization:`Bearer ${token}` },
+        body: JSON.stringify({ titulo, mensaje })
+      });
+      if(r.status !== 404) break;
+    }
     const res = await r.json().catch(() => ({}));
-    return { ok: r.ok, mensaje: res.mensaje || ('error ' + r.status) };
+    if(r.status === 404)
+      return { ok:false, mensaje:'la pieza que manda los avisos no está publicada en Netlify' };
+    return { ok: r.ok, mensaje: res.mensaje || ('error ' + r.status), destinatarias: res.destinatarias };
   }catch(e){ return { ok:false, mensaje:e.message }; }
 }
 
@@ -1695,13 +1707,15 @@ function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias','auspicio','extra'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','mensaje','auspicio','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
-       noticias:'Noticias',auspicio:'Auspiciadores',extra:'Puntos extra'}[s]}</button>`).join('');
+       noticias:'Noticias',mensaje:'Mandar un aviso',auspicio:'Auspiciadores',
+       extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
     ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion,
-       noticias:admNoticias, auspicio:admAuspicio, extra:admExtra }[subAdm])();
+       noticias:admNoticias, mensaje:admMensaje, auspicio:admAuspicio,
+       extra:admExtra }[subAdm])();
 }
 
 function admEquipos(){
@@ -1840,6 +1854,46 @@ function admNoticias(){
           <button class="btn claro n-toggle" data-id="${x.id}" data-pub="${x.publicada}">${x.publicada?'Despublicar':'Publicar'}</button>
           <button class="btn claro n-borrar" data-id="${x.id}" style="border-color:var(--alerta);color:var(--alerta)">Borrar</button>
         </div></div>`).join('')}`;
+}
+
+/* --- administración: mandar un aviso suelto --- */
+
+/* Ideas para no empezar de la nada. */
+const MOLDES = [
+  ['Sorteo', 'Sorteo esta noche', 'Después de los partidos sorteamos entre todas las que estén en la cancha.'],
+  ['Cambio de hora', 'Ojo con el horario', 'Esta semana los partidos parten a las 18:00. Revisa el fixture.'],
+  ['Asado', 'Nos juntamos', 'Después de la última fecha hacemos algo. Pasen por la cancha.'],
+  ['Reglamento', 'La DIVA habló', 'Hay una respuesta nueva en la sección DIVA. Entra a leerla.']
+];
+
+function admMensaje(){
+  return `<div class="card">
+      <h3>Mandar un aviso al teléfono de todas</h3>
+      <p style="font-size:13px;color:var(--gris);margin:0 0 12px">
+        Le llega a todas las que tengan los avisos activados, al tiro.
+        Esto no queda guardado en la app: si quieres que quede escrito,
+        publícalo además como noticia.</p>
+      <div style="margin-bottom:8px"><label class="lab">Título</label>
+        <input type="text" id="ms-tit" maxlength="60" placeholder="Sorteo esta noche">
+        <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+          Es lo que se lee en grande. Corto, que se corta si es largo.</p></div>
+      <div style="margin-bottom:10px"><label class="lab">Mensaje</label>
+        <textarea id="ms-txt" maxlength="160" rows="3"
+          placeholder="Después de los partidos sorteamos entre todas las que estén en la cancha."></textarea></div>
+      <p class="lab">O parte de una de estas</p>
+      <div class="chips" style="margin-bottom:14px">${MOLDES.map((m, i) =>
+        `<button class="chip enblanco ms-molde" data-i="${i}">${esc(m[0])}</button>`).join('')}</div>
+      <button class="btn lima" id="ms-enviar">Enviar a todas</button>
+      <div id="ms-msg"></div>
+    </div>
+    <div class="card">
+      <h3>Cuándo conviene usarlo</h3>
+      <p class="texto">Los resultados, las noticias y el aviso de los 20 minutos antes de cada
+      partido salen solos. Esto es para lo que no cabe en ninguna de esas: un sorteo, un cambio
+      de última hora, una junta, un agradecimiento.</p>
+      <p class="texto" style="margin-top:10px;color:var(--gris);font-size:13px">
+        Úsalo con criterio: un aviso de más y la gente apaga las notificaciones para siempre.</p>
+    </div>`;
 }
 
 /* --- administración: auspiciadores --- */
@@ -2161,6 +2215,9 @@ function formResultado(p){
     </div>
     <p class="pista">El súper tie break se llena solo si el partido quedó 1-1.
       Si se definió en dos sets, déjalo en blanco.</p>
+    <label style="font-size:13px;display:block;margin:10px 0 0">
+      <input type="checkbox" id="r-avisar" ${p.estado === 'jugado' ? '' : 'checked'}>
+      Avisar el resultado al teléfono de todas</label>
     <div id="r-previa"></div>
     <div class="fila" style="margin-top:12px">
       <button class="btn lima" id="r-guardar">Guardar resultado</button>
@@ -2211,6 +2268,19 @@ async function guardarResultado(){
       cargado_en: new Date().toISOString()
     }).eq('id', id);
     if(error) throw error;
+
+    if($('#r-avisar')?.checked){
+      const gana = c.setsA > c.setsB;
+      const ganadora = gana ? p.dupla_a : p.dupla_b;
+      const perdedora = gana ? p.dupla_b : p.dupla_a;
+      const eqG = gana ? ladoA(p) : ladoB(p);
+      const eqP = gana ? ladoB(p) : ladoA(p);
+      await avisarATodas(
+        `Resultado · categoría ${cat(p.categoria_id)}`,
+        `${nomDupla(ganadora)} (${eq(eqG)}) le ganaron a ${nomDupla(perdedora)} (${eq(eqP)}) `
+        + `por ${marcadorTexto({ ...p, ...m })}`);
+    }
+
     resultadoEdit = null;
     await cargar();
     pintar();
@@ -2646,6 +2716,30 @@ function enlazar(){
   if($('#pa-nuevo'))    $('#pa-nuevo').onclick    = () => { partidoEdit = 'nuevo'; pintar(); };
   if($('#pa-excel'))    $('#pa-excel').onclick    = excelRespaldo;
   if($('#av-boton'))    $('#av-boton').onclick    = pedirAvisos;
+
+  /* --- mandar un aviso suelto --- */
+  document.querySelectorAll('.ms-molde').forEach(b => b.onclick = () => {
+    const m = MOLDES[+b.dataset.i];
+    $('#ms-tit').value = m[1];
+    $('#ms-txt').value = m[2];
+  });
+  if($('#ms-enviar')) $('#ms-enviar').onclick = async () => {
+    const caja = $('#ms-msg');
+    const titulo = $('#ms-tit').value.trim();
+    const texto  = $('#ms-txt').value.trim();
+    if(!titulo) return aviso(caja, 'Ponle un título.', true);
+    if(!confirm(`Se le va a mandar este aviso a todas:\n\n${titulo}\n${texto}\n\n¿Lo mando?`)) return;
+    const boton = $('#ms-enviar');
+    boton.disabled = true; boton.textContent = 'Enviando…';
+    const r = await avisarATodas(titulo, texto);
+    boton.disabled = false; boton.textContent = 'Enviar a todas';
+    if(r.ok){
+      $('#ms-tit').value = ''; $('#ms-txt').value = '';
+      aviso(caja, r.destinatarias != null
+        ? `Enviado a ${r.destinatarias} teléfono${r.destinatarias === 1 ? '' : 's'}.`
+        : 'Enviado.');
+    } else aviso(caja, 'No se pudo enviar: ' + r.mensaje, true);
+  };
 
   /* --- auspiciadores --- */
   if($('#au-crear')) $('#au-crear').onclick = async () => {
