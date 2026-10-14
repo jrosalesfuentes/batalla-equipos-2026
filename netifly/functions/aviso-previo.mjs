@@ -42,7 +42,6 @@ export default async () => {
 
   const ok = await mandar(clave, {
     app_id: APP_ID,
-    included_segments: ['Subscribed Users'],
     headings: { en: `Empiezan a las ${hora}`, es: `Empiezan a las ${hora}` },
     contents: { en: texto, es: texto },
     url: DESTINO
@@ -52,19 +51,28 @@ export default async () => {
                          : 'OneSignal rechazó el aviso', { status: ok ? 200 : 502 });
 };
 
-/* Las claves nuevas usan "Key" y las antiguas "Basic". */
-async function mandar(clave, aviso) {
+/* Dos cosas cambian según la antigüedad de la cuenta: cómo se manda
+   la clave y cómo se llama el grupo de todos los suscritos. Se
+   prueban las combinaciones hasta dar con la que funciona. */
+const GRUPOS = ['Total Subscriptions', 'Subscribed Users', 'Active Subscriptions'];
+
+async function mandar(clave, base) {
   for (const forma of ['Key', 'Basic']) {
-    try {
-      const r = await fetch('https://api.onesignal.com/notifications', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json',
-                   authorization: `${forma} ${clave}` },
-        body: JSON.stringify(aviso)
-      });
-      if (r.ok) return true;
-      if (r.status !== 401 && r.status !== 403) return false;
-    } catch { return false; }
+    let claveMala = false;
+    for (const grupo of GRUPOS) {
+      try {
+        const r = await fetch('https://api.onesignal.com/notifications', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json',
+                     authorization: `${forma} ${clave}` },
+          body: JSON.stringify({ ...base, included_segments: [grupo] })
+        });
+        const datos = await r.json().catch(() => ({}));
+        if (r.ok && !datos.errors) return true;
+        if (r.status === 401 || r.status === 403) { claveMala = true; break; }
+      } catch { return false; }
+    }
+    if (!claveMala) break;
   }
   return false;
 }
