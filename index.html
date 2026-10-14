@@ -24,7 +24,9 @@
 html,body{max-width:100%;overflow-x:hidden}
 img{max-width:100%}
 body{margin:0;background:var(--verde);color:var(--tinta);font-family:'Poppins',system-ui,sans-serif;font-size:15px;line-height:1.45}
-input,button,select,textarea{font-family:inherit;font-size:15px}
+input,button,select,textarea{font-family:inherit;font-size:15px;color:inherit}
+/* Sin esto, iPhone pinta el texto de todo botón de su azul de sistema. */
+button{color:inherit;-webkit-appearance:none;appearance:none}
 .mono{font-family:'IBM Plex Mono',monospace}
 
 /* cabecera */
@@ -757,7 +759,7 @@ function vResultados(){
       : `<div class="vacio">Todavía no hay partidos programados. Las administradoras los cargan en la sección de administración.</div>`;
   }
   if(subRes === 'equipos'){
-    cuerpo = D.tabla.length ? tablaPos(D.tabla,'Equipo') : sinDatos();
+    cuerpo = tablaEquipos().some(x => x.pj) ? tablaPos(tablaEquipos(),'Equipo') : sinDatos();
     if(D.ajustes.length) cuerpo += `<p class="nota">Incluye puntos extra: ${
       D.ajustes.map(a => `${esc(eq(a.equipo_id))} ${a.puntos>0?'+':''}${a.puntos} (${esc(a.motivo)})`).join(' · ')}</p>`;
   }
@@ -928,6 +930,38 @@ function ultimaHora(horas){
   return String((+h[0] + 1) % 24).padStart(2,'0') + ':' + h[1];
 }
 
+/* La tabla de posiciones la calcula la base de datos. Si por lo
+   que sea no llega (falta correr un SQL, o un permiso), la sacamos
+   acá con las mismas reglas, para no mostrar todo en blanco. */
+function tablaEquipos(){
+  if(D.tabla.length) return D.tabla;
+  const base = D.equipos.map(e => ({
+    equipo_id:e.id, nombre:e.nombre, color:e.color, logo_url:e.logo_url,
+    pj:0, pg:0, pp:0, sets_g:0, sets_p:0, dif_sets:0,
+    games_g:0, games_p:0, dif_games:0, puntos_extra:0, puntos:0 }));
+  const por = {};
+  base.forEach(x => { por[x.equipo_id] = x; });
+
+  D.partidos.filter(p => p.estado === 'jugado' && p.set1_a != null).forEach(p => {
+    const c = cuentaPartido(p, p.es_final);
+    const gA = p.set1_a + p.set2_a, gB = p.set1_b + p.set2_b;
+    [[ladoA(p), c.setsA, c.setsB, c.puntosA, gA, gB],
+     [ladoB(p), c.setsB, c.setsA, c.puntosB, gB, gA]].forEach(([id, sg, sp, pts, gg, gp]) => {
+      const f = por[id];
+      if(!f) return;
+      f.pj++; if(sg > sp) f.pg++; else f.pp++;
+      f.sets_g += sg; f.sets_p += sp; f.games_g += gg; f.games_p += gp; f.puntos += pts;
+    });
+  });
+  D.ajustes.forEach(a => {
+    const f = por[a.equipo_id];
+    if(f){ f.puntos_extra += a.puntos; f.puntos += a.puntos; }
+  });
+  base.forEach(f => { f.dif_sets = f.sets_g - f.sets_p; f.dif_games = f.games_g - f.games_p; });
+  return base.sort((a, b) => b.puntos - a.puntos
+    || b.dif_sets - a.dif_sets || b.dif_games - a.dif_games);
+}
+
 /* --- equipos --- */
 function chipsEquipos(activo){
   return `<div class="chips">
@@ -940,8 +974,13 @@ function chipsEquipos(activo){
 function vEquipos(){
   if(!D.equipos.length) return `<h2 class="sec">Equipos</h2><div class="vacio">Todavía no hay equipos cargados.</div>`;
   if(equipoAbierto) return detalleEquipo(equipoAbierto);
+  const tab = tablaEquipos();
   return `<h2 class="sec">Equipos</h2>${chipsEquipos(null)}` + D.equipos.map(e => {
-    const t = D.tabla.find(x => x.equipo_id === e.id);
+    const t = tab.find(x => x.equipo_id === e.id);
+    const jugados = D.partidos.filter(p => (ladoA(p) === e.id || ladoB(p) === e.id)
+      && p.estado === 'jugado' && p.set1_a != null).length;
+    const porJugar = D.partidos.filter(p => (ladoA(p) === e.id || ladoB(p) === e.id)
+      && p.estado !== 'jugado').length;
     return `<button class="eqfila" data-equipo="${e.id}">
       <span class="eq-logo ${e.logo_url ? 'con-logo' : ''}" style="${e.logo_url
         ? `box-shadow:inset 0 0 0 2px ${esc(e.color || '#CBDDD9')}, 0 0 0 1px var(--linea)`
@@ -952,7 +991,11 @@ function vEquipos(){
         : `<span class="eq-foto vacia">sin foto</span>`}
       <span class="eq-datos">
         <strong>${esc(e.nombre)}</strong>
-        <span>${t ? t.puntos + ' pts' : 'sin partidos'}</span>
+        <span>${jugados
+          ? `${t ? t.puntos : 0} pts · ${jugados} jugado${jugados===1?'':'s'}`
+          : porJugar
+            ? `${porJugar} partido${porJugar===1?'':'s'} por jugar`
+            : 'sin partidos todavía'}</span>
       </span></button>`;
   }).join('');
 }
@@ -1017,7 +1060,7 @@ function partidosDelEquipo(id, ps){
     .sort((a, b) => cuando(b) - cuando(a));
   const vienen = ps.filter(p => p.estado !== 'jugado')
     .sort((a, b) => cuando(a) - cuando(b));
-  const t = D.tabla.find(x => x.equipo_id === id);
+  const t = tablaEquipos().find(x => x.equipo_id === id);
 
   const resumen = jugados.length ? `<div class="marcha">
       <div><b>${jugados.length}</b><span>jugados</span></div>
