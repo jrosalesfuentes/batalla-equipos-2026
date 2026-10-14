@@ -25,8 +25,17 @@ html,body{max-width:100%;overflow-x:hidden}
 img{max-width:100%}
 body{margin:0;background:var(--verde);color:var(--tinta);font-family:'Poppins',system-ui,sans-serif;font-size:15px;line-height:1.45}
 input,button,select,textarea{font-family:inherit;font-size:15px;color:inherit}
-/* Sin esto, iPhone pinta el texto de todo botón de su azul de sistema. */
+/* Sin esto, iPhone pinta el texto de todo botón de su azul de sistema,
+   y al tocar deja un recuadro azul de selección. */
 button{color:inherit;-webkit-appearance:none;appearance:none}
+html{-webkit-tap-highlight-color:transparent}
+body,button,a,.chip,.eqfila,.nombre,.dupla,.celda,.auspicio,.marcha,.cajon,.barra,.cab{
+  -webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+/* Lo que sí se puede copiar: los textos de verdad. */
+p,.texto,.desc-equipo,.desc-dupla,.cuerpo-noticia,td,th,input,textarea,select{
+  -webkit-user-select:text;user-select:text}
+::selection{background:var(--lima);color:var(--tinta)}
+::-moz-selection{background:var(--lima);color:var(--tinta)}
 .mono{font-family:'IBM Plex Mono',monospace}
 
 /* cabecera */
@@ -313,6 +322,13 @@ a.auspicio:hover{background:var(--paper)}
   padding:3px 9px;border-radius:999px}
 .veredicto-chip.gano{background:var(--lima);color:var(--tinta)}
 .veredicto-chip.perdio{background:var(--glass);color:var(--gris)}
+
+/* La pastilla del tirón para actualizar. */
+.tiron{position:fixed;top:0;left:50%;z-index:20;transform:translate(-50%,-60px);opacity:0;
+  background:var(--verde-hondo);color:#fff;font-size:12.5px;font-weight:600;
+  padding:8px 18px;border-radius:999px;box-shadow:0 4px 14px rgba(5,59,55,.3);
+  transition:transform .18s,opacity .18s;pointer-events:none;white-space:nowrap}
+.tiron.listo{background:var(--lima);color:var(--tinta)}
 
 .desliza{font-size:11.5px;color:var(--claro);margin:8px 0 0;text-align:right}
 @media (min-width:620px){ .desliza{display:none} }
@@ -2649,7 +2665,7 @@ let ultimoRefresco = Date.now();
 
 /* Vuelve a pedir todo y repinta, cuidando de no interrumpir algo
    que la administradora esté escribiendo. */
-async function refrescar(){
+async function refrescar(aLaFuerza){
   if(refrescando || document.hidden) return;
   /* Si hay un formulario abierto, esperamos: repintar le borraría
      lo que lleva escrito. */
@@ -2664,7 +2680,7 @@ async function refrescar(){
     ultimoRefresco = Date.now();
     /* Solo repintamos si de verdad cambió algo: así no se mueve la
        pantalla bajo el dedo de alguien que está leyendo. */
-    if(huella() !== antes){
+    if(aLaFuerza || huella() !== antes){
       const y = window.scrollY;
       pintar();
       window.scrollTo(0, y);
@@ -2694,17 +2710,58 @@ function mantenerAlDia(){
   window.addEventListener('online', refrescar);
   setInterval(refrescar, 120000);
 
-  /* Tirar hacia abajo estando arriba del todo también actualiza. */
-  let parte = null;
+  tironParaActualizar();
+}
+
+/* Tirar hacia abajo estando arriba del todo. Se dibuja una pastilla
+   que baja con el dedo, para que se note que la app entendió. */
+function tironParaActualizar(){
+  const señal = document.createElement('div');
+  señal.className = 'tiron';
+  señal.textContent = 'Tira para actualizar';
+  document.body.appendChild(señal);
+
+  const UMBRAL = 70;
+  let parte = null, distancia = 0;
+
+  const mostrar = d => {
+    señal.style.transform = `translate(-50%, ${Math.min(d, 110)}px)`;
+    señal.style.opacity = d > 12 ? '1' : '0';
+    señal.textContent = d >= UMBRAL ? 'Suelta para actualizar' : 'Tira para actualizar';
+    señal.classList.toggle('listo', d >= UMBRAL);
+  };
+  const esconder = () => {
+    señal.style.transform = 'translate(-50%, -60px)';
+    señal.style.opacity = '0';
+    señal.classList.remove('listo');
+  };
+
   window.addEventListener('touchstart', e => {
     parte = window.scrollY <= 0 ? e.touches[0].clientY : null;
+    distancia = 0;
   }, { passive:true });
-  window.addEventListener('touchend', e => {
+
+  window.addEventListener('touchmove', e => {
     if(parte === null) return;
-    const tiron = (e.changedTouches[0].clientY - parte);
-    parte = null;
-    if(tiron > 90 && Date.now() - ultimoRefresco > 3000) refrescar();
+    distancia = e.touches[0].clientY - parte;
+    if(distancia > 0 && window.scrollY <= 0) mostrar(distancia * 0.5);
+    else { esconder(); parte = null; }
   }, { passive:true });
+
+  window.addEventListener('touchend', async () => {
+    if(parte === null) return;
+    const llego = distancia * 0.5 >= UMBRAL;
+    parte = null; distancia = 0;
+    if(!llego) return esconder();
+
+    señal.textContent = 'Actualizando…';
+    señal.style.transform = 'translate(-50%, 70px)';
+    await refrescar(true);
+    señal.textContent = 'Al día';
+    setTimeout(esconder, 700);
+  }, { passive:true });
+
+  esconder();
 }
 
 
