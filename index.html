@@ -265,6 +265,30 @@ tr:last-child td{border-bottom:0}
 .parrilla .celda .tetoca{align-self:flex-start;width:auto;margin:0;background:var(--lima);
   color:var(--tinta);font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
   padding:3px 9px;border-radius:999px}
+/* --- La capitana del equipo --- */
+.capitana{display:flex;align-items:center;gap:12px;background:var(--paper);
+  border:1px solid var(--linea);border-radius:12px;padding:10px 12px;margin:0 0 12px}
+.capitana img,.capitana .sincap{width:52px;height:52px;border-radius:50%;object-fit:cover;flex:none;
+  background:var(--glass);box-shadow:0 0 0 3px var(--lima)}
+.capitana .sincap{display:flex;align-items:center;justify-content:center;font-size:21px;
+  font-weight:700;color:var(--verde)}
+.capitana .rot{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--gris);font-weight:700}
+.capitana strong{font-size:16px;line-height:1.2}
+
+/* --- Los auspiciadores --- */
+.auspicios{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:10px}
+.auspicio{background:#fff;border-radius:13px;padding:14px 12px;text-align:center;
+  text-decoration:none;color:var(--tinta);display:flex;flex-direction:column;align-items:center;
+  gap:8px;justify-content:flex-start}
+a.auspicio:hover{background:var(--paper)}
+.auspicio img{width:100%;height:76px;object-fit:contain;display:block}
+.auspicio .sin-logo-aus{width:72px;height:72px;border-radius:14px;background:var(--glass);
+  color:var(--verde);font-size:30px;font-weight:700;display:flex;align-items:center;
+  justify-content:center}
+.auspicio strong{font-size:13.5px;line-height:1.25}
+.auspicio span{font-size:11.5px;color:var(--gris);line-height:1.35}
+
 .desliza{font-size:11.5px;color:var(--claro);margin:8px 0 0;text-align:right}
 @media (min-width:620px){ .desliza{display:none} }
 
@@ -401,6 +425,8 @@ tr:last-child td{border-bottom:0}
   <div class="quien" id="quien">Público</div>
   <a data-vista="perfil" data-sub="partidos">Mis partidos</a>
   <a data-vista="perfil" data-sub="resultados">Mis resultados</a>
+  <h2>El torneo</h2>
+  <a data-vista="auspiciadores">Auspiciadores</a>
   <h2>Acceso</h2>
   <a data-vista="entrar" id="lnk-entrar">Iniciar sesión</a>
   <a id="lnk-salir" hidden>Cerrar sesión</a>
@@ -410,6 +436,7 @@ tr:last-child td{border-bottom:0}
     <a data-adm="plantel">Jugadoras y duplas</a>
     <a data-adm="programacion">Programación</a>
     <a data-adm="noticias">Noticias</a>
+    <a data-adm="auspicio">Auspiciadores</a>
     <a data-adm="extra">Puntos extra</a>
   </div>
   <a class="insta" href="https://instagram.com/club.zonapadel" target="_blank" rel="noopener">
@@ -431,7 +458,7 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[] };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -456,6 +483,7 @@ let yo = null;                // jugadora conectada
 let jorAdm = null;            // fecha abierta en el editor de programación
 let partidoEdit = null;       // partido que se está editando
 let resultadoEdit = null;     // partido al que se le está cargando el marcador
+let auspicioEdit = null;      // auspiciador que se está editando
 let filtroFecha = 'todas';
 let equipoAbierto = null;
 let duplaAbierta = null;
@@ -647,7 +675,8 @@ function pintar(){
   const p = $('#pantalla');
   p.className = '';
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
-              noticias:vNoticias, diva:vDiva, entrar:vEntrar, admin:vAdmin }[vista] ?? vResultados;
+              noticias:vNoticias, diva:vDiva, entrar:vEntrar, admin:vAdmin,
+              auspiciadores:vAuspiciadores }[vista] ?? vResultados;
   const puerta = vista === 'entrar';
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
@@ -916,8 +945,15 @@ function detalleEquipo(id){
       <div><h3 style="margin:0">${esc(e.nombre)}</h3>
       ${e.grito ? `<p class="grito-chico">“${esc(e.grito)}”</p>` : ''}</div>
     </div>
-    ${e.foto_url || e.descripcion ? `<div class="card">
+    ${e.foto_url || e.descripcion || e.capitana ? `<div class="card">
       ${e.foto_url ? `<img class="foto-equipo" src="${esc(e.foto_url)}" alt="Equipo ${esc(e.nombre)}">` : ''}
+      ${e.capitana ? `<div class="capitana">
+        ${e.capitana_foto
+          ? `<img src="${esc(e.capitana_foto)}" alt="${esc(e.capitana)}">`
+          : `<span class="sincap" aria-hidden="true">${esc(e.capitana.trim().charAt(0).toUpperCase())}</span>`}
+        <div><span class="rot">Capitana</span>
+          <strong>${esc(e.capitana)}</strong></div>
+      </div>` : ''}
       ${e.descripcion ? `<p class="desc-equipo">${esc(e.descripcion)}</p>` : ''}
     </div>` : ''}
     <div class="card"><h3>Duplas</h3>${ds.length
@@ -1075,6 +1111,55 @@ function miniPartido(p, ids){
       <strong>${esc(nomDupla(rival))}</strong>
       <span style="color:var(--gris)">· ${esc(eq(rivalEq))}</span></div>
   </div>`;
+}
+
+/* --- auspiciadores --- */
+/* Los logos vienen dentro de la base de datos y pesan. No tiene
+   sentido bajarlos cada vez que alguien abre la app: se traen la
+   primera vez que se entra a esta pantalla. */
+let bajandoAuspicios = false;
+async function cargarAuspicios(forzar){
+  if(bajandoAuspicios || (D.auspiciadores !== null && !forzar)) return;
+  bajandoAuspicios = true;
+  try{
+    D.auspiciadores = (await sb.from('auspiciadores').select('*').order('orden')).data ?? [];
+  }catch(e){ D.auspiciadores = []; }
+  bajandoAuspicios = false;
+  pintar();
+}
+
+/* Acepta un @usuario de Instagram y lo convierte en dirección.
+   Si ya viene una dirección completa, la deja igual. */
+function comoEnlace(t){
+  const v = String(t ?? '').trim();
+  if(!v) return null;
+  if(/^@/.test(v)) return 'https://instagram.com/' + v.slice(1).replace(/\/+$/,'');
+  if(/^https?:\/\//i.test(v)) return v;
+  if(/^(instagram\.com|www\.instagram\.com)\//i.test(v)) return 'https://' + v;
+  if(/^[\w.]+$/.test(v) && !v.includes('.')) return 'https://instagram.com/' + v;
+  return 'https://' + v;
+}
+
+function vAuspiciadores(){
+  if(D.auspiciadores === null){ cargarAuspicios(); return `<h2 class="sec">Auspiciadores</h2>
+    <div class="vacio">Cargando…</div>`; }
+  if(!D.auspiciadores.length)
+    return `<h2 class="sec">Auspiciadores</h2>
+      <div class="vacio">Todavía no hay auspiciadores cargados.</div>`;
+
+  return `<h2 class="sec">Auspiciadores</h2>
+    <p class="nota">Sin ellas y ellos no habría torneo. Si pueden, devuélvanles la mano.</p>
+    <div class="auspicios">${D.auspiciadores.map(a => {
+      const dentro = `
+        ${a.logo_url
+          ? `<img src="${esc(a.logo_url)}" alt="${esc(a.nombre)}" loading="lazy">`
+          : `<span class="sin-logo-aus">${esc(a.nombre.charAt(0).toUpperCase())}</span>`}
+        <strong>${esc(a.nombre)}</strong>
+        ${a.mensaje ? `<span>${esc(a.mensaje)}</span>` : ''}`;
+      return a.enlace
+        ? `<a class="auspicio" href="${esc(a.enlace)}" target="_blank" rel="noopener">${dentro}</a>`
+        : `<div class="auspicio">${dentro}</div>`;
+    }).join('')}</div>`;
 }
 
 /* --- DIVA · Decisora Imparcial de Validación y Arbitraje --- */
@@ -1326,12 +1411,13 @@ function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias','extra'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','auspicio','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
-       noticias:'Noticias',extra:'Puntos extra'}[s]}</button>`).join('');
+       noticias:'Noticias',auspicio:'Auspiciadores',extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
-    ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion, noticias:admNoticias, extra:admExtra }[subAdm])();
+    ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion,
+       noticias:admNoticias, auspicio:admAuspicio, extra:admExtra }[subAdm])();
 }
 
 function admEquipos(){
@@ -1364,6 +1450,12 @@ function admEquipos(){
           <input type="color" class="e-col" value="${esc(e.color || '#007E76')}" style="width:54px;padding:3px">
           <span style="font-size:12px;color:var(--gris)">Marca al equipo en las listas y en los círculos.</span>
         </div></div>
+      <div style="margin-bottom:10px"><label class="lab">Capitana</label>
+        <input type="text" class="e-cap" value="${esc(e.capitana ?? '')}" placeholder="Nombre de la capitana">
+        <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+          Aparece arriba de la descripción al abrir el equipo.</p></div>
+      <div style="margin-bottom:10px"><label class="lab">Foto de la capitana</label>
+        <input type="file" class="e-capfoto" accept="image/*"></div>
       <div style="margin-bottom:10px"><label class="lab">Descripción</label>
         <textarea class="e-desc" maxlength="1000">${esc(e.descripcion ?? '')}</textarea></div>
       <div style="margin-bottom:12px"><label class="lab">Grito</label>
@@ -1462,6 +1554,108 @@ function admNoticias(){
           <button class="btn claro n-toggle" data-id="${x.id}" data-pub="${x.publicada}">${x.publicada?'Despublicar':'Publicar'}</button>
           <button class="btn claro n-borrar" data-id="${x.id}" style="border-color:var(--alerta);color:var(--alerta)">Borrar</button>
         </div></div>`).join('')}`;
+}
+
+/* --- administración: auspiciadores --- */
+function admAuspicio(){
+  if(D.auspiciadores === null){ cargarAuspicios(); return `<div class="vacio">Cargando…</div>`; }
+  return `<div class="card">
+      <h3>Agregar un auspiciador</h3>
+      <p style="font-size:13px;color:var(--gris);margin:0 0 12px">
+        El logo se ve mejor cuadrado o apaisado, con fondo blanco o transparente.
+        El enlace es opcional: si lo pones, al tocar el logo se abre esa página.</p>
+      <div style="margin-bottom:8px"><label class="lab">Nombre</label>
+        <input type="text" id="au-nom" placeholder="Zona Pádel"></div>
+      <div style="margin-bottom:8px"><label class="lab">Logo</label>
+        <input type="file" id="au-logo" accept="image/*"></div>
+      <div style="margin-bottom:8px"><label class="lab">Enlace</label>
+        <input type="text" id="au-url" placeholder="@sucuenta o https://...">
+        <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+          Para Instagram basta el arroba: escribe @zonapadel y la app arma la dirección sola.</p></div>
+      <div style="margin-bottom:12px"><label class="lab">Una línea sobre ellos</label>
+        <input type="text" id="au-msg" maxlength="90" placeholder="Indumentaria deportiva"></div>
+      <button class="btn lima" id="au-crear">Agregar</button>
+      <div id="au-msg-estado"></div>
+    </div>
+    ${D.auspiciadores.length
+      ? `<p class="nota">${D.auspiciadores.length} cargado${D.auspiciadores.length===1?'':'s'}.
+          Las flechas los mueven de lugar; así los ordenas como quieras.</p>`
+      : '<div class="vacio">Todavía no hay ninguno.</div>'}
+    ${D.auspiciadores.map((a, i) => auspicioEdit === a.id
+      ? formAuspicio(a)
+      : `<div class="card"><div class="fila" style="margin:0">
+        ${a.logo_url
+          ? `<img src="${esc(a.logo_url)}" style="width:54px;height:40px;object-fit:contain;
+               background:#fff;border:1px solid var(--linea);border-radius:7px;padding:3px">`
+          : `<span class="sin-logo">sin logo</span>`}
+        <div style="flex:1;min-width:120px">
+          <strong>${esc(a.nombre)}</strong>
+          ${a.mensaje ? `<div style="font-size:12px;color:var(--gris)">${esc(a.mensaje)}</div>` : ''}
+          ${a.enlace
+            ? `<div style="font-size:11.5px;color:var(--verde);overflow-wrap:anywhere">${esc(a.enlace)}</div>`
+            : `<div style="font-size:11.5px;color:var(--gris)">sin enlace</div>`}
+        </div>
+      </div>
+      <div class="fila" style="margin:10px 0 0">
+        <button class="btn claro au-subir" data-id="${a.id}" ${i===0?'disabled':''}>↑</button>
+        <button class="btn claro au-bajar" data-id="${a.id}"
+          ${i===D.auspiciadores.length-1?'disabled':''}>↓</button>
+        <button class="btn claro au-editar" data-id="${a.id}">Editar</button>
+        <button class="btn claro au-borrar" data-id="${a.id}" data-nom="${esc(a.nombre)}"
+          style="border-color:var(--alerta);color:var(--alerta);margin-left:auto">Borrar</button>
+      </div></div>`).join('')}`;
+}
+
+/* El formulario para corregir un auspiciador: el enlace, el nombre,
+   la línea de abajo o el logo. */
+function formAuspicio(a){
+  return `<div class="card" id="au-form" data-id="${a.id}">
+    <div class="fila" style="margin:0 0 12px">
+      ${a.logo_url
+        ? `<img src="${esc(a.logo_url)}" style="width:62px;height:46px;object-fit:contain;
+             background:#fff;border:1px solid var(--linea);border-radius:7px;padding:3px">`
+        : `<span class="sin-logo">sin logo</span>`}
+      <h3 style="margin:0">${esc(a.nombre)}</h3>
+    </div>
+    <div style="margin-bottom:8px"><label class="lab">Nombre</label>
+      <input type="text" id="aue-nom" value="${esc(a.nombre)}"></div>
+    <div style="margin-bottom:8px"><label class="lab">Enlace</label>
+      <input type="text" id="aue-url" value="${esc(a.enlace ?? '')}"
+        placeholder="@sucuenta o https://...">
+      <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+        Para Instagram basta el arroba: @zonapadel. También sirve una dirección completa.
+        Con enlace, el logo se puede tocar; si lo dejas en blanco, solo se muestra.</p></div>
+    <div style="margin-bottom:8px"><label class="lab">Una línea sobre ellos</label>
+      <input type="text" id="aue-linea" maxlength="90" value="${esc(a.mensaje ?? '')}"></div>
+    <div style="margin-bottom:12px"><label class="lab">Cambiar el logo</label>
+      <input type="file" id="aue-logo" accept="image/*">
+      <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+        Solo si quieres reemplazar el que ya tiene.</p></div>
+    <div class="fila">
+      <button class="btn lima" id="aue-guardar">Guardar</button>
+      <button class="btn claro" id="aue-cancelar">Cancelar</button>
+    </div>
+    <div id="aue-msg"></div>
+  </div>`;
+}
+
+/* Mueve un auspiciador una posición, intercambiando el orden con su
+   vecino. Más simple que renumerar la lista entera. */
+async function moverAuspicio(id, paso){
+  const i = D.auspiciadores.findIndex(a => a.id === id);
+  const otro = D.auspiciadores[i + paso];
+  if(i < 0 || !otro) return;
+  const a = D.auspiciadores[i];
+  await sb.from('auspiciadores').update({ orden: otro.orden }).eq('id', a.id);
+  await sb.from('auspiciadores').update({ orden: a.orden }).eq('id', otro.id);
+  /* Si quedaron con el mismo número, se renumera todo de una vez. */
+  if(a.orden === otro.orden){
+    const lista = [...D.auspiciadores];
+    lista.splice(i, 1); lista.splice(i + paso, 0, a);
+    for(let k = 0; k < lista.length; k++)
+      await sb.from('auspiciadores').update({ orden: k + 1 }).eq('id', lista[k].id);
+  }
+  await cargarAuspicios(true);
 }
 
 /* --- administración: puntos extra --- */
@@ -2008,12 +2202,15 @@ function enlazar(){
         nombre: c.querySelector('.e-nom').value.trim(),
         color:  c.querySelector('.e-col').value.trim() || null,
         descripcion: c.querySelector('.e-desc').value.trim() || null,
-        grito:  c.querySelector('.e-grito').value.trim() || null
+        grito:  c.querySelector('.e-grito').value.trim() || null,
+        capitana: c.querySelector('.e-cap').value.trim() || null
       };
       const f = c.querySelector('.e-logo').files[0];
       if(f) cambios.logo_url = await subirFoto(f, 'logos');
       const ff = c.querySelector('.e-foto').files[0];
       if(ff) cambios.foto_url = await subirFoto(ff, 'equipos');
+      const fc = c.querySelector('.e-capfoto').files[0];
+      if(fc) cambios.capitana_foto = await subirFoto(fc, 'capitanas');
       const { error } = await sb.from('equipos').update(cambios).eq('id', id);
       if(error) throw error;
       await cargar(); aviso(msg, 'Guardado.'); setTimeout(pintar, 700);
@@ -2160,6 +2357,55 @@ function enlazar(){
 
   if($('#pa-nuevo'))    $('#pa-nuevo').onclick    = () => { partidoEdit = 'nuevo'; pintar(); };
   if($('#pa-excel'))    $('#pa-excel').onclick    = excelRespaldo;
+
+  /* --- auspiciadores --- */
+  if($('#au-crear')) $('#au-crear').onclick = async () => {
+    const msg = $('#au-msg-estado');
+    const nombre = $('#au-nom').value.trim();
+    if(!nombre) return aviso(msg, 'Ponle el nombre.', true);
+    try{
+      const fila = { nombre,
+        enlace:  comoEnlace($('#au-url').value),
+        mensaje: $('#au-msg').value.trim() || null,
+        orden:   (D.auspiciadores.at(-1)?.orden ?? 0) + 1 };
+      const f = $('#au-logo').files[0];
+      if(f) fila.logo_url = await subirFoto(f, 'auspiciadores');
+      const { error } = await sb.from('auspiciadores').insert(fila);
+      if(error) throw error;
+      await cargarAuspicios(true);
+    }catch(e){ problema(msg, e); }
+  };
+  document.querySelectorAll('.au-subir').forEach(b =>
+    b.onclick = () => { auspicioEdit = null; moverAuspicio(+b.dataset.id, -1); });
+  document.querySelectorAll('.au-bajar').forEach(b =>
+    b.onclick = () => { auspicioEdit = null; moverAuspicio(+b.dataset.id, 1); });
+  document.querySelectorAll('.au-editar').forEach(b =>
+    b.onclick = () => { auspicioEdit = +b.dataset.id; pintar(); });
+  if($('#aue-cancelar')) $('#aue-cancelar').onclick = () => { auspicioEdit = null; pintar(); };
+  if($('#aue-guardar'))  $('#aue-guardar').onclick  = async () => {
+    const msg = $('#aue-msg');
+    try{
+      const nombre = $('#aue-nom').value.trim();
+      if(!nombre) return aviso(msg, 'El nombre no puede quedar vacío.', true);
+      const cambios = {
+        nombre,
+        enlace:  comoEnlace($('#aue-url').value),
+        mensaje: $('#aue-linea').value.trim() || null
+      };
+      const f = $('#aue-logo').files[0];
+      if(f) cambios.logo_url = await subirFoto(f, 'auspiciadores');
+      const { error } = await sb.from('auspiciadores')
+        .update(cambios).eq('id', +$('#au-form').dataset.id);
+      if(error) throw error;
+      auspicioEdit = null;
+      await cargarAuspicios(true);
+    }catch(e){ problema(msg, e); }
+  };
+  document.querySelectorAll('.au-borrar').forEach(b => b.onclick = async () => {
+    if(!confirm(`¿Borrar a ${b.dataset.nom} de los auspiciadores?`)) return;
+    await sb.from('auspiciadores').delete().eq('id', +b.dataset.id);
+    await cargarAuspicios(true);
+  });
   if($('#pa-cancelar')) $('#pa-cancelar').onclick = () => { partidoEdit = null; pintar(); };
   if($('#pa-guardar'))  $('#pa-guardar').onclick  = guardarPartido;
   if($('#pa-borrar'))   $('#pa-borrar').onclick   = borrarPartido;
