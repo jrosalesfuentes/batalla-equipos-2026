@@ -338,6 +338,8 @@ tr:last-child td{border-bottom:0}
 
 /* La pastilla del tirón para actualizar. */
 .elegido{display:block;font-size:12px;color:var(--verde);font-weight:600;margin-top:5px}
+.cuandito{font-size:12.5px;color:var(--verde);font-weight:600;margin-top:6px}
+.dia-parrilla{margin:18px 0 8px;font-size:15px;color:#fff;font-weight:700}
 .pasos{margin:10px 0 0;padding-left:20px;line-height:1.6;font-size:14px}
 .pasos li{margin-bottom:5px}
 .tiron{position:fixed;top:0;left:50%;z-index:20;transform:translate(-50%,-60px);opacity:0;
@@ -605,6 +607,14 @@ const inicial = (nombre, equipoId, clase) => {
 const signo = n => (n > 0 ? '+' : '') + n;
 const fechaLarga = f => new Date(f + 'T12:00:00')
   .toLocaleDateString('es-CL', { weekday:'long', day:'numeric', month:'long' });
+const diaCorto = f => new Date(f + 'T12:00:00')
+  .toLocaleDateString('es-CL', { day:'numeric', month:'short' }).replace('.', '');
+
+/* El día en que se juega un partido. Cada partido puede tener el
+   suyo: por lluvia u otra razón, una fecha del torneo se puede
+   repartir en varios días sin dejar de ser la misma fecha. */
+const diaDe = p => p.fecha_real
+  || D.jornadas.find(j => j.id === p.jornada_id)?.fecha || null;
 
 /* ---------- datos ---------- */
 const t = async (n, o) => (await sb.from(n).select('*').order(o ?? 'id')).data ?? [];
@@ -847,9 +857,15 @@ function tablaPos(lista, etiqueta){
 function tituloFecha(jor, cola){
   if(!jor) return `<div class="titulo-fecha"><h3>Todas las fechas</h3>
     <p>El torneo completo, de la primera a la última.</p></div>`;
+  /* Una fecha puede haberse repartido en varios días. */
+  const dias = [...new Set(D.partidos.filter(p => p.jornada_id === jor.id)
+    .map(diaDe).filter(Boolean))].sort();
+  const cuando = dias.length > 1
+    ? dias.map(d => mayus(diaCorto(d))).join(' · ')
+    : mayus(fechaLarga(dias[0] || jor.fecha));
   return `<div class="titulo-fecha">
     <h3>${esc(jor.nombre)}</h3>
-    <p>${esc(mayus(fechaLarga(jor.fecha)))}${cola ? ' · ' + esc(cola) : ''}</p>
+    <p>${esc(cuando)}${cola ? ' · ' + esc(cola) : ''}</p>
   </div>`;
 }
 
@@ -862,7 +878,19 @@ const rotuloEstado = p => ESTADOS[p.estado] || '';
    columna por cancha, como el cuadro que arman las organizadoras.
    En el teléfono la columna de la hora queda fija y las canchas se
    deslizan de lado. */
+/* Si la fecha se jugó en varios días, va una parrilla por día,
+   cada una con su encabezado. */
 function parrilla(lista){
+  const dias = [...new Set(lista.map(diaDe).filter(Boolean))].sort();
+  if(dias.length > 1)
+    return dias.map(d => `<h3 class="dia-parrilla">${esc(mayus(fechaLarga(d)))}</h3>`
+      + unaParrilla(lista.filter(p => diaDe(p) === d))).join('')
+      + (lista.some(p => !diaDe(p))
+         ? unaParrilla(lista.filter(p => !diaDe(p))) : '');
+  return unaParrilla(lista);
+}
+
+function unaParrilla(lista){
   const canchas = [...new Set(lista.map(p => p.cancha).filter(Boolean))]
     .sort((a,b) => String(a).localeCompare(String(b), 'es', { numeric:true }));
   const horas = [...new Set(lista.map(p => p.hora ? p.hora.slice(0,5) : 'Por definir'))].sort();
@@ -940,10 +968,11 @@ function resumenFecha(jor, lista){
   if(!lista.length)
     return `<p class="nota">${esc(jor.nombre)} · ${esc(fechaLarga(jor.fecha))}</p>`;
 
+  const dias = [...new Set(lista.map(diaDe).filter(Boolean))].sort();
   const horas = [...new Set(lista.map(p => p.hora ? p.hora.slice(0,5) : null).filter(Boolean))].sort();
   const canchas = new Set(lista.map(p => p.cancha).filter(Boolean)).size;
   const cats = D.categorias.filter(c => lista.some(p => p.categoria_id === c.id)).map(c => c.codigo);
-  const falta = cuantoFalta(new Date(jor.fecha + 'T' + (horas[0] || '12:00') + ':00').getTime());
+  const falta = cuantoFalta(new Date((dias[0] || jor.fecha) + 'T' + (horas[0] || '12:00') + ':00').getTime());
 
   const pendientes = lista.filter(x => x.estado === 'pendiente').length;
   const mios = lista.filter(esMio).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
@@ -955,7 +984,9 @@ function resumenFecha(jor, lista){
 
   return `<div class="resumen">
     <span class="cuenta">${esc(falta)}</span>
-    <p class="cuando">${esc(mayus(fechaLarga(jor.fecha)))}</p>
+    <p class="cuando">${dias.length > 1
+      ? esc(dias.map(d => mayus(diaCorto(d))).join(' · '))
+      : esc(mayus(fechaLarga(dias[0] || jor.fecha)))}</p>
     <p class="cifra">${lista.length - pendientes} partido${lista.length - pendientes===1?'':'s'}</p>
     ${pendientes ? `<p class="detalle" style="color:var(--lima)">
       + ${pendientes} por reprogramar</p>` : ''}
@@ -1144,6 +1175,7 @@ function tarjetaEquipo(p, id){
             p.hora ? esc(p.hora.slice(0,5)) : ''}${p.cancha ? ' · cancha ' + esc(p.cancha) : ''}</span>`}
       ${jugado ? `<span class="mono" style="margin-left:auto;font-weight:700">${esc(marcadorTexto(p))}</span>` : ''}
     </div>
+    ${diaDe(p) ? `<div class="cuandito">${esc(mayus(fechaLarga(diaDe(p))))}</div>` : ''}
     <div style="margin-top:9px;font-size:14px;line-height:1.45">
       <strong>${esc(nomDupla(miDupla))}</strong>
       <span style="color:var(--gris)"> contra </span>
@@ -1212,9 +1244,9 @@ function vPerfil(){
 
 /* Cuándo se juega un partido, como número, para poder ordenarlos. */
 function cuando(p){
-  const j = D.jornadas.find(x => x.id === p.jornada_id);
-  if(!j) return Infinity;
-  return new Date(j.fecha + 'T' + (p.hora ? p.hora.slice(0,5) : '00:00') + ':00').getTime();
+  const dia = diaDe(p);
+  if(!dia) return Infinity;
+  return new Date(dia + 'T' + (p.hora ? p.hora.slice(0,5) : '00:00') + ':00').getTime();
 }
 
 /* Primera letra en mayúscula, el resto como viene. */
@@ -1264,7 +1296,7 @@ function proximoPartido(p, ids){
 
   return `<div class="proximo">
     <span class="cuenta">${esc(falta)}</span>
-    <p class="cuando">${j ? esc(mayus(fechaLarga(j.fecha))) : ''}</p>
+    <p class="cuando">${diaDe(p) ? esc(mayus(fechaLarga(diaDe(p)))) : ''}</p>
     <p class="hora-grande">${p.hora ? esc(p.hora.slice(0,5)) : 'hora por confirmar'}${
       p.cancha ? ` <span>· cancha ${esc(p.cancha)}</span>` : ''}</p>
     <div class="contra">
@@ -1291,11 +1323,13 @@ function miniPartido(p, ids){
   const miLadoA = ids.includes(p.dupla_a);
   const rival   = miLadoA ? p.dupla_b : p.dupla_a;
   const rivalEq = miLadoA ? ladoB(p) : ladoA(p);
+  const dia = diaDe(p);
   return `<div class="card"><div class="fila" style="margin:0">
       <span class="cat">${esc(cat(p.categoria_id))}</span>
       <span style="font-size:12px;color:var(--gris)">${j ? esc(j.nombre) : ''}</span>
       <span class="mono" style="margin-left:auto;color:var(--gris)">${
         p.hora ? esc(p.hora.slice(0,5)) : '—'}${p.cancha ? ' · cancha ' + esc(p.cancha) : ''}</span></div>
+    ${dia ? `<div class="cuandito">${esc(mayus(fechaLarga(dia)))}</div>` : ''}
     <div style="margin-top:8px;font-size:14px">
       <span style="color:var(--gris)">contra</span>
       <strong>${esc(nomDupla(rival))}</strong>
@@ -2111,6 +2145,8 @@ function admProgramacion(){
         <span class="cat">${esc(cat(p.categoria_id))}</span>
         <span class="mono" style="font-size:13px">${p.hora ? esc(p.hora.slice(0,5)) : '—'}</span>
         <span style="font-size:12px;color:var(--gris)">${p.cancha ? 'cancha ' + esc(p.cancha) : 'sin cancha'}</span>
+        ${p.fecha_real ? `<span style="font-size:12px;color:var(--verde);font-weight:600">${
+          esc(diaCorto(p.fecha_real))}</span>` : ''}
         ${rotuloEstado(p) && !jugado
           ? `<span class="etq aviso">${esc(rotuloEstado(p))}</span>` : ''}
         <button class="btn claro pa-editar" data-id="${p.id}" style="margin-left:auto">Editar</button>
@@ -2157,7 +2193,14 @@ function formPartido(p){
   return `<div class="card" id="pa-form" data-id="${p ? p.id : ''}">
     <h3>${p ? 'Editar partido' : 'Partido nuevo'}</h3>
     <div style="margin-bottom:10px"><label class="lab">Fecha del torneo</label>
-      <select id="pa-jor">${jors}</select></div>
+      <select id="pa-jor">${jors}</select>
+      <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+        A cuál de las fechas pertenece para la tabla, aunque se juegue otro día.</p></div>
+    <div style="margin-bottom:10px"><label class="lab">Día en que se juega</label>
+      <input type="date" id="pa-dia" value="${p && p.fecha_real ? esc(p.fecha_real) : ''}">
+      <p style="font-size:11.5px;color:var(--gris);margin:5px 0 0">
+        Déjalo vacío si se juega el día propio de esa fecha. Llénalo solo si lo corrieron
+        a otro día, como los que se pasaron por lluvia.</p></div>
     <div class="fila">
       <div style="flex:1;min-width:110px"><label class="lab">Hora</label>
         <input type="time" id="pa-hora" value="${p && p.hora ? esc(p.hora.slice(0,5)) : ''}" step="900"></div>
@@ -2390,8 +2433,10 @@ async function armarExcel(){
     const suyos = D.partidos.filter(p => p.jornada_id === j.id);
     if(!suyos.length) continue;
 
+    const dias = [...new Set(suyos.map(diaDe).filter(Boolean))].sort();
     juntar.push({ s:{ r:fila(0), c:0 }, e:{ r:fila(0), c:ancho - 1 } });
-    filas.push([`${j.nombre.toUpperCase()} · ${fechaLarga(j.fecha).toUpperCase()}`]);
+    filas.push([`${j.nombre.toUpperCase()} · ${
+      dias.map(d => fechaLarga(d)).join(' / ').toUpperCase() || fechaLarga(j.fecha).toUpperCase()}`]);
 
     const cab = ['Hora'];
     canchas.forEach((c, i) => {
@@ -2433,7 +2478,7 @@ async function armarExcel(){
     for(const p of suyos){
       const c = jugados(p) ? cuentaPartido(p, p.es_final) : null;
       det.push([
-        j.nombre, j.fecha, p.hora ? p.hora.slice(0,5) : '', p.cancha ?? '',
+        j.nombre, diaDe(p) || j.fecha, p.hora ? p.hora.slice(0,5) : '', p.cancha ?? '',
         cat(p.categoria_id),
         nomDupla(p.dupla_a), eq(ladoA(p)), nomDupla(p.dupla_b), eq(ladoB(p)),
         p.set1_a != null ? `${p.set1_a}-${p.set1_b}` : '',
@@ -2480,6 +2525,7 @@ async function guardarPartido(){
   const fila = {
     jornada_id:   +$('#pa-jor').value,
     categoria_id: +$('#pa-cat').value,
+    fecha_real:   $('#pa-dia').value || null,
     hora:         $('#pa-hora').value || null,
     cancha:       $('#pa-cancha').value.trim() || null,
     dupla_a: da, dupla_b: db,
