@@ -1252,13 +1252,17 @@ function cuando(p){
 /* Primera letra en mayúscula, el resto como viene. */
 const mayus = t => String(t ?? '').charAt(0).toUpperCase() + String(t ?? '').slice(1);
 
-/* Cuántos días faltan, en palabras. */
+/* Cuántos días faltan, en palabras. Se comparan días del
+   calendario, no horas: un partido de hoy a las 21:00 visto a las
+   7 de la mañana es hoy, no mañana. */
 function cuantoFalta(ms){
-  const dias = Math.ceil((ms - Date.now()) / 86400000);
-  if(dias < 0)  return 'ya pasó';
-  if(dias === 0) return '¡es hoy!';
+  const cuando = new Date(ms), ahora = new Date();
+  const soloDia = f => new Date(f.getFullYear(), f.getMonth(), f.getDate()).getTime();
+  const dias = Math.round((soloDia(cuando) - soloDia(ahora)) / 86400000);
+  if(dias < 0)   return 'ya pasó';
+  if(dias === 0) return ms > Date.now() ? 'es hoy' : 'fue hoy';
   if(dias === 1) return 'es mañana';
-  if(dias < 14) return `faltan ${dias} días`;
+  if(dias < 14)  return `faltan ${dias} días`;
   return `faltan ${Math.round(dias / 7)} semanas`;
 }
 
