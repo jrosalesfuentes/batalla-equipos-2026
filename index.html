@@ -187,18 +187,42 @@ textarea{min-height:80px;resize:vertical}
 .foto-equipo{display:block;width:100%;border-radius:10px;margin-bottom:11px;background:var(--glass)}
 .desc-equipo{margin:0;line-height:1.55;white-space:pre-wrap}
 
-table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;margin-bottom:8px}
-.tabla-caja{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px;border-radius:12px}
+/* separate y no collapse: con collapse el navegador ignora las
+   columnas fijas (el nombre a la izquierda y los puntos a la
+   derecha) cuando la tabla se desliza de lado. */
+/* Sin overflow aquí: si la tabla recorta por su cuenta, el
+   navegador deja de fijar las columnas de los extremos. El borde
+   redondeado lo pone la caja de afuera. */
+table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;
+  border-radius:12px;margin-bottom:8px}
+.tabla-caja{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px;
+  border-radius:12px;background:#fff}
 .tabla-caja table{margin-bottom:0;min-width:max-content}
-.tabla-caja th:first-child,.tabla-caja td:first-child{position:sticky;left:0;background:#fff}
-.tabla-caja thead th:first-child{background:var(--glass)}
+/* Al deslizar la tabla de lado quedan fijos el equipo a la
+   izquierda y el puntaje oficial a la derecha, que son las dos
+   cosas que hay que tener a la vista para leer una fila. */
+.tabla-caja th:first-child,.tabla-caja td:first-child{position:sticky;left:0;background:#fff;
+  width:26px;min-width:26px}
+.tabla-caja th:nth-child(2),.tabla-caja td:nth-child(2){position:sticky;left:26px;background:#fff}
+.tabla-caja thead th:first-child,.tabla-caja thead th:nth-child(2){background:var(--glass)}
 th{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--gris);padding:8px 5px;text-align:right;border-bottom:1px solid var(--linea);white-space:nowrap}
 th:nth-child(2){text-align:left}
 td{padding:8px 5px;border-bottom:1px solid var(--glass);text-align:right;font-family:'IBM Plex Mono',monospace;font-size:13px;white-space:nowrap}
 td:nth-child(2){text-align:left;font-family:'Poppins',sans-serif;font-weight:600}
 tr:last-child td{border-bottom:0}
 .pos{color:var(--gris);font-size:11px}
-.pts{font-weight:700;background:rgba(215,222,105,.34)}
+/* La columna oficial: la que decide el torneo va destacada. */
+td.pts{font-weight:800;font-size:15px;color:var(--tinta);background:#EDF1B6;
+  border-left:2px solid var(--lima)}
+th.pts{color:var(--tinta);background:#E6EBA6;border-left:2px solid var(--lima)}
+/* Si la tabla se desliza de lado, el puntaje oficial queda igual
+   a la vista, como el nombre del equipo a la izquierda. */
+.tabla-caja th.pts,.tabla-caja td.pts{position:sticky;right:0}
+tr:last-child td.pts{border-bottom:0}
+td.prom{color:var(--gris)}
+td.jug{color:var(--gris);font-size:12px}
+.leyenda{font-size:11.5px;color:var(--claro);line-height:1.55;margin:0 0 16px;max-width:62ch}
+.leyenda b{color:#fff}
 @media(max-width:600px){th:nth-child(6),td:nth-child(6),th:nth-child(8),td:nth-child(8){display:none}th,td{padding:8px 4px;font-size:12.5px}}
 
 .cat{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;background:var(--tinta);color:var(--lima);padding:3px 7px;border-radius:4px}
@@ -250,7 +274,6 @@ tr:last-child td{border-bottom:0}
   font-size:19px;font-weight:700;color:#8FA9A5;line-height:1.1;position:relative}
 .pizarra .sets b.gana-set{color:var(--tinta)}
 .pizarra .sets sup{font-size:10px;font-weight:700;vertical-align:super;margin-left:1px}
-.pizarra .sets sub{font-size:10px;font-weight:700;vertical-align:sub;margin-left:1px}
 .pizarra .sets b.stb{color:#8FA9A5}
 .pizarra .sets b.stb.gana-set{color:var(--tinta)}
 .pizarra .pie{display:flex;align-items:center;gap:8px;padding:8px 14px;
@@ -881,7 +904,7 @@ const sinDatos = () => `<div class="vacio">Aún no hay partidos jugados. La tabl
    El numerito chico arriba es el tie break del set: va en la que
    lo perdió, como se escribe siempre (7 · 6³).
    En el súper tie break va el 1 y el 0, porque eso es lo que
-   suma, y abajo chiquitito los puntos que se hicieron.
+   suma, y arriba chiquititos los puntos que se hicieron.
    ============================================================ */
 
 /* Las casillas de un lado: set 1, set 2 y, si lo hubo, el súper
@@ -902,7 +925,7 @@ function casillasSet(p, lado){
   if(p.stb_a != null && p.stb_b != null){
     const mio = p[`stb_${lado}`], suyo = p[`stb_${otro}`];
     casillas.push(`<b class="stb ${mio > suyo ? 'gana-set' : ''}">${
-      mio > suyo ? 1 : 0}<sub>${mio}</sub></b>`);
+      mio > suyo ? 1 : 0}<sup>${mio}</sup></b>`);
   }
   return `<div class="sets">${casillas.join('')}</div>`;
 }
@@ -970,14 +993,45 @@ function ladoPartido(duplaId, equipoId){
   </div>`;
 }
 
+/* Cuántos partidos tiene cada equipo y cada dupla en todo el
+   torneo, jugados o no. Dentro de una fecha a unas les tocan más
+   partidos que a otras; recién al final todas quedan con los
+   mismos. Por eso la tabla dice "12/25" y no solo "12": sin
+   eso, dos equipos con puntajes distintos parecen desparejos
+   cuando en realidad una jugó más partidos. */
+function totalProgramados(){
+  const porEquipo = {}, porDupla = {};
+  const sumar = (caja, id) => { if(id != null) caja[id] = (caja[id] ?? 0) + 1; };
+  D.partidos.forEach(p => {
+    sumar(porEquipo, ladoA(p));  sumar(porEquipo, ladoB(p));
+    sumar(porDupla,  p.dupla_a); sumar(porDupla,  p.dupla_b);
+  });
+  return { porEquipo, porDupla };
+}
+
 function tablaPos(lista, etiqueta){
+  const esEquipo = etiqueta === 'Equipo';
+  const tope = totalProgramados();
+  /* Puntos por partido. Como cada partido reparte 50 puntos entre
+     los dos lados, el promedio del torneo entero es 25: sobre 25
+     va bien, bajo 25 va mal, y 40 es ganarlo todo 2-0. */
+  const promedio = f => f.pj ? (f.puntos / f.pj).toFixed(1).replace('.', ',') : '—';
+  const jugados = f => {
+    const total = esEquipo ? tope.porEquipo[f.equipo_id] : tope.porDupla[f.dupla_id];
+    return total ? `${f.pj}/${total}` : String(f.pj);
+  };
   return `<div class="tabla-caja"><table><thead><tr><th>#</th><th>${etiqueta}</th><th>PJ</th><th>G</th><th>P</th>
-    <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Pts</th></tr></thead><tbody>` +
+    <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Prom.</th><th class="pts">Pts</th></tr></thead><tbody>` +
     lista.map((f,i) => `<tr ${f.equipo_id&&etiqueta==='Equipo'?`data-equipo="${f.equipo_id}" style="cursor:pointer"`:''}><td class="pos">${i+1}</td>
-      <td>${esc(f.nombre ?? f.equipo)}</td><td>${f.pj}</td><td>${f.pg}</td><td>${f.pp}</td>
+      <td>${esc(f.nombre ?? f.equipo)}</td><td class="jug">${esc(jugados(f))}</td><td>${f.pg}</td><td>${f.pp}</td>
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
-      <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table></div>`;
+      <td class="prom">${promedio(f)}</td>
+      <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table></div>
+    <p class="leyenda"><b>Pts</b> es el puntaje oficial y es el que ordena la tabla.
+      <b>Prom.</b> son los puntos por partido, para comparar parejo mientras unas
+      llevan más partidos jugados que otras: 25 es el promedio del torneo y 40 es
+      ganarlo todo 2-0. Al final todas juegan la misma cantidad de partidos.</p>`;
 }
 
 /* El título grande de una fecha: el número arriba y la fecha del
@@ -2514,7 +2568,7 @@ function formResultado(p){
       Si se definió en dos sets, déjalo en blanco.<br>
       Cuando un set queda 7-6 aparece una casilla chica para los puntos del
       tie break. Es opcional: si la llenas, el marcador los muestra chiquititos
-      al lado del 6, como en la tele.</p>
+      arriba del 6, como en la tele.</p>
     <label style="font-size:13px;display:block;margin:10px 0 0">
       <input type="checkbox" id="r-avisar" ${p.estado === 'jugado' ? '' : 'checked'}>
       Avisar el resultado al teléfono de todas</label>
