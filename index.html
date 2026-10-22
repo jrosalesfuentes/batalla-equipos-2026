@@ -225,6 +225,41 @@ tr:last-child td{border-bottom:0}
 .lado-e{font-size:11.5px;color:var(--gris);margin-left:auto;flex:none;padding-left:8px}
 .versus{font-size:11px;color:var(--gris);margin:3px 0 3px 17px;letter-spacing:.06em}
 
+/* --- la pizarra del marcador --- */
+.pizarra{background:#fff;color:var(--tinta);font-family:inherit;
+  border-radius:12px;margin-bottom:12px;overflow:hidden}
+.pizarra .encabezado{display:flex;align-items:center;gap:8px;
+  padding:9px 14px;background:var(--glass)}
+.pizarra .cuando{font-size:11.5px;font-weight:700;color:var(--verde);
+  letter-spacing:.04em;text-transform:uppercase}
+.pizarra .encabezado .cat{margin-left:auto}
+.pizarra .fila-dupla{display:flex;align-items:center;gap:9px;padding:11px 14px}
+.pizarra .fila-dupla + .fila-dupla{border-top:1px solid #EDF4F3}
+.pizarra .punto{width:9px;height:9px;border-radius:50%;flex:none;
+  border:1px solid rgba(0,0,0,.15)}
+.pizarra .nombres{flex:1;min-width:0}
+.pizarra .nombres b{display:block;font-size:14.5px;font-weight:700;line-height:1.25}
+.pizarra .nombres span{display:block;font-size:11px;color:var(--gris);
+  letter-spacing:.05em;text-transform:uppercase;margin-top:2px}
+/* La que perdió se apaga: el ojo encuentra sola a la que ganó. */
+.pizarra .pierde .nombres b{font-weight:600;color:#8FA9A5}
+.pizarra .pierde .nombres span{color:#A8BDB9}
+.pizarra .pierde .punto{opacity:.45}
+.pizarra .sets{display:flex;gap:1px;flex:none}
+.pizarra .sets b{width:28px;text-align:center;font-family:'IBM Plex Mono',monospace;
+  font-size:19px;font-weight:700;color:#8FA9A5;line-height:1.1;position:relative}
+.pizarra .sets b.gana-set{color:var(--tinta)}
+.pizarra .sets sup{font-size:10px;font-weight:700;vertical-align:super;margin-left:1px}
+.pizarra .sets sub{font-size:10px;font-weight:700;vertical-align:sub;margin-left:1px}
+.pizarra .sets b.stb{color:#8FA9A5}
+.pizarra .sets b.stb.gana-set{color:var(--tinta)}
+.pizarra .pie{display:flex;align-items:center;gap:8px;padding:8px 14px;
+  background:#F4F9F8;border-top:1px solid #EDF4F3;
+  font-size:11px;color:var(--gris);letter-spacing:.04em;text-transform:uppercase;font-weight:600}
+.pizarra .pie .estado{margin-left:auto;font-weight:700}
+.pizarra .pie .estado.listo{color:var(--verde)}
+.pizarra .pie .estado.perdio{color:#9A8F8C}
+
 /* La tarjeta grande del próximo partido de la jugadora. */
 .proximo{background:linear-gradient(150deg,var(--verde) 0%,var(--verde-hondo) 100%);
   border-radius:16px;padding:20px 18px;margin-bottom:14px;color:#fff;text-align:center}
@@ -338,6 +373,11 @@ tr:last-child td{border-bottom:0}
 
 /* La pastilla del tirón para actualizar. */
 .elegido{display:block;font-size:12px;color:var(--verde);font-weight:600;margin-top:5px}
+/* El globito rojo de "hay algo nuevo" en la barra de abajo. */
+.navbar button{position:relative}
+.globo{position:absolute;top:4px;left:calc(50% + 7px);min-width:17px;height:17px;padding:0 4px;
+  border-radius:999px;background:var(--alerta);color:#fff;font-size:10.5px;font-weight:700;
+  line-height:17px;text-align:center;box-shadow:0 0 0 2px var(--verde-hondo)}
 .cuandito{font-size:12.5px;color:var(--verde);font-weight:600;margin-top:6px}
 .dia-parrilla{margin:18px 0 8px;font-size:15px;color:#fff;font-weight:700}
 .pasos{margin:10px 0 0;padding-left:20px;line-height:1.6;font-size:14px}
@@ -353,7 +393,9 @@ tr:last-child td{border-bottom:0}
 
 /* La rejilla para cargar el marcador. */
 .marcador .rejilla{display:grid;grid-template-columns:1fr 50px 50px 50px;gap:7px;
-  align-items:center;margin-top:12px}
+  align-items:start;margin-top:12px}
+/* Los nombres se alinean con la casilla grande, no con la chica. */
+.marcador .rejilla .rn{padding-top:9px}
 .marcador .rejilla .rot{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;
   color:var(--gris);font-weight:700;text-align:center;line-height:1.1}
 .marcador .rejilla .rn{font-size:13.5px;font-weight:600;line-height:1.2;min-width:0;
@@ -364,7 +406,14 @@ tr:last-child td{border-bottom:0}
   margin-right:5px;border:1px solid rgba(0,0,0,.15)}
 .marcador .rejilla input{width:100%;text-align:center;font-family:'IBM Plex Mono',monospace;
   font-size:18px;font-weight:600;padding:9px 0;margin:0}
-.marcador .pista{font-size:11.5px;color:var(--gris);margin:9px 0 0}
+.marcador .casilla{display:flex;flex-direction:column;gap:4px}
+/* La casilla chica del tie break cuelga debajo de la del set, con
+   borde punteado para que se note que es otra cosa. */
+.marcador .casilla .tb{display:none;height:27px;padding:0;font-size:12px;
+  font-weight:700;color:var(--gris);border:1px dashed var(--linea);border-radius:7px}
+.marcador.con-tb1 #r-t1a, .marcador.con-tb1 #r-t1b,
+.marcador.con-tb2 #r-t2a, .marcador.con-tb2 #r-t2b{display:block}
+.marcador .pista{font-size:11.5px;color:var(--gris);margin:9px 0 0;line-height:1.5}
 .veredicto{background:var(--paper);border:1px solid var(--linea);border-radius:11px;
   padding:11px 13px;margin-top:12px}
 .veredicto strong{display:block;font-size:15px}
@@ -775,9 +824,14 @@ function pintar(){
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
   document.querySelector('.top').classList.toggle('oculta', puerta);
+  /* Entrar a una sección es haberla visto. */
+  if(vista === 'noticias' && subNot === 'noticias') marcarVisto('noticias');
+  if(vista === 'resultados') marcarVisto('resultados');
+  if(vista === 'diva') marcarVisto('diva');
   try{
     p.innerHTML = f();
     enlazar();
+    pintarGlobos();
   }catch(e){
     p.innerHTML = `<div class="vacio">Algo falló al mostrar esta sección.<br><br>
       <span class="mono" style="font-size:12px">${esc(e.message)}</span><br><br>
@@ -817,19 +871,93 @@ function vResultados(){
 }
 const sinDatos = () => `<div class="vacio">Aún no hay partidos jugados. La tabla aparece sola en cuanto se cargue el primer resultado.</div>`;
 
-function tarjetaPartido(p, sinFecha){
-  const j = sinFecha ? null : D.jornadas.find(x => x.id === p.jornada_id);
-  const marcador = p.estado === 'jugado'
-    ? `<span class="mono">${p.set1_a}-${p.set1_b} · ${p.set2_a}-${p.set2_b}${p.stb_a!=null?` · ${p.stb_a}-${p.stb_b}`:''}</span>`
-    : `<span class="mono" style="color:var(--gris)">${p.hora ? p.hora.slice(0,5) : 'por jugar'}${p.cancha?' · cancha '+esc(p.cancha):''}</span>`;
-  return `<div class="card"><div class="fila" style="margin:0">
+/* ============================================================
+   LA PIZARRA DEL MARCADOR
+   Como el tablero que se ve en la tele: una fila por dupla y los
+   sets en columnas, alineados uno debajo del otro. La que ganó
+   queda en negro y la otra en gris, así se lee de un vistazo
+   quién ganó sin tener que descifrar los números.
+
+   El numerito chico arriba es el tie break del set: va en la que
+   lo perdió, como se escribe siempre (7 · 6³).
+   En el súper tie break va el 1 y el 0, porque eso es lo que
+   suma, y abajo chiquitito los puntos que se hicieron.
+   ============================================================ */
+
+/* Las casillas de un lado: set 1, set 2 y, si lo hubo, el súper
+   tie break. 'lado' es 'a' o 'b'. */
+function casillasSet(p, lado){
+  const otro = lado === 'a' ? 'b' : 'a';
+  const casillas = [];
+  for(const s of [1, 2]){
+    const mio = p[`set${s}_${lado}`], suyo = p[`set${s}_${otro}`];
+    if(mio == null) continue;
+    const tbMio = p[`tb${s}_${lado}`], tbSuyo = p[`tb${s}_${otro}`];
+    /* El tie break se anota en la que lo perdió. */
+    const chico = (tbMio != null && tbSuyo != null && tbMio < tbSuyo) ? tbMio : null;
+    const gano = suyo != null && mio > suyo;
+    casillas.push(`<b class="${gano ? 'gana-set' : ''}">${mio}${
+      chico != null ? `<sup>${chico}</sup>` : ''}</b>`);
+  }
+  if(p.stb_a != null && p.stb_b != null){
+    const mio = p[`stb_${lado}`], suyo = p[`stb_${otro}`];
+    casillas.push(`<b class="stb ${mio > suyo ? 'gana-set' : ''}">${
+      mio > suyo ? 1 : 0}<sub>${mio}</sub></b>`);
+  }
+  return `<div class="sets">${casillas.join('')}</div>`;
+}
+
+/* La pizarra entera. 'extra' es lo que va abajo a la derecha:
+   un "Ganado" o "Perdido" cuando se mira desde un equipo. */
+function pizarra(p, opciones){
+  const o = opciones ?? {};
+  const jugado = p.estado === 'jugado' && p.set1_a != null;
+  const c = jugado ? cuentaPartido(p, p.es_final) : null;
+  const ganaA = jugado && c.setsA > c.setsB;
+  const ganaB = jugado && c.setsB > c.setsA;
+  const j = D.jornadas.find(x => x.id === p.jornada_id);
+  const dia = diaDe(p);
+
+  const fila = (duplaId, equipoId, pierde, casillas) =>
+    `<div class="fila-dupla ${pierde ? 'pierde' : ''}">
+      <span class="punto" style="background:${esc(colorEq(equipoId))}"></span>
+      <div class="nombres">
+        <b>${esc(nomDupla(duplaId))}</b>
+        <span>${esc(eq(equipoId))}</span>
+      </div>
+      ${casillas}
+    </div>`;
+
+  const arriba = jugado
+    ? (p.hora ? `Se jugó a las ${esc(p.hora.slice(0,5))}` : 'Partido jugado')
+    : (p.hora ? `Empieza a las ${esc(p.hora.slice(0,5))}` : 'Hora por definir');
+
+  const estado = jugado ? 'Final'
+    : rotuloEstado(p) ? mayus(rotuloEstado(p))
+    : 'Por jugar';
+
+  const abajo = [
+    o.fecha === false ? null : (j ? esc(j.nombre) : null),
+    dia ? esc(mayus(diaCorto(dia))) : null,
+    p.cancha ? 'cancha ' + esc(p.cancha) : null
+  ].filter(Boolean).join(' · ');
+
+  return `<div class="pizarra">
+    <div class="encabezado">
+      <span class="cuando">${arriba}</span>
       <span class="cat">${esc(cat(p.categoria_id))}</span>
-      <span style="font-size:12px;color:var(--gris)">${j?esc(j.nombre):''}</span>
-      <span style="margin-left:auto">${marcador}</span></div>
-    ${ladoPartido(p.dupla_a, ladoA(p))}
-    <div class="versus">vs</div>
-    ${ladoPartido(p.dupla_b, ladoB(p))}
+    </div>
+    ${fila(p.dupla_a, ladoA(p), ganaB, jugado ? casillasSet(p, 'a') : '')}
+    ${fila(p.dupla_b, ladoB(p), ganaA, jugado ? casillasSet(p, 'b') : '')}
+    <div class="pie">
+      <span>${abajo}</span>
+      <span class="estado ${o.extra ? o.tono : (jugado ? 'listo' : '')}">${o.extra ?? estado}</span>
+    </div>
   </div>`;
+}
+
+function tarjetaPartido(p, sinFecha){
+  return pizarra(p, { fecha: !sinFecha });
 }
 
 /* Un lado del partido: el punto del color del equipo, los dos
@@ -1154,35 +1282,11 @@ function partidosDelEquipo(id, ps){
 
 /* Un partido visto desde un equipo: primero su dupla, y si ganó. */
 function tarjetaEquipo(p, id){
-  const mio = ladoA(p) === id;
-  const miDupla = mio ? p.dupla_a : p.dupla_b;
-  const suDupla = mio ? p.dupla_b : p.dupla_a;
-  const suEquipo = mio ? ladoB(p) : ladoA(p);
-  const j = D.jornadas.find(x => x.id === p.jornada_id);
   const jugado = p.estado === 'jugado' && p.set1_a != null;
-  let gano = null;
-  if(jugado){
-    const c = cuentaPartido(p, p.es_final);
-    gano = mio ? c.setsA > c.setsB : c.setsB > c.setsA;
-  }
-  return `<div class="card">
-    <div class="fila" style="margin:0">
-      <span class="cat">${esc(cat(p.categoria_id))}</span>
-      <span style="font-size:12px;color:var(--gris)">${j ? esc(j.nombre) : ''}</span>
-      ${jugado
-        ? `<span class="veredicto-chip ${gano ? 'gano' : 'perdio'}">${gano ? 'Ganado' : 'Perdido'}</span>`
-        : `<span class="mono" style="font-size:12px;color:var(--gris)">${
-            p.hora ? esc(p.hora.slice(0,5)) : ''}${p.cancha ? ' · cancha ' + esc(p.cancha) : ''}</span>`}
-      ${jugado ? `<span class="mono" style="margin-left:auto;font-weight:700">${esc(marcadorTexto(p))}</span>` : ''}
-    </div>
-    ${diaDe(p) ? `<div class="cuandito">${esc(mayus(fechaLarga(diaDe(p))))}</div>` : ''}
-    <div style="margin-top:9px;font-size:14px;line-height:1.45">
-      <strong>${esc(nomDupla(miDupla))}</strong>
-      <span style="color:var(--gris)"> contra </span>
-      <strong>${esc(nomDupla(suDupla))}</strong>
-      <span style="color:var(--gris)"> · ${esc(eq(suEquipo))}</span>
-    </div>
-  </div>`;
+  if(!jugado) return pizarra(p);
+  const c = cuentaPartido(p, p.es_final);
+  const gano = ladoA(p) === id ? c.setsA > c.setsB : c.setsB > c.setsA;
+  return pizarra(p, { extra: gano ? 'Ganado' : 'Perdido', tono: gano ? 'listo' : 'perdio' });
 }
 
 /* --- perfil de la jugadora: partidos y resultados --- */
@@ -1494,6 +1598,74 @@ function vAvisos(){
       <p class="texto" style="margin-top:10px;color:var(--gris);font-size:13px">
         Nunca vas a recibir avisos de otra cosa, y los puedes apagar cuando quieras desde acá.</p>
     </div>`;
+}
+
+/* ============================================================
+   LO NUEVO
+   Cada teléfono se acuerda de cuándo vio por última vez cada
+   sección, y la barra de abajo muestra un globito con cuántas
+   cosas aparecieron desde entonces.
+   ============================================================ */
+
+const LLAVE_VISTO = 'batalla:visto';
+
+function leerVisto(){
+  try{ return JSON.parse(localStorage.getItem(LLAVE_VISTO)) || {}; }
+  catch(e){ return {}; }
+}
+function marcarVisto(seccion){
+  try{
+    const v = leerVisto();
+    v[seccion] = new Date().toISOString();
+    localStorage.setItem(LLAVE_VISTO, JSON.stringify(v));
+  }catch(e){ /* en modo privado no se puede guardar; no es grave */ }
+}
+
+/* La primera vez que alguien entra no tiene nada marcado. No
+   tendría sentido mostrarle 40 noticias sin leer: se toma como si
+   hubiera visto todo hasta ese momento. */
+function estrenar(){
+  const v = leerVisto();
+  if(v.estrenado) return;
+  const ahora = new Date().toISOString();
+  try{
+    localStorage.setItem(LLAVE_VISTO, JSON.stringify({
+      estrenado: ahora, noticias: ahora, resultados: ahora, diva: ahora }));
+  }catch(e){ /* nada que hacer */ }
+}
+
+function cuantoNuevo(){
+  const v = leerVisto();
+  const desde = s => v[s] ? new Date(v[s]).getTime() : 0;
+
+  const noticias = D.noticias.filter(n => n.publicada && n.publicada_en
+    && new Date(n.publicada_en).getTime() > desde('noticias')).length;
+
+  const resultados = D.partidos.filter(p => p.estado === 'jugado' && p.cargado_en
+    && new Date(p.cargado_en).getTime() > desde('resultados')).length;
+
+  const diva = D.preguntas.filter(q => q.respuesta && q.respondida_en
+    && new Date(q.respondida_en).getTime() > desde('diva')).length;
+
+  return { noticias, resultados, diva };
+}
+
+/* Pinta los globitos en la barra de abajo. */
+function pintarGlobos(){
+  const n = cuantoNuevo();
+  const mapa = { noticias:n.noticias, resultados:n.resultados, diva:n.diva };
+  document.querySelectorAll('#navbar button[data-vista]').forEach(b => {
+    const cuantos = mapa[b.dataset.vista] || 0;
+    let globo = b.querySelector('.globo');
+    if(!cuantos){ if(globo) globo.remove(); return; }
+    if(!globo){
+      globo = document.createElement('span');
+      globo.className = 'globo';
+      b.appendChild(globo);
+    }
+    globo.textContent = cuantos > 9 ? '9+' : cuantos;
+    globo.setAttribute('aria-label', `${cuantos} sin ver`);
+  });
 }
 
 /* --- auspiciadores --- */
@@ -1925,7 +2097,8 @@ function admNoticias(){
         <label style="font-size:13px"><input type="checkbox" id="n-pub" ${n?.publicada?'checked':''}> Publicada</label>
         <label style="font-size:13px"><input type="checkbox" id="n-des" ${n?.destacada?'checked':''}> Portada</label></div>
       <label style="font-size:13px;display:block;margin:4px 0 10px">
-        <input type="checkbox" id="n-avisar" ${n ? '' : 'checked'}> Avisar al teléfono de las jugadoras</label>
+        <input type="checkbox" id="n-avisar" ${n?.avisada_en ? '' : 'checked'}>
+        ${n?.avisada_en ? 'Avisar otra vez al teléfono de las jugadoras' : 'Avisar al teléfono de las jugadoras'}</label>
       ${n?.portada_url ? '<p style="font-size:12px;color:var(--gris);margin:0 0 10px">Ya tiene foto. Sube otra solo si la quieres cambiar.</p>' : ''}
       <div class="fila"><button class="btn lima" id="n-guardar">${n ? 'Guardar cambios' : 'Publicar noticia'}</button>
         ${n ? '<button class="btn claro" id="n-cancelar">Cancelar</button>' : ''}</div>
@@ -2241,7 +2414,14 @@ function formPartido(p){
 /* El marcador escrito, para mostrarlo en las listas. */
 function marcadorTexto(p){
   if(p.set1_a == null) return '';
-  let t = `${p.set1_a}-${p.set1_b} · ${p.set2_a}-${p.set2_b}`;
+  /* Un 7-6 se escribe con los puntos del tie break entre
+     paréntesis, como en cualquier planilla: 7-6(4). */
+  const set = (a, b, tbA, tbB) => {
+    const perdedor = tbA != null && tbB != null ? Math.min(tbA, tbB) : null;
+    return `${a}-${b}${perdedor != null ? `(${perdedor})` : ''}`;
+  };
+  let t = `${set(p.set1_a, p.set1_b, p.tb1_a, p.tb1_b)} · ${
+             set(p.set2_a, p.set2_b, p.tb2_a, p.tb2_b)}`;
   if(p.stb_a != null) t += ` · [${p.stb_a}-${p.stb_b}]`;
   return t;
 }
@@ -2283,15 +2463,31 @@ function reparos(m){
 }
 
 const numCampo = sel => { const v = $(sel)?.value; return v === '' || v == null ? null : +v; };
-const leerMarcador = () => ({
-  set1_a:numCampo('#r-1a'), set1_b:numCampo('#r-1b'),
-  set2_a:numCampo('#r-2a'), set2_b:numCampo('#r-2b'),
-  stb_a: numCampo('#r-sa'), stb_b: numCampo('#r-sb')
-});
+/* Un set 7-6 se definió en tie break. Solo ahí tiene sentido
+   pedir los puntos, así que las casillas aparecen solas. */
+const huboTieBreak = (a, b) =>
+  a != null && b != null && Math.max(a,b) === 7 && Math.min(a,b) === 6;
+
+const leerMarcador = () => {
+  const m = {
+    set1_a:numCampo('#r-1a'), set1_b:numCampo('#r-1b'),
+    set2_a:numCampo('#r-2a'), set2_b:numCampo('#r-2b'),
+    stb_a: numCampo('#r-sa'), stb_b: numCampo('#r-sb'),
+    tb1_a: numCampo('#r-t1a'), tb1_b: numCampo('#r-t1b'),
+    tb2_a: numCampo('#r-t2a'), tb2_b: numCampo('#r-t2b')
+  };
+  /* Si el set dejó de ser 7-6, los puntos que hubieran quedado
+     escritos ya no corresponden a nada. */
+  if(!huboTieBreak(m.set1_a, m.set1_b)) m.tb1_a = m.tb1_b = null;
+  if(!huboTieBreak(m.set2_a, m.set2_b)) m.tb2_a = m.tb2_b = null;
+  return m;
+};
 
 function formResultado(p){
   const n = (v) => v == null ? '' : v;
-  return `<div class="card marcador" id="r-form" data-id="${p.id}">
+  const clases = [huboTieBreak(p.set1_a, p.set1_b) ? 'con-tb1' : '',
+                  huboTieBreak(p.set2_a, p.set2_b) ? 'con-tb2' : ''].join(' ');
+  return `<div class="card marcador ${clases}" id="r-form" data-id="${p.id}">
     <div class="fila" style="margin:0 0 4px">
       <span class="cat">${esc(cat(p.categoria_id))}</span>
       <span class="mono" style="font-size:13px">${p.hora ? esc(p.hora.slice(0,5)) : ''}</span>
@@ -2301,17 +2497,24 @@ function formResultado(p){
       <span></span><span class="rot">Set 1</span><span class="rot">Set 2</span><span class="rot">Súper TB</span>
       <div class="rn">${esc(nomDupla(p.dupla_a))}
         <span><i style="background:${esc(colorEq(ladoA(p)))}"></i>${esc(eq(ladoA(p)))}</span></div>
-      <input type="number" id="r-1a" inputmode="numeric" min="0" max="9"  value="${n(p.set1_a)}">
-      <input type="number" id="r-2a" inputmode="numeric" min="0" max="9"  value="${n(p.set2_a)}">
+      <div class="casilla"><input type="number" id="r-1a" inputmode="numeric" min="0" max="9" value="${n(p.set1_a)}">
+        <input type="number" class="tb" id="r-t1a" inputmode="numeric" min="0" max="30" placeholder="tb" value="${n(p.tb1_a)}"></div>
+      <div class="casilla"><input type="number" id="r-2a" inputmode="numeric" min="0" max="9" value="${n(p.set2_a)}">
+        <input type="number" class="tb" id="r-t2a" inputmode="numeric" min="0" max="30" placeholder="tb" value="${n(p.tb2_a)}"></div>
       <input type="number" id="r-sa" inputmode="numeric" min="0" max="30" value="${n(p.stb_a)}">
       <div class="rn">${esc(nomDupla(p.dupla_b))}
         <span><i style="background:${esc(colorEq(ladoB(p)))}"></i>${esc(eq(ladoB(p)))}</span></div>
-      <input type="number" id="r-1b" inputmode="numeric" min="0" max="9"  value="${n(p.set1_b)}">
-      <input type="number" id="r-2b" inputmode="numeric" min="0" max="9"  value="${n(p.set2_b)}">
+      <div class="casilla"><input type="number" id="r-1b" inputmode="numeric" min="0" max="9" value="${n(p.set1_b)}">
+        <input type="number" class="tb" id="r-t1b" inputmode="numeric" min="0" max="30" placeholder="tb" value="${n(p.tb1_b)}"></div>
+      <div class="casilla"><input type="number" id="r-2b" inputmode="numeric" min="0" max="9" value="${n(p.set2_b)}">
+        <input type="number" class="tb" id="r-t2b" inputmode="numeric" min="0" max="30" placeholder="tb" value="${n(p.tb2_b)}"></div>
       <input type="number" id="r-sb" inputmode="numeric" min="0" max="30" value="${n(p.stb_b)}">
     </div>
     <p class="pista">El súper tie break se llena solo si el partido quedó 1-1.
-      Si se definió en dos sets, déjalo en blanco.</p>
+      Si se definió en dos sets, déjalo en blanco.<br>
+      Cuando un set queda 7-6 aparece una casilla chica para los puntos del
+      tie break. Es opcional: si la llenas, el marcador los muestra chiquititos
+      al lado del 6, como en la tele.</p>
     <label style="font-size:13px;display:block;margin:10px 0 0">
       <input type="checkbox" id="r-avisar" ${p.estado === 'jugado' ? '' : 'checked'}>
       Avisar el resultado al teléfono de todas</label>
@@ -2334,6 +2537,9 @@ function previaResultado(){
   if(!caja) return;
   const p = D.partidos.find(x => x.id === +$('#r-form').dataset.id);
   const m = leerMarcador();
+  const form = $('#r-form');
+  form.classList.toggle('con-tb1', huboTieBreak(m.set1_a, m.set1_b));
+  form.classList.toggle('con-tb2', huboTieBreak(m.set2_a, m.set2_b));
   if(m.set1_a == null && m.set1_b == null && m.set2_a == null && m.set2_b == null)
     return caja.innerHTML = '';
   const c = cuentaPartido(m, p.es_final);
@@ -2390,6 +2596,7 @@ async function borrarResultado(){
   try{
     const { error } = await sb.from('partidos').update({
       set1_a:null, set1_b:null, set2_a:null, set2_b:null,
+      tb1_a:null, tb1_b:null, tb2_a:null, tb2_b:null,
       stb_a:null, stb_b:null, estado:'programado',
       cargado_por:null, cargado_en:null
     }).eq('id', id);
@@ -2921,6 +3128,15 @@ function enlazar(){
     }catch(e){ problema($('#et-msg'), e); }
   });
 
+  /* Queda anotado que esta noticia ya salió al teléfono, así el
+     próximo que la edite no la avisa de nuevo sin querer. */
+  async function marcarAvisada(titulo){
+    const ahora = new Date().toISOString();
+    if(editandoNoticia) await sb.from('noticias').update({ avisada_en: ahora }).eq('id', editandoNoticia);
+    else await sb.from('noticias').update({ avisada_en: ahora })
+      .eq('titulo', titulo).is('avisada_en', null);
+  }
+
   if($('#n-cancelar')) $('#n-cancelar').onclick = () => { editandoNoticia = null; pintar(); };
 
   if($('#n-guardar')) $('#n-guardar').onclick = async () => {
@@ -2953,6 +3169,7 @@ function enlazar(){
       if(pub && $('#n-avisar')?.checked){
         const r = await avisarATodas(fila.titulo, fila.bajada || 'Entra a leerla.');
         recado = r.ok ? 'Guardado y avisado.' : 'Guardado, pero el aviso falló: ' + r.mensaje;
+        if(r.ok) await marcarAvisada(fila.titulo);
       }
 
       editandoNoticia = null;
@@ -2976,8 +3193,17 @@ function enlazar(){
 
   document.querySelectorAll('.n-toggle').forEach(b => b.onclick = async () => {
     const pub = b.dataset.pub !== 'true';
+    const id = +b.dataset.id;
+    const n = D.noticias.find(x => x.id === id);
     await sb.from('noticias').update({ publicada:pub, publicada_en: pub ? new Date().toISOString() : null })
-      .eq('id', +b.dataset.id);
+      .eq('id', id);
+    /* Publicar desde aquí también avisa, salvo que ya se hubiera avisado. */
+    if(pub && n && !n.avisada_en){
+      b.textContent = 'Avisando…'; b.disabled = true;
+      const r = await avisarATodas(n.titulo, n.bajada || 'Entra a leerla.');
+      if(r.ok) await sb.from('noticias').update({ avisada_en: new Date().toISOString() }).eq('id', id);
+      else alert('La noticia quedó publicada, pero el aviso al teléfono falló: ' + r.mensaje);
+    }
     await cargar(); pintar();
   });
 }
@@ -3109,6 +3335,7 @@ function tironParaActualizar(){
 /* ---------- arranque ---------- */
 (async function(){
   try{
+    estrenar();
     await revisarSesion();
     await cargarBase();
     /* quien ya entró alguna vez va directo a lo suyo */
