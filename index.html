@@ -221,6 +221,7 @@ th.pts{color:var(--tinta);background:#E6EBA6;border-left:2px solid var(--lima)}
 tr:last-child td.pts{border-bottom:0}
 td.prom{color:var(--gris)}
 td.jug{color:var(--gris);font-size:12px}
+.dequien{display:block;font-size:11px;color:var(--gris);font-weight:400;margin-top:1px}
 .leyenda{font-size:11.5px;color:var(--claro);line-height:1.55;margin:0 0 16px;max-width:62ch}
 .leyenda b{color:#fff}
 @media(max-width:600px){th:nth-child(6),td:nth-child(6),th:nth-child(8),td:nth-child(8){display:none}th,td{padding:8px 4px;font-size:12.5px}}
@@ -867,7 +868,7 @@ function pintar(){
 function vResultados(){
   const chips = ['partidos','equipos','duplas'].map(s =>
     `<button class="chip ${subRes===s?'on':''}" data-sub="${s}">${
-      {partidos:'Partidos',equipos:'Tabla de equipos',duplas:'Ranking de duplas'}[s]}</button>`).join('');
+      {partidos:'Partidos',equipos:'Puntajes por equipo',duplas:'Ranking de duplas'}[s]}</button>`).join('');
   let cuerpo = '';
   if(subRes === 'partidos'){
     const fechas = ['todas', ...D.jornadas.map(j => j.id)];
@@ -880,15 +881,17 @@ function vResultados(){
       : `<div class="vacio">Todavía no hay partidos programados. Las administradoras los cargan en la sección de administración.</div>`;
   }
   if(subRes === 'equipos'){
-    cuerpo = tablaEquipos().some(x => x.pj) ? tablaPos(tablaEquipos(),'Equipo') : sinDatos();
+    cuerpo = tablaEquipos().some(x => x.pj)
+      ? tablaPos(tablaEquipos(),'Equipo') + leyendaTabla('equipos') : sinDatos();
     if(D.ajustes.length) cuerpo += `<p class="nota">Incluye puntos extra: ${
       D.ajustes.map(a => `${esc(eq(a.equipo_id))} ${a.puntos>0?'+':''}${a.puntos} (${esc(a.motivo)})`).join(' · ')}</p>`;
   }
   if(subRes === 'duplas'){
-    cuerpo = D.ranking.length ? D.categorias.map(c => {
-      const l = D.ranking.filter(r => r.categoria === c.codigo);
+    const ran = rankingDuplas();
+    cuerpo = ran.some(x => x.pj) ? D.categorias.map(c => {
+      const l = ran.filter(r => r.categoria === c.codigo);
       return l.length ? `<h2 class="sec">Categoría ${esc(c.codigo)}</h2>` + tablaPos(l,'Dupla') : '';
-    }).join('') : sinDatos();
+    }).join('') + leyendaTabla('duplas') : sinDatos();
   }
   return `<h2 class="sec">Resultados</h2><div class="chips">${chips}</div>${cuerpo}`;
 }
@@ -1009,6 +1012,39 @@ function totalProgramados(){
   return { porEquipo, porDupla };
 }
 
+/* El ranking de duplas. Igual que la tabla de equipos: si la
+   vista de la base de datos viene vacía, se calcula acá con los
+   mismos partidos, así el ranking aparece siempre que haya
+   resultados cargados. */
+function rankingDuplas(){
+  if(D.ranking.length) return D.ranking;
+  const orden = {};
+  D.categorias.forEach(c => { orden[c.id] = c.orden ?? 0; });
+  const base = D.duplas.map(d => ({
+    dupla_id:d.id, equipo_id:d.equipo_id, equipo:eq(d.equipo_id),
+    nombre:nomDupla(d.id), foto_url:d.foto_url,
+    categoria:cat(d.categoria_id), categoria_orden:orden[d.categoria_id] ?? 0,
+    pj:0, pg:0, pp:0, sets_g:0, sets_p:0, dif_sets:0,
+    games_g:0, games_p:0, dif_games:0, puntos:0 }));
+  const por = {};
+  base.forEach(x => { por[x.dupla_id] = x; });
+
+  D.partidos.filter(p => p.estado === 'jugado' && p.set1_a != null).forEach(p => {
+    const c = cuentaPartido(p, p.es_final);
+    const gA = p.set1_a + p.set2_a, gB = p.set1_b + p.set2_b;
+    [[p.dupla_a, c.setsA, c.setsB, c.puntosA, gA, gB],
+     [p.dupla_b, c.setsB, c.setsA, c.puntosB, gB, gA]].forEach(([id, sg, sp, pts, gg, gp]) => {
+      const f = por[id];
+      if(!f) return;
+      f.pj++; if(sg > sp) f.pg++; else f.pp++;
+      f.sets_g += sg; f.sets_p += sp; f.games_g += gg; f.games_p += gp; f.puntos += pts;
+    });
+  });
+  base.forEach(f => { f.dif_sets = f.sets_g - f.sets_p; f.dif_games = f.games_g - f.games_p; });
+  return base.sort((a, b) => a.categoria_orden - b.categoria_orden
+    || b.puntos - a.puntos || b.dif_sets - a.dif_sets || b.dif_games - a.dif_games);
+}
+
 function tablaPos(lista, etiqueta){
   const esEquipo = etiqueta === 'Equipo';
   const tope = totalProgramados();
@@ -1016,6 +1052,10 @@ function tablaPos(lista, etiqueta){
      los dos lados, el promedio del torneo entero es 25: sobre 25
      va bien, bajo 25 va mal, y 40 es ganarlo todo 2-0. */
   const promedio = f => f.pj ? (f.puntos / f.pj).toFixed(1).replace('.', ',') : '—';
+  /* En el ranking de duplas la fila se llama como la dupla, no
+     como su equipo, que va abajo chiquitito. */
+  const comoSeLlama = f => esEquipo ? (f.nombre ?? f.equipo)
+    : (f.dupla_id ? nomDupla(f.dupla_id) : (f.nombre ?? f.equipo));
   const jugados = f => {
     const total = esEquipo ? tope.porEquipo[f.equipo_id] : tope.porDupla[f.dupla_id];
     return total ? `${f.pj}/${total}` : String(f.pj);
@@ -1023,16 +1063,23 @@ function tablaPos(lista, etiqueta){
   return `<div class="tabla-caja"><table><thead><tr><th>#</th><th>${etiqueta}</th><th>PJ</th><th>G</th><th>P</th>
     <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Prom.</th><th class="pts">Pts</th></tr></thead><tbody>` +
     lista.map((f,i) => `<tr ${f.equipo_id&&etiqueta==='Equipo'?`data-equipo="${f.equipo_id}" style="cursor:pointer"`:''}><td class="pos">${i+1}</td>
-      <td>${esc(f.nombre ?? f.equipo)}</td><td class="jug">${esc(jugados(f))}</td><td>${f.pg}</td><td>${f.pp}</td>
+      <td>${esc(comoSeLlama(f))}${esEquipo || !f.equipo ? ''
+        : `<span class="dequien">${esc(f.equipo)}</span>`}</td><td class="jug">${esc(jugados(f))}</td><td>${f.pg}</td><td>${f.pp}</td>
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
       <td class="prom">${promedio(f)}</td>
-      <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table></div>
-    <p class="leyenda"><b>Pts</b> es el puntaje oficial y es el que ordena la tabla.
-      <b>Prom.</b> son los puntos por partido, para comparar parejo mientras unas
-      llevan más partidos jugados que otras: 25 es el promedio del torneo y 40 es
-      ganarlo todo 2-0. Al final todas juegan la misma cantidad de partidos.</p>`;
+      <td class="pts">${f.puntos}</td></tr>`).join('') + `</tbody></table></div>`;
 }
+
+/* La explicación de las columnas. Va una sola vez abajo de todo,
+   no debajo de cada categoría. */
+const leyendaTabla = quienes => `<p class="leyenda">
+  <b>PJ</b> son los partidos jugados de los que le tocan en todo el torneo.
+  <b>Prom.</b> son los puntos por partido, para comparar parejo mientras
+  ${quienes === 'duplas' ? 'unas duplas' : 'unos equipos'} llevan más partidos
+  jugados que ${quienes === 'duplas' ? 'otras' : 'otros'}: 25 es el promedio del
+  torneo y 40 es ganarlo todo 2-0. <b>Pts</b> es el puntaje oficial y es el que
+  ordena la tabla. Al final todas juegan la misma cantidad de partidos.</p>`;
 
 /* El título grande de una fecha: el número arriba y la fecha del
    calendario abajo. Se usa en Resultados y en Administración. */
@@ -1379,7 +1426,7 @@ function vPerfil(){
 
   if(subPerfil === 'resultados'){
     const jugados = mios.filter(p => p.estado === 'jugado');
-    const mias = D.ranking.filter(r => ids.includes(r.dupla_id));
+    const mias = rankingDuplas().filter(r => ids.includes(r.dupla_id));
     return `<h2 class="sec">Mis resultados</h2>${ficha}
       ${mias.map(mias => `<div class="card"><h3>Tu dupla en la categoría ${esc(mias.categoria)}</h3>
         <div class="tabla-caja"><table><thead><tr><th>PJ</th><th style="text-align:right">Ganados</th><th>Perdidos</th><th>±S</th><th>±G</th><th>Pts</th></tr></thead>
@@ -2773,7 +2820,7 @@ async function armarExcel(){
 
   /* ---------- hoja 4: el ranking de duplas ---------- */
   const ran = [['Categoría','Dupla','Equipo','PJ','Ganados','Perdidos','±Sets','±Games','Puntos']];
-  D.ranking.forEach(r => ran.push([r.categoria, nomDupla(r.dupla_id), r.equipo,
+  rankingDuplas().forEach(r => ran.push([r.categoria, nomDupla(r.dupla_id), r.equipo,
     r.pj, r.pg, r.pp, r.dif_sets, r.dif_games, r.puntos]));
   const hoja4 = XLSX.utils.aoa_to_sheet(ran);
   hoja4['!cols'] = [{wch:10},{wch:24},{wch:12},{wch:5},{wch:9},{wch:10},{wch:8},{wch:9},{wch:8}];
