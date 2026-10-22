@@ -224,7 +224,16 @@ td.jug{color:var(--gris);font-size:12px}
 .dequien{display:block;font-size:11px;color:var(--gris);font-weight:400;margin-top:1px}
 .leyenda{font-size:11.5px;color:var(--claro);line-height:1.55;margin:0 0 16px;max-width:62ch}
 .leyenda b{color:#fff}
-@media(max-width:600px){th:nth-child(6),td:nth-child(6),th:nth-child(8),td:nth-child(8){display:none}th,td{padding:8px 4px;font-size:12.5px}}
+/* En el teléfono se esconden Sets y Games (quedan sus
+   diferencias) y se aprieta todo un poco, para que las columnas
+   que importan entren sin tener que deslizar. */
+@media(max-width:600px){
+  th:nth-child(6),td:nth-child(6),th:nth-child(8),td:nth-child(8){display:none}
+  th,td{padding:8px 3px;font-size:12px}
+  th{font-size:9px;letter-spacing:.04em}
+  td:nth-child(2){font-size:13px}
+  td.pts{font-size:14px}
+}
 
 .cat{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;background:var(--tinta);color:var(--lima);padding:3px 7px;border-radius:4px}
 .avisito{padding:9px 12px;border-radius:8px;font-size:13px;margin-bottom:10px}
@@ -1045,6 +1054,24 @@ function rankingDuplas(){
     || b.puntos - a.puntos || b.dif_sets - a.dif_sets || b.dif_games - a.dif_games);
 }
 
+/* En la tabla de puntajes el ancho del teléfono manda: un nombre
+   largo empuja las columnas de números fuera de la pantalla. Acá
+   se anota con cuántas palabras se muestra cada nombre largo en
+   las tablas. En el resto de la app el nombre va siempre completo.
+   Para agregar otro, basta una línea más: el nombre tal cual está
+   en la base (da lo mismo mayúsculas o espacios de más) y cuántas
+   palabras dejar. */
+const CORTAR_EN = {
+  'LOLLYPOP PINK POWER': 1     /* queda LOLLYPOP */
+};
+function nombreDeTabla(nombre){
+  const palabras = String(nombre ?? '').trim().split(/\s+/);
+  const cuantas = CORTAR_EN[palabras.join(' ').toUpperCase()];
+  /* Se cortan las palabras del nombre original, así conserva las
+     mayúsculas y minúsculas con que esté escrito. */
+  return cuantas ? palabras.slice(0, cuantas).join(' ') : palabras.join(' ');
+}
+
 function tablaPos(lista, etiqueta){
   const esEquipo = etiqueta === 'Equipo';
   const tope = totalProgramados();
@@ -1054,7 +1081,7 @@ function tablaPos(lista, etiqueta){
   const promedio = f => f.pj ? (f.puntos / f.pj).toFixed(1).replace('.', ',') : '—';
   /* En el ranking de duplas la fila se llama como la dupla, no
      como su equipo, que va abajo chiquitito. */
-  const comoSeLlama = f => esEquipo ? (f.nombre ?? f.equipo)
+  const comoSeLlama = f => esEquipo ? nombreDeTabla(f.nombre ?? f.equipo)
     : (f.dupla_id ? nomDupla(f.dupla_id) : (f.nombre ?? f.equipo));
   const jugados = f => {
     const total = esEquipo ? tope.porEquipo[f.equipo_id] : tope.porDupla[f.dupla_id];
@@ -1064,7 +1091,7 @@ function tablaPos(lista, etiqueta){
     <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Prom.</th><th class="pts">Pts</th></tr></thead><tbody>` +
     lista.map((f,i) => `<tr ${f.equipo_id&&etiqueta==='Equipo'?`data-equipo="${f.equipo_id}" style="cursor:pointer"`:''}><td class="pos">${i+1}</td>
       <td>${esc(comoSeLlama(f))}${esEquipo || !f.equipo ? ''
-        : `<span class="dequien">${esc(f.equipo)}</span>`}</td><td class="jug">${esc(jugados(f))}</td><td>${f.pg}</td><td>${f.pp}</td>
+        : `<span class="dequien">${esc(nombreDeTabla(f.equipo))}</span>`}</td><td class="jug">${esc(jugados(f))}</td><td>${f.pg}</td><td>${f.pp}</td>
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
       <td class="prom">${promedio(f)}</td>
