@@ -311,20 +311,55 @@ td.jug{color:var(--gris);font-size:12px}
   aspect-ratio:1;cursor:pointer}
 .tejuela img{width:100%;height:100%;object-fit:cover;display:block}
 
-/* La foto a pantalla completa. */
+.tejuela .senales{position:absolute;left:4px;bottom:4px;background:rgba(5,59,55,.78);color:#fff;
+  font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;letter-spacing:.02em}
+.tejuela{position:relative}
+
+/* La foto a pantalla completa, con su corazón y sus comentarios. */
 body.quieto{overflow:hidden}
-.visor{position:fixed;inset:0;z-index:40;background:rgba(3,30,28,.96);
-  display:flex;align-items:center;justify-content:center;padding:54px 10px}
-.visor img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
-.cerrar-visor{position:absolute;top:10px;right:14px;background:transparent;border:0;color:#fff;
-  font-size:32px;line-height:1;cursor:pointer;padding:4px 10px}
-.pie-visor{position:absolute;left:0;right:0;bottom:0;padding:14px 18px 20px;text-align:center;
-  color:#fff;background:linear-gradient(to top,rgba(3,30,28,.9),transparent)}
-.pie-visor p{margin:0 0 4px;font-size:13.5px;line-height:1.4}
-.pie-visor span{font-size:11.5px;color:var(--claro);letter-spacing:.06em}
+.visor{position:fixed;inset:0;z-index:40;background:#042523;
+  display:flex;flex-direction:column;padding:46px 0 0}
+.visor .marco{position:relative;flex:1;min-height:0;display:flex;align-items:center;
+  justify-content:center;padding:0 10px}
+.visor .marco img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
+.cerrar-visor{position:absolute;top:8px;right:12px;background:transparent;border:0;color:#fff;
+  font-size:32px;line-height:1;cursor:pointer;padding:4px 10px;z-index:2}
 .flecha{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.14);
   border:0;color:#fff;font-size:30px;line-height:1;width:42px;height:56px;border-radius:9px;cursor:pointer}
 .flecha.izq{left:8px} .flecha.der{right:8px}
+
+.barra-foto{flex:none;padding:12px 16px 14px;color:#fff}
+.pie-foto{margin:0 0 9px;font-size:13.5px;line-height:1.45}
+.barra-foto .acciones{display:flex;align-items:center;gap:9px}
+.corazon,.hablar{background:rgba(255,255,255,.12);border:0;color:#fff;font-size:13px;
+  font-weight:600;padding:8px 13px;border-radius:999px;cursor:pointer;display:flex;
+  align-items:center;gap:6px}
+.corazon .simbolo{font-size:16px;line-height:1}
+.corazon.dado{background:rgba(217,72,47,.9)}
+.hablar.on{background:var(--lima);color:var(--tinta)}
+.cuenta-foto{margin-left:auto;font-size:11.5px;color:var(--claro);letter-spacing:.06em}
+.quienes{margin:9px 0 0;font-size:12px;color:var(--claro);line-height:1.45}
+
+.panel-com{flex:none;max-height:52vh;display:flex;flex-direction:column;
+  background:rgba(255,255,255,.07);border-top:1px solid rgba(255,255,255,.14)}
+.dichos{overflow-y:auto;padding:12px 16px;flex:1;min-height:0}
+.dicho{position:relative;padding:9px 30px 9px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.dicho:last-child{border-bottom:0}
+.dicho b{display:block;color:var(--lima);font-size:12.5px}
+.dicho p{margin:2px 0 0;color:#fff;font-size:14px;line-height:1.45;white-space:pre-wrap;
+  overflow-wrap:anywhere}
+.dicho .cuando{display:block;margin-top:3px;font-size:10.5px;color:var(--claro);letter-spacing:.04em}
+.borra-com{position:absolute;top:7px;right:0;background:transparent;border:0;color:var(--claro);
+  font-size:18px;line-height:1;cursor:pointer;padding:2px 6px}
+.sin-dichos{margin:6px 0;color:var(--claro);font-size:13px;text-align:center}
+.escribir{flex:none;padding:11px 16px 15px;border-top:1px solid rgba(255,255,255,.12);
+  display:flex;gap:8px;align-items:center}
+.escribir.pedir{display:block}
+.escribir input{flex:1;min-width:0;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);
+  color:#fff;border-radius:9px;padding:10px 12px}
+.escribir input::placeholder{color:rgba(255,255,255,.55)}
+.escribir .btn{flex:none}
+.aclara{margin:8px 0 0;font-size:11.5px;color:var(--claro);line-height:1.45}
 
 /* Las fotos del álbum en administración, para poder quitarlas. */
 .mini-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;margin-top:11px}
@@ -642,7 +677,7 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[] };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[] };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -758,7 +793,7 @@ async function cargarBase(){
 /* Lo demás: tablas calculadas, noticias, la DIVA. Se pide después
    de haber pintado, así la app aparece antes. */
 async function cargarResto(){
-  const [tab, ran, aju, pre, not, div, etq, gal, gfo] = await Promise.all([
+  const [tab, ran, aju, pre, not, div, etq, gal, gfo, lik, com] = await Promise.all([
     t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
     sb.from('preguntas').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
     sb.from('noticias').select('*').order('publicada_en',{ascending:false}).then(r => r.data ?? []),
@@ -769,11 +804,15 @@ async function cargarResto(){
     /* Lo mismo con la galería: si todavía no se corrió su SQL,
        vuelve vacía y la sección aparece sin álbumes. */
     sb.from('galerias').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
-    t('galeria_fotos','orden')
+    t('galeria_fotos','orden'),
+    t('foto_likes'),
+    t('foto_comentarios','creado_en')
   ]);
   D.tabla = tab; D.ranking = ran; D.ajustes = aju;
   D.preguntas = pre; D.noticias = not; D.diva = div; D.etiquetas = etq;
   D.galerias = gal; D.galeriaFotos = gfo;
+  D.fotoLikes = lik; D.fotoComentarios = com;
+  restoListo = true;
 }
 
 async function cargar(){
@@ -904,9 +943,7 @@ function pintar(){
   $('#abrir').classList.toggle('oculta', puerta);
   document.querySelector('.top').classList.toggle('oculta', puerta);
   /* Entrar a una sección es haberla visto. */
-  if(vista === 'noticias' && subNot === 'noticias') marcarVisto('noticias');
-  if(vista === 'resultados') marcarVisto('resultados');
-  if(vista === 'diva') marcarVisto('diva');
+  if(SECCIONES.includes(vista)) marcarVisto(vista);
   try{
     p.innerHTML = f();
     enlazar();
@@ -1784,55 +1821,86 @@ function vAvisos(){
 
 const LLAVE_VISTO = 'batalla:visto';
 
+/* Las cinco secciones de la barra de abajo. */
+const SECCIONES = ['equipos', 'resultados', 'programacion', 'noticias', 'diva'];
+
+/* Los globitos recién tienen sentido con todos los datos en mano. */
+let restoListo = false;
+
+/* De qué se compone cada sección: una línea por cosa que, si
+   aparece o cambia, vale la pena avisar. Comparando estas líneas
+   con las que el teléfono vio la última vez sale el número del
+   globito, sin necesidad de guardar nada en la base de datos. */
+function piezas(seccion){
+  if(seccion === 'equipos')
+    return D.equipos.map(e => `e${e.id}:${e.nombre}|${e.logo_url}|${e.foto_url}|${
+        e.capitana}|${e.capitana_foto}|${e.descripcion}|${e.grito}`)
+      .concat(D.duplas.map(d => `d${d.id}:${d.foto_url}|${d.descripcion}|${
+        d.jugadora_1}|${d.jugadora_2}`));
+
+  if(seccion === 'resultados')
+    return D.partidos.filter(p => p.estado === 'jugado' && p.set1_a != null)
+      .map(p => `p${p.id}:${p.set1_a}-${p.set1_b}.${p.set2_a}-${p.set2_b}.${p.stb_a}-${p.stb_b}`)
+      .concat(D.ajustes.map(a => `a${a.id}:${a.equipo_id}.${a.puntos}`));
+
+  if(seccion === 'programacion')
+    return D.partidos.map(p => `p${p.id}:${p.jornada_id}.${p.fecha_real}.${p.hora}.${
+      p.cancha}.${p.estado}.${p.dupla_a}.${p.dupla_b}`);
+
+  if(seccion === 'noticias')
+    return D.noticias.filter(n => n.publicada)
+        .map(n => `n${n.id}:${n.titulo}|${n.cuerpo ? n.cuerpo.length : 0}`)
+      .concat(D.galerias.filter(g => g.publicada)
+        .map(g => `g${g.id}:${g.titulo}|${fotosDe(g.id).length}`));
+
+  if(seccion === 'diva')
+    return D.preguntas.filter(q => q.respuesta).map(q => `q${q.id}`)
+      .concat(D.diva ? [`diva:${D.diva.descripcion}|${D.diva.reglamento_url}|${D.diva.foto_url}`] : []);
+
+  return [];
+}
+
 function leerVisto(){
   try{ return JSON.parse(localStorage.getItem(LLAVE_VISTO)) || {}; }
   catch(e){ return {}; }
 }
+
+/* Entrar a una sección es haberla visto: se guarda cómo estaba en
+   ese momento, y lo que aparezca después cuenta como novedad. */
 function marcarVisto(seccion){
   try{
     const v = leerVisto();
-    v[seccion] = new Date().toISOString();
+    v[seccion] = piezas(seccion);
+    v.estrenado = v.estrenado || new Date().toISOString();
     localStorage.setItem(LLAVE_VISTO, JSON.stringify(v));
   }catch(e){ /* en modo privado no se puede guardar; no es grave */ }
 }
 
-/* La primera vez que alguien entra no tiene nada marcado. No
-   tendría sentido mostrarle 40 noticias sin leer: se toma como si
-   hubiera visto todo hasta ese momento. */
-function estrenar(){
-  const v = leerVisto();
-  if(v.estrenado) return;
-  const ahora = new Date().toISOString();
-  try{
-    localStorage.setItem(LLAVE_VISTO, JSON.stringify({
-      estrenado: ahora, noticias: ahora, resultados: ahora, diva: ahora }));
-  }catch(e){ /* nada que hacer */ }
-}
-
 function cuantoNuevo(){
+  const vacio = {};
+  SECCIONES.forEach(s => { vacio[s] = 0; });
+  /* Mientras no haya terminado de cargar todo, no se cuenta nada:
+     si no, la primera vez que alguien entra vería el torneo
+     entero marcado como novedad. */
+  if(!restoListo) return vacio;
+
   const v = leerVisto();
-  const desde = s => v[s] ? new Date(v[s]).getTime() : 0;
-
-  const noticias = D.noticias.filter(n => n.publicada && n.publicada_en
-      && new Date(n.publicada_en).getTime() > desde('noticias')).length
-    + D.galerias.filter(g => g.publicada && g.creada_en
-      && new Date(g.creada_en).getTime() > desde('noticias')).length;
-
-  const resultados = D.partidos.filter(p => p.estado === 'jugado' && p.cargado_en
-    && new Date(p.cargado_en).getTime() > desde('resultados')).length;
-
-  const diva = D.preguntas.filter(q => q.respuesta && q.respondida_en
-    && new Date(q.respondida_en).getTime() > desde('diva')).length;
-
-  return { noticias, resultados, diva };
+  const cuenta = {};
+  for(const s of SECCIONES){
+    const antes = Array.isArray(v[s]) ? new Set(v[s]) : null;
+    /* Sin registro previo no se inventa novedad: se marca ahora.
+       Eso cubre a quien abre la app por primera vez. */
+    if(!antes){ marcarVisto(s); cuenta[s] = 0; continue; }
+    cuenta[s] = piezas(s).filter(x => !antes.has(x)).length;
+  }
+  return cuenta;
 }
 
 /* Pinta los globitos en la barra de abajo. */
 function pintarGlobos(){
   const n = cuantoNuevo();
-  const mapa = { noticias:n.noticias, resultados:n.resultados, diva:n.diva };
   document.querySelectorAll('#navbar button[data-vista]').forEach(b => {
-    const cuantos = mapa[b.dataset.vista] || 0;
+    const cuantos = n[b.dataset.vista] || 0;
     let globo = b.querySelector('.globo');
     if(!cuantos){ if(globo) globo.remove(); return; }
     if(!globo){
@@ -2025,6 +2093,8 @@ let subNot = 'noticias';
 let galeriaAbierta = null;      /* el álbum que se está mirando */
 let fotoAbierta = null;         /* la foto a pantalla completa */
 let galeriaEdit = null;         /* 'nueva' o el id que se edita */
+let comentariosAbiertos = false;/* el panel de comentarios de la foto */
+let pidiendoNombre = null;      /* qué hacer cuando escriba su nombre */
 function vNoticias(){
   const pub = D.noticias.filter(n => n.publicada || sesion);
   if(noticiaAbierta){
@@ -2151,6 +2221,93 @@ function entrarComo(id){
    fotos en mosaico; al tocar una, a pantalla completa.
    ============================================================ */
 
+/* ============================================================
+   LA FIRMA
+   Para dar un me gusta o dejar un comentario hay que tener
+   nombre. Una jugadora que entró con su código ya lo tiene. A
+   quien entra solo a mirar se le pregunta una vez y se le guarda
+   en su teléfono, con un código al azar que sirve para que pueda
+   sacar su propio me gusta después.
+   ============================================================ */
+
+const LLAVE_FIRMA = 'batalla:firma';
+
+function miFirma(){
+  if(yo) return { quien:'j' + yo.jugadora_id, nombre:yo.nombre, jugadora_id:yo.jugadora_id };
+  try{
+    const g = JSON.parse(localStorage.getItem(LLAVE_FIRMA));
+    if(g && g.quien && g.nombre) return { quien:g.quien, nombre:g.nombre, jugadora_id:null };
+  }catch(e){ }
+  return null;
+}
+
+function guardarFirma(nombre){
+  const limpio = String(nombre ?? '').trim().slice(0, 40);
+  if(!limpio) return null;
+  const firma = { quien:'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+                  nombre:limpio };
+  try{ localStorage.setItem(LLAVE_FIRMA, JSON.stringify(firma)); }catch(e){ }
+  return { ...firma, jugadora_id:null };
+}
+
+/* Los me gusta y los comentarios de una foto. */
+const likesDe = id => D.fotoLikes.filter(l => l.foto_id === id);
+const miLike  = id => {
+  const f = miFirma();
+  return f ? D.fotoLikes.find(l => l.foto_id === id && l.quien === f.quien) : null;
+};
+const comentariosDe = id => D.fotoComentarios
+  .filter(c => c.foto_id === id)
+  .sort((a, b) => new Date(a.creado_en) - new Date(b.creado_en));
+
+/* Pone o saca el corazón. Se dibuja al tiro y después se guarda,
+   para que el toque se sienta inmediato aunque la señal ande mal. */
+async function tocarCorazon(fotoId){
+  const firma = miFirma();
+  if(!firma){ pidiendoNombre = () => tocarCorazon(fotoId); return pintarVisor(); }
+  const mio = miLike(fotoId);
+  if(mio){
+    D.fotoLikes = D.fotoLikes.filter(l => l !== mio);
+    pintarVisor();
+    await sb.from('foto_likes').delete().eq('id', mio.id);
+  } else {
+    const nuevo = { id:-Date.now(), foto_id:fotoId, quien:firma.quien,
+      jugadora_id:firma.jugadora_id, nombre:firma.nombre, creado_en:new Date().toISOString() };
+    D.fotoLikes = [...D.fotoLikes, nuevo];
+    pintarVisor();
+    try{
+      const { data } = await sb.from('foto_likes')
+        .insert({ foto_id:fotoId, quien:firma.quien,
+                  jugadora_id:firma.jugadora_id, nombre:firma.nombre })
+        .select('id').single();
+      if(data) nuevo.id = data.id;
+    }catch(e){ D.fotoLikes = D.fotoLikes.filter(l => l !== nuevo); pintarVisor(); }
+  }
+}
+
+async function mandarComentario(fotoId, texto){
+  const firma = miFirma();
+  if(!firma){ pidiendoNombre = () => { }; return pintarVisor(); }
+  const limpio = String(texto ?? '').trim().slice(0, 500);
+  if(!limpio) return;
+  const nuevo = { id:-Date.now(), foto_id:fotoId, quien:firma.quien,
+    jugadora_id:firma.jugadora_id, nombre:firma.nombre, texto:limpio,
+    creado_en:new Date().toISOString() };
+  D.fotoComentarios = [...D.fotoComentarios, nuevo];
+  pintarVisor();
+  try{
+    const { data } = await sb.from('foto_comentarios')
+      .insert({ foto_id:fotoId, quien:firma.quien, jugadora_id:firma.jugadora_id,
+                nombre:firma.nombre, texto:limpio })
+      .select('id').single();
+    if(data) nuevo.id = data.id;
+  }catch(e){
+    D.fotoComentarios = D.fotoComentarios.filter(c => c !== nuevo);
+    pintarVisor();
+    alert('No se pudo publicar el comentario. Revisa tu señal y vuelve a intentarlo.');
+  }
+}
+
 /* La fecha del álbum, a prueba de un dato vacío: si algo falla
    acá, la sección entera se queda en blanco. */
 const fechaAlbum = g => g.creada_en ? mayus(fechaLarga(g.creada_en.slice(0,10))) : '';
@@ -2175,10 +2332,14 @@ function vGaleria(){
           <p class="fechita" style="margin-top:10px">${esc(fechaAlbum(g))}
             · ${fotos.length} foto${fotos.length === 1 ? '' : 's'}${g.publicada ? '' : ' · borrador'}</p>
         </div>
-        ${fotos.length ? `<div class="mosaico">${fotos.map((f, i) => `
-          <button class="tejuela" data-foto="${i}" aria-label="Ver foto ${i + 1}">
+        ${fotos.length ? `<div class="mosaico">${fotos.map((f, i) => {
+          const q = likesDe(f.id).length, d = comentariosDe(f.id).length;
+          return `<button class="tejuela" data-foto="${i}" aria-label="Ver foto ${i + 1}">
             <img src="${esc(f.url)}" alt="${esc(f.pie ?? '')}" loading="lazy">
-          </button>`).join('')}</div>`
+            ${q || d ? `<span class="senales">${q ? `♥ ${q}` : ''}${
+              q && d ? ' · ' : ''}${d ? `💬 ${d}` : ''}</span>` : ''}
+          </button>`;
+        }).join('')}</div>`
           : `<div class="vacio">Este álbum todavía no tiene fotos.</div>`}`;
     }
   }
@@ -2206,41 +2367,136 @@ function vGaleria(){
 }
 
 /* La foto a pantalla completa, con flechas para pasar de una a
-   otra sin volver al mosaico. Se dibuja aparte del resto de la
-   pantalla para que quede encima de todo. */
+   otra sin volver al mosaico, su corazón y sus comentarios. Se
+   dibuja aparte del resto de la pantalla para quedar encima de
+   todo. */
 function pintarVisor(){
   const viejo = document.querySelector('.visor');
   if(viejo) viejo.remove();
-  if(fotoAbierta == null || !galeriaAbierta) return document.body.classList.remove('quieto');
+  if(fotoAbierta == null || !galeriaAbierta){
+    comentariosAbiertos = false; pidiendoNombre = null;
+    return document.body.classList.remove('quieto');
+  }
 
   const fotos = fotosDe(galeriaAbierta);
   const f = fotos[fotoAbierta];
   if(!f){ fotoAbierta = null; return; }
 
+  const corazones = likesDe(f.id);
+  const mio = miLike(f.id);
+  const dichos = comentariosDe(f.id);
+  const firma = miFirma();
+
   const caja = document.createElement('div');
   caja.className = 'visor';
   caja.innerHTML = `
     <button class="cerrar-visor" aria-label="Cerrar">×</button>
-    <img src="${esc(f.url)}" alt="${esc(f.pie ?? '')}">
-    <div class="pie-visor">
-      ${f.pie ? `<p>${esc(f.pie)}</p>` : ''}
-      <span>${fotoAbierta + 1} de ${fotos.length}</span>
+    <div class="marco">
+      <img src="${esc(f.url)}" alt="${esc(f.pie ?? '')}">
+      ${fotoAbierta > 0 ? '<button class="flecha izq" aria-label="Anterior">‹</button>' : ''}
+      ${fotoAbierta < fotos.length - 1 ? '<button class="flecha der" aria-label="Siguiente">›</button>' : ''}
     </div>
-    ${fotoAbierta > 0 ? '<button class="flecha izq" aria-label="Anterior">‹</button>' : ''}
-    ${fotoAbierta < fotos.length - 1 ? '<button class="flecha der" aria-label="Siguiente">›</button>' : ''}`;
+    <div class="barra-foto">
+      ${f.pie ? `<p class="pie-foto">${esc(f.pie)}</p>` : ''}
+      <div class="acciones">
+        <button class="corazon ${mio ? 'dado' : ''}" aria-label="Me gusta">
+          <span class="simbolo">${mio ? '♥' : '♡'}</span>${corazones.length || ''}</button>
+        <button class="hablar ${comentariosAbiertos ? 'on' : ''}">
+          ${dichos.length ? `${dichos.length} comentario${dichos.length === 1 ? '' : 's'}`
+                          : 'Comentar'}</button>
+        <span class="cuenta-foto">${fotoAbierta + 1} de ${fotos.length}</span>
+      </div>
+      ${corazones.length ? `<p class="quienes">Les gustó a ${
+        esc(corazones.slice(0, 3).map(l => l.nombre || 'alguien').join(', '))}${
+        corazones.length > 3 ? ` y ${corazones.length - 3} más` : ''}</p>` : ''}
+    </div>
+    ${comentariosAbiertos ? `<div class="panel-com">
+      <div class="dichos">
+        ${dichos.length ? dichos.map(c => `<div class="dicho" data-com="${c.id}">
+            <b>${esc(c.nombre)}</b>
+            <p>${esc(c.texto)}</p>
+            <span class="cuando">${esc(haceRato(c.creado_en))}</span>
+            ${sesion ? `<button class="borra-com" data-com="${c.id}" aria-label="Borrar">×</button>` : ''}
+          </div>`).join('')
+          : '<p class="sin-dichos">Todavía no hay comentarios. Parte tú.</p>'}
+      </div>
+      ${firma ? `<div class="escribir">
+          <input type="text" id="com-texto" maxlength="500"
+            placeholder="Comenta como ${esc(firma.nombre)}…" autocomplete="off">
+          <button class="btn lima" id="com-enviar">Enviar</button>
+        </div>`
+      : `<div class="escribir pedir">
+          <label class="lab" style="color:#fff">¿Cómo te llamas?</label>
+          <div class="fila" style="margin:0">
+            <input type="text" id="com-nombre" maxlength="40" placeholder="Tu nombre" autocomplete="name">
+            <button class="btn lima" id="com-listo">Listo</button>
+          </div>
+          <p class="aclara">Se guarda en tu teléfono, para no preguntártelo de nuevo.</p>
+        </div>`}
+    </div>` : ''}
+    ${!comentariosAbiertos && pidiendoNombre ? `<div class="panel-com">
+      <div class="escribir pedir">
+        <label class="lab" style="color:#fff">¿Cómo te llamas?</label>
+        <div class="fila" style="margin:0">
+          <input type="text" id="com-nombre" maxlength="40" placeholder="Tu nombre" autocomplete="name">
+          <button class="btn lima" id="com-listo">Listo</button>
+        </div>
+        <p class="aclara">Para que tu me gusta salga con tu nombre. Se guarda en tu teléfono.</p>
+      </div></div>` : ''}`;
   document.body.appendChild(caja);
   document.body.classList.add('quieto');
 
   const mover = n => { fotoAbierta = n; pintarVisor(); };
-  caja.querySelector('.cerrar-visor').onclick = () => { fotoAbierta = null; pintarVisor(); };
-  caja.onclick = ev => { if(ev.target === caja){ fotoAbierta = null; pintarVisor(); } };
+  const cerrar = () => { fotoAbierta = null; pintarVisor(); };
+  caja.querySelector('.cerrar-visor').onclick = cerrar;
+  caja.onclick = ev => { if(ev.target === caja) cerrar(); };
   const izq = caja.querySelector('.izq'), der = caja.querySelector('.der');
   if(izq) izq.onclick = () => mover(fotoAbierta - 1);
   if(der) der.onclick = () => mover(fotoAbierta + 1);
 
-  /* Deslizar con el dedo, como en cualquier galería. */
+  caja.querySelector('.corazon').onclick = () => tocarCorazon(f.id);
+  caja.querySelector('.hablar').onclick = () => {
+    comentariosAbiertos = !comentariosAbiertos; pidiendoNombre = null; pintarVisor();
+    const campo = document.querySelector('#com-texto');
+    if(campo) campo.focus();
+  };
+
+  const enviar = caja.querySelector('#com-enviar');
+  const texto  = caja.querySelector('#com-texto');
+  if(enviar && texto){
+    const mandar = () => { const t = texto.value; texto.value = ''; mandarComentario(f.id, t); };
+    enviar.onclick = mandar;
+    texto.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); mandar(); } };
+  }
+
+  const listo  = caja.querySelector('#com-listo');
+  const nombre = caja.querySelector('#com-nombre');
+  if(listo && nombre){
+    const guardar = () => {
+      if(!guardarFirma(nombre.value)) return nombre.focus();
+      const seguir = pidiendoNombre;
+      pidiendoNombre = null;
+      if(seguir) seguir(); else pintarVisor();
+    };
+    listo.onclick = guardar;
+    nombre.onkeydown = ev => { if(ev.key === 'Enter'){ ev.preventDefault(); guardar(); } };
+    nombre.focus();
+  }
+
+  caja.querySelectorAll('.borra-com').forEach(b => b.onclick = async () => {
+    if(!confirm('¿Borrar este comentario?')) return;
+    const id = +b.dataset.com;
+    D.fotoComentarios = D.fotoComentarios.filter(c => c.id !== id);
+    pintarVisor();
+    await sb.from('foto_comentarios').delete().eq('id', id);
+  });
+
+  /* Deslizar con el dedo, como en cualquier galería. Con el panel
+     de comentarios abierto no, para no cambiar de foto mientras
+     alguien los lee. */
   let parte = null;
-  caja.addEventListener('touchstart', e => { parte = e.touches[0].clientX; }, { passive:true });
+  caja.addEventListener('touchstart', e => {
+    parte = comentariosAbiertos ? null : e.touches[0].clientX; }, { passive:true });
   caja.addEventListener('touchend', e => {
     if(parte == null) return;
     const corrio = e.changedTouches[0].clientX - parte;
@@ -2248,6 +2504,18 @@ function pintarVisor(){
     if(corrio < -50 && fotoAbierta < fotos.length - 1) mover(fotoAbierta + 1);
     if(corrio >  50 && fotoAbierta > 0)                mover(fotoAbierta - 1);
   }, { passive:true });
+}
+
+/* Hace cuánto se escribió algo, en palabras. */
+function haceRato(cuando){
+  const min = Math.round((Date.now() - new Date(cuando).getTime()) / 60000);
+  if(min < 1)    return 'recién';
+  if(min < 60)   return `hace ${min} min`;
+  const h = Math.round(min / 60);
+  if(h < 24)     return `hace ${h} hora${h === 1 ? '' : 's'}`;
+  const d = Math.round(h / 24);
+  if(d < 7)      return `hace ${d} día${d === 1 ? '' : 's'}`;
+  return new Date(cuando).toLocaleDateString('es-CL', { day:'numeric', month:'short' });
 }
 
 /* Las flechas del teclado, para quien mire desde el computador. */
@@ -2460,12 +2728,26 @@ async function guardarGaleria(){
       }catch(e){ fallaron++; }
     }
 
+    /* El aviso al teléfono va solo si el álbum quedó publicado. */
+    let avisado = '';
+    if(publicada && $('#g-avisar')?.checked){
+      const cuantas = fotosDe(id).length + archivos.length - fallaron;
+      const r = await avisarATodas(`Fotos nuevas · ${titulo}`,
+        resena || `${cuantas} foto${cuantas === 1 ? '' : 's'} nuevas en la galería.`);
+      if(r.ok){
+        await sb.from('galerias').update({ avisada_en: new Date().toISOString() }).eq('id', id);
+        avisado = ' Avisado al teléfono de todas.';
+      } else avisado = ' El aviso al teléfono falló: ' + r.mensaje;
+    }
+
     galeriaEdit = null;
     await cargar();
-    aviso(caja, fallaron
+    const dicho = fallaron
       ? `Listo, pero ${fallaron} foto${fallaron === 1 ? '' : 's'} no se pudo subir. Vuelve a intentarlo con esas.`
-      : (archivos.length ? `Álbum guardado con ${archivos.length} foto${archivos.length === 1 ? '' : 's'}.`
-                         : 'Álbum guardado.'), !!fallaron);
+      : archivos.length
+        ? `Álbum guardado con ${archivos.length} foto${archivos.length === 1 ? '' : 's'}.`
+        : 'Álbum guardado.';
+    aviso(caja, dicho + avisado, !!fallaron);
     setTimeout(pintar, 1200);
   }catch(e){
     problema(caja, e);
@@ -2492,9 +2774,12 @@ function admGaleria(){
     <div style="margin-bottom:10px"><label class="lab">Fotos</label>
       <input type="file" id="g-fotos" accept="image/*" multiple>
       <span class="elegido"></span></div>
-    <label style="font-size:13px;display:block;margin:0 0 12px">
+    <label style="font-size:13px;display:block;margin:0 0 6px">
       <input type="checkbox" id="g-pub" ${g ? (g.publicada ? 'checked' : '') : 'checked'}>
       Publicado · visible para todas</label>
+    <label style="font-size:13px;display:block;margin:0 0 12px">
+      <input type="checkbox" id="g-avisar" ${g?.avisada_en ? '' : 'checked'}>
+      ${g?.avisada_en ? 'Avisar otra vez al teléfono de todas' : 'Avisar al teléfono de todas'}</label>
     <div class="fila">
       <button class="btn lima" id="g-guardar">${g ? 'Guardar cambios' : 'Crear álbum'}</button>
       ${g ? '<button class="btn claro" id="g-cancelar">Cancelar</button>' : ''}
@@ -3251,7 +3536,19 @@ function enlazar(){
     galeriaEdit = +b.dataset.id; pintar(); window.scrollTo({ top:0, behavior:'smooth' }); });
 
   document.querySelectorAll('.g-toggle').forEach(b => b.onclick = async () => {
-    await sb.from('galerias').update({ publicada: b.dataset.pub !== 'true' }).eq('id', +b.dataset.id);
+    const pub = b.dataset.pub !== 'true';
+    const id = +b.dataset.id;
+    const x = D.galerias.find(y => y.id === id);
+    await sb.from('galerias').update({ publicada: pub }).eq('id', id);
+    /* Publicar desde aquí también avisa, salvo que ya se avisó. */
+    if(pub && x && !x.avisada_en){
+      b.textContent = 'Avisando…'; b.disabled = true;
+      const cuantas = fotosDe(id).length;
+      const r = await avisarATodas(`Fotos nuevas · ${x.titulo}`,
+        x.resena || `${cuantas} foto${cuantas === 1 ? '' : 's'} nuevas en la galería.`);
+      if(r.ok) await sb.from('galerias').update({ avisada_en: new Date().toISOString() }).eq('id', id);
+      else alert('El álbum quedó publicado, pero el aviso al teléfono falló: ' + r.mensaje);
+    }
     await cargar(); pintar();
   });
 
@@ -3721,7 +4018,8 @@ function huella(){
   const t = D.tabla.map(x => `${x.equipo_id}.${x.puntos}`).join('|');
   const v = D.diva ? `${D.diva.nombre}.${D.diva.foto_url}.${D.diva.logo_url}.${D.diva.reglamento_url}.${D.diva.descripcion}` : '';
   const g = D.galerias.map(x => `${x.id}.${x.publicada}.${x.titulo}`).join('|')
-          + '/' + D.galeriaFotos.length;
+          + '/' + D.galeriaFotos.length
+          + '/' + D.fotoLikes.length + '/' + D.fotoComentarios.length;
   return [p, n, q, e, d, t, v, g].join('#');
 }
 
@@ -3791,7 +4089,6 @@ function tironParaActualizar(){
 /* ---------- arranque ---------- */
 (async function(){
   try{
-    estrenar();
     await revisarSesion();
     await cargarBase();
     /* quien ya entró alguna vez va directo a lo suyo */
