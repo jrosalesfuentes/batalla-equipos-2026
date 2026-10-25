@@ -293,6 +293,46 @@ td.jug{color:var(--gris);font-size:12px}
 .pizarra .pie .estado.listo{color:var(--verde)}
 .pizarra .pie .estado.perdio{color:#9A8F8C}
 
+/* --- la galería --- */
+.album{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:12px;cursor:pointer}
+.album .tapa{position:relative;aspect-ratio:16/10;background:var(--glass)}
+.album .tapa img{width:100%;height:100%;object-fit:cover;display:block}
+.album .sinfoto{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:12.5px;color:var(--gris);font-style:italic}
+.album .cuantas{position:absolute;right:10px;bottom:10px;background:rgba(5,59,55,.82);color:#fff;
+  font-size:11px;font-weight:700;letter-spacing:.04em;padding:4px 9px;border-radius:999px}
+.album .cuerpo{padding:13px 15px 15px}
+.album h4{margin:0;font-size:16px;line-height:1.25}
+.album .baj{margin:5px 0 0;font-size:13.5px;color:var(--gris);line-height:1.5}
+.album .fechita{margin-top:7px}
+
+.mosaico{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:5px;margin-bottom:14px}
+.tejuela{padding:0;border:0;background:var(--glass);border-radius:8px;overflow:hidden;
+  aspect-ratio:1;cursor:pointer}
+.tejuela img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* La foto a pantalla completa. */
+body.quieto{overflow:hidden}
+.visor{position:fixed;inset:0;z-index:40;background:rgba(3,30,28,.96);
+  display:flex;align-items:center;justify-content:center;padding:54px 10px}
+.visor img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px}
+.cerrar-visor{position:absolute;top:10px;right:14px;background:transparent;border:0;color:#fff;
+  font-size:32px;line-height:1;cursor:pointer;padding:4px 10px}
+.pie-visor{position:absolute;left:0;right:0;bottom:0;padding:14px 18px 20px;text-align:center;
+  color:#fff;background:linear-gradient(to top,rgba(3,30,28,.9),transparent)}
+.pie-visor p{margin:0 0 4px;font-size:13.5px;line-height:1.4}
+.pie-visor span{font-size:11.5px;color:var(--claro);letter-spacing:.06em}
+.flecha{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.14);
+  border:0;color:#fff;font-size:30px;line-height:1;width:42px;height:56px;border-radius:9px;cursor:pointer}
+.flecha.izq{left:8px} .flecha.der{right:8px}
+
+/* Las fotos del álbum en administración, para poder quitarlas. */
+.mini-fotos{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:6px;margin-top:11px}
+.mini{position:relative;aspect-ratio:1;border-radius:7px;overflow:hidden;background:var(--glass)}
+.mini img{width:100%;height:100%;object-fit:cover;display:block}
+.quitar{position:absolute;top:3px;right:3px;width:21px;height:21px;border-radius:50%;border:0;
+  background:rgba(5,59,55,.82);color:#fff;font-size:14px;line-height:21px;padding:0;cursor:pointer}
+
 /* La tarjeta grande del próximo partido de la jugadora. */
 .proximo{background:linear-gradient(150deg,var(--verde) 0%,var(--verde-hondo) 100%);
   border-radius:16px;padding:20px 18px;margin-bottom:14px;color:#fff;text-align:center}
@@ -578,6 +618,7 @@ td.jug{color:var(--gris);font-size:12px}
     <a data-adm="plantel">Jugadoras y duplas</a>
     <a data-adm="programacion">Programación</a>
     <a data-adm="noticias">Noticias</a>
+    <a data-adm="galeria">Galería</a>
     <a data-adm="mensaje">Mandar un aviso</a>
     <a data-adm="auspicio">Auspiciadores</a>
     <a data-adm="extra">Puntos extra</a>
@@ -601,7 +642,7 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[] };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -717,17 +758,22 @@ async function cargarBase(){
 /* Lo demás: tablas calculadas, noticias, la DIVA. Se pide después
    de haber pintado, así la app aparece antes. */
 async function cargarResto(){
-  const [tab, ran, aju, pre, not, div, etq] = await Promise.all([
+  const [tab, ran, aju, pre, not, div, etq, gal, gfo] = await Promise.all([
     t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
     sb.from('preguntas').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
     sb.from('noticias').select('*').order('publicada_en',{ascending:false}).then(r => r.data ?? []),
     sb.from('diva').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
     /* La tabla de etiquetas puede no existir todavía: si falla, se
        siguen usando las cuatro de siempre y la app no se cae. */
-    t('etiquetas','orden')
+    t('etiquetas','orden'),
+    /* Lo mismo con la galería: si todavía no se corrió su SQL,
+       vuelve vacía y la sección aparece sin álbumes. */
+    sb.from('galerias').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
+    t('galeria_fotos','orden')
   ]);
   D.tabla = tab; D.ranking = ran; D.ajustes = aju;
   D.preguntas = pre; D.noticias = not; D.diva = div; D.etiquetas = etq;
+  D.galerias = gal; D.galeriaFotos = gfo;
 }
 
 async function cargar(){
@@ -865,6 +911,7 @@ function pintar(){
     p.innerHTML = f();
     enlazar();
     pintarGlobos();
+    pintarVisor();
   }catch(e){
     p.innerHTML = `<div class="vacio">Algo falló al mostrar esta sección.<br><br>
       <span class="mono" style="font-size:12px">${esc(e.message)}</span><br><br>
@@ -1767,7 +1814,9 @@ function cuantoNuevo(){
   const desde = s => v[s] ? new Date(v[s]).getTime() : 0;
 
   const noticias = D.noticias.filter(n => n.publicada && n.publicada_en
-    && new Date(n.publicada_en).getTime() > desde('noticias')).length;
+      && new Date(n.publicada_en).getTime() > desde('noticias')).length
+    + D.galerias.filter(g => g.publicada && g.creada_en
+      && new Date(g.creada_en).getTime() > desde('noticias')).length;
 
   const resultados = D.partidos.filter(p => p.estado === 'jugado' && p.cargado_en
     && new Date(p.cargado_en).getTime() > desde('resultados')).length;
@@ -1973,6 +2022,9 @@ const fechita = n => {
 };
 
 let subNot = 'noticias';
+let galeriaAbierta = null;      /* el álbum que se está mirando */
+let fotoAbierta = null;         /* la foto a pantalla completa */
+let galeriaEdit = null;         /* 'nueva' o el id que se edita */
 function vNoticias(){
   const pub = D.noticias.filter(n => n.publicada || sesion);
   if(noticiaAbierta){
@@ -1992,7 +2044,10 @@ function vNoticias(){
 
   const chips = `<div class="chips">
     <button class="chip ${subNot==='noticias'?'on':''}" data-not="noticias">Noticias</button>
+    <button class="chip ${subNot==='galeria'?'on':''}" data-not="galeria">Galería</button>
     <button class="chip ${subNot==='gritos'?'on':''}" data-not="gritos">Los gritos</button></div>`;
+
+  if(subNot === 'galeria') return `<h2 class="sec">Noticias</h2>${chips}${vGaleria()}`;
 
   if(subNot === 'gritos'){
     const con = D.equipos.filter(e => (e.grito || '').trim());
@@ -2089,19 +2144,134 @@ function entrarComo(id){
   pintarMenu(); vista = 'perfil'; subPerfil = 'partidos'; pintar();
 }
 
+/* ============================================================
+   LA GALERÍA
+   Cada álbum es una publicación con su reseña y todas sus fotos.
+   En la lista se ve la portada y de qué se trata; al entrar, las
+   fotos en mosaico; al tocar una, a pantalla completa.
+   ============================================================ */
+
+/* La fecha del álbum, a prueba de un dato vacío: si algo falla
+   acá, la sección entera se queda en blanco. */
+const fechaAlbum = g => g.creada_en ? mayus(fechaLarga(g.creada_en.slice(0,10))) : '';
+
+/* Las fotos de un álbum, en orden. */
+const fotosDe = id => D.galeriaFotos
+  .filter(f => f.galeria_id === id)
+  .sort((a, b) => (a.orden - b.orden) || (a.id - b.id));
+
+function vGaleria(){
+  /* Los borradores solo los ven las administradoras. */
+  const albumes = D.galerias.filter(g => g.publicada || sesion);
+
+  if(galeriaAbierta){
+    const g = D.galerias.find(x => x.id === galeriaAbierta);
+    if(g){
+      const fotos = fotosDe(g.id);
+      return `<button class="btn claro" id="volver-g" style="margin-bottom:14px">← Todos los álbumes</button>
+        <div class="card">
+          <h3>${esc(g.titulo)}</h3>
+          ${g.resena ? `<p class="baj" style="margin-top:6px">${esc(g.resena)}</p>` : ''}
+          <p class="fechita" style="margin-top:10px">${esc(fechaAlbum(g))}
+            · ${fotos.length} foto${fotos.length === 1 ? '' : 's'}${g.publicada ? '' : ' · borrador'}</p>
+        </div>
+        ${fotos.length ? `<div class="mosaico">${fotos.map((f, i) => `
+          <button class="tejuela" data-foto="${i}" aria-label="Ver foto ${i + 1}">
+            <img src="${esc(f.url)}" alt="${esc(f.pie ?? '')}" loading="lazy">
+          </button>`).join('')}</div>`
+          : `<div class="vacio">Este álbum todavía no tiene fotos.</div>`}`;
+    }
+  }
+
+  if(!albumes.length)
+    return `<div class="vacio">Todavía no hay álbumes.<br>
+      Las fotos de cada fecha se suben desde Administración, en Galería.</div>`;
+
+  return albumes.map(g => {
+    const fotos = fotosDe(g.id);
+    const portada = fotos[0];
+    return `<div class="album" data-galeria="${g.id}">
+      <div class="tapa">
+        ${portada ? `<img src="${esc(portada.url)}" alt="" loading="lazy">`
+                  : '<div class="sinfoto">Sin fotos todavía</div>'}
+        ${fotos.length > 1 ? `<span class="cuantas">${fotos.length} fotos</span>` : ''}
+      </div>
+      <div class="cuerpo">
+        <h4>${esc(g.titulo)}</h4>
+        ${g.resena ? `<p class="baj">${esc(g.resena)}</p>` : ''}
+        <p class="fechita">${esc(fechaAlbum(g))}${g.publicada ? '' : ' · borrador'}</p>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* La foto a pantalla completa, con flechas para pasar de una a
+   otra sin volver al mosaico. Se dibuja aparte del resto de la
+   pantalla para que quede encima de todo. */
+function pintarVisor(){
+  const viejo = document.querySelector('.visor');
+  if(viejo) viejo.remove();
+  if(fotoAbierta == null || !galeriaAbierta) return document.body.classList.remove('quieto');
+
+  const fotos = fotosDe(galeriaAbierta);
+  const f = fotos[fotoAbierta];
+  if(!f){ fotoAbierta = null; return; }
+
+  const caja = document.createElement('div');
+  caja.className = 'visor';
+  caja.innerHTML = `
+    <button class="cerrar-visor" aria-label="Cerrar">×</button>
+    <img src="${esc(f.url)}" alt="${esc(f.pie ?? '')}">
+    <div class="pie-visor">
+      ${f.pie ? `<p>${esc(f.pie)}</p>` : ''}
+      <span>${fotoAbierta + 1} de ${fotos.length}</span>
+    </div>
+    ${fotoAbierta > 0 ? '<button class="flecha izq" aria-label="Anterior">‹</button>' : ''}
+    ${fotoAbierta < fotos.length - 1 ? '<button class="flecha der" aria-label="Siguiente">›</button>' : ''}`;
+  document.body.appendChild(caja);
+  document.body.classList.add('quieto');
+
+  const mover = n => { fotoAbierta = n; pintarVisor(); };
+  caja.querySelector('.cerrar-visor').onclick = () => { fotoAbierta = null; pintarVisor(); };
+  caja.onclick = ev => { if(ev.target === caja){ fotoAbierta = null; pintarVisor(); } };
+  const izq = caja.querySelector('.izq'), der = caja.querySelector('.der');
+  if(izq) izq.onclick = () => mover(fotoAbierta - 1);
+  if(der) der.onclick = () => mover(fotoAbierta + 1);
+
+  /* Deslizar con el dedo, como en cualquier galería. */
+  let parte = null;
+  caja.addEventListener('touchstart', e => { parte = e.touches[0].clientX; }, { passive:true });
+  caja.addEventListener('touchend', e => {
+    if(parte == null) return;
+    const corrio = e.changedTouches[0].clientX - parte;
+    parte = null;
+    if(corrio < -50 && fotoAbierta < fotos.length - 1) mover(fotoAbierta + 1);
+    if(corrio >  50 && fotoAbierta > 0)                mover(fotoAbierta - 1);
+  }, { passive:true });
+}
+
+/* Las flechas del teclado, para quien mire desde el computador. */
+document.addEventListener('keydown', ev => {
+  if(fotoAbierta == null) return;
+  const fotos = fotosDe(galeriaAbierta);
+  if(ev.key === 'Escape'){ fotoAbierta = null; pintarVisor(); }
+  if(ev.key === 'ArrowRight' && fotoAbierta < fotos.length - 1){ fotoAbierta++; pintarVisor(); }
+  if(ev.key === 'ArrowLeft'  && fotoAbierta > 0){ fotoAbierta--; pintarVisor(); }
+});
+
 /* --- administración --- */
 function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias','mensaje','auspicio','extra'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','galeria','mensaje','auspicio','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
-       noticias:'Noticias',mensaje:'Mandar un aviso',auspicio:'Auspiciadores',
+       noticias:'Noticias',galeria:'Galería',mensaje:'Mandar un aviso',auspicio:'Auspiciadores',
        extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
     ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion,
-       noticias:admNoticias, mensaje:admMensaje, auspicio:admAuspicio,
+       noticias:admNoticias, galeria:admGaleria, mensaje:admMensaje, auspicio:admAuspicio,
        extra:admExtra }[subAdm])();
 }
 
@@ -2243,6 +2413,122 @@ function admNoticias(){
           <button class="btn claro n-toggle" data-id="${x.id}" data-pub="${x.publicada}">${x.publicada?'Despublicar':'Publicar'}</button>
           <button class="btn claro n-borrar" data-id="${x.id}" style="border-color:var(--alerta);color:var(--alerta)">Borrar</button>
         </div></div>`).join('')}`;
+}
+
+/* Guarda el álbum y sube las fotos elegidas, una por una, para
+   no ahogar la conexión del teléfono. Va contando en pantalla,
+   porque con muchas fotos esto se demora. */
+async function guardarGaleria(){
+  const caja = $('#g-msg');
+  const boton = $('#g-guardar');
+  const titulo = $('#g-tit').value.trim();
+  const resena = $('#g-res').value.trim() || null;
+  const publicada = $('#g-pub').checked;
+  const archivos = [...($('#g-fotos').files || [])];
+
+  if(!titulo) return aviso(caja, 'Ponle un título al álbum.', true);
+
+  boton.disabled = true;
+  const antes = boton.textContent;
+  try{
+    let id = typeof galeriaEdit === 'number' ? galeriaEdit : null;
+
+    if(id){
+      const { error } = await sb.from('galerias')
+        .update({ titulo, resena, publicada }).eq('id', id);
+      if(error) throw error;
+    } else {
+      const { data, error } = await sb.from('galerias')
+        .insert({ titulo, resena, publicada, autor: sesion?.user?.id ?? null })
+        .select('id').single();
+      if(error) throw error;
+      id = data.id;
+    }
+
+    /* El orden arranca después de las fotos que ya estaban, así
+       las nuevas quedan al final y no se mezclan. */
+    let orden = fotosDe(id).length;
+    let fallaron = 0;
+    for(let i = 0; i < archivos.length; i++){
+      boton.textContent = `Subiendo ${i + 1} de ${archivos.length}…`;
+      aviso(caja, `Subiendo la foto ${i + 1} de ${archivos.length}. No cierres la app.`);
+      try{
+        const url = await subirFoto(archivos[i], 'galeria');
+        const { error } = await sb.from('galeria_fotos')
+          .insert({ galeria_id:id, url, orden: orden++ });
+        if(error) throw error;
+      }catch(e){ fallaron++; }
+    }
+
+    galeriaEdit = null;
+    await cargar();
+    aviso(caja, fallaron
+      ? `Listo, pero ${fallaron} foto${fallaron === 1 ? '' : 's'} no se pudo subir. Vuelve a intentarlo con esas.`
+      : (archivos.length ? `Álbum guardado con ${archivos.length} foto${archivos.length === 1 ? '' : 's'}.`
+                         : 'Álbum guardado.'), !!fallaron);
+    setTimeout(pintar, 1200);
+  }catch(e){
+    problema(caja, e);
+  }finally{
+    boton.disabled = false;
+    boton.textContent = antes;
+  }
+}
+
+/* --- administración: la galería --- */
+
+function admGaleria(){
+  const g = typeof galeriaEdit === 'number'
+    ? D.galerias.find(x => x.id === galeriaEdit) : null;
+
+  const formulario = `<div class="card">
+    <h3>${g ? 'Editar álbum' : 'Nuevo álbum'}</h3>
+    <div style="margin-bottom:8px"><label class="lab">Título</label>
+      <input type="text" id="g-tit" maxlength="120" placeholder="¡Fotos de la primera fecha!"
+        value="${esc(g?.titulo ?? '')}"></div>
+    <div style="margin-bottom:10px"><label class="lab">Reseña</label>
+      <textarea id="g-res" maxlength="600" placeholder="Un par de líneas sobre de qué son estas fotos."
+        >${esc(g?.resena ?? '')}</textarea></div>
+    <div style="margin-bottom:10px"><label class="lab">Fotos</label>
+      <input type="file" id="g-fotos" accept="image/*" multiple>
+      <span class="elegido"></span></div>
+    <label style="font-size:13px;display:block;margin:0 0 12px">
+      <input type="checkbox" id="g-pub" ${g ? (g.publicada ? 'checked' : '') : 'checked'}>
+      Publicado · visible para todas</label>
+    <div class="fila">
+      <button class="btn lima" id="g-guardar">${g ? 'Guardar cambios' : 'Crear álbum'}</button>
+      ${g ? '<button class="btn claro" id="g-cancelar">Cancelar</button>' : ''}
+    </div>
+    <div id="g-msg"></div>
+  </div>`;
+
+  const lista = D.galerias.map(x => {
+    const fotos = fotosDe(x.id);
+    return `<div class="card">
+      <div class="fila" style="margin:0;align-items:flex-start">
+        <div style="flex:1;min-width:140px">
+          <div style="font-weight:600">${esc(x.titulo)}</div>
+          <div class="fechita">${esc(fechaAlbum(x))} · ${fotos.length} foto${
+            fotos.length === 1 ? '' : 's'}${x.publicada ? '' : ' · borrador'}</div>
+        </div></div>
+      ${fotos.length ? `<div class="mini-fotos">${fotos.map(f => `
+        <div class="mini"><img src="${esc(f.url)}" alt="" loading="lazy">
+          <button class="quitar gf-borrar" data-foto="${f.id}" aria-label="Quitar esta foto">×</button>
+        </div>`).join('')}</div>` : ''}
+      <div class="fila" style="margin:10px 0 0">
+        <button class="btn claro g-editar" data-id="${x.id}">Editar y agregar fotos</button>
+        <button class="btn claro g-toggle" data-id="${x.id}" data-pub="${x.publicada}">${
+          x.publicada ? 'Despublicar' : 'Publicar'}</button>
+        <button class="btn claro g-borrar" data-id="${x.id}"
+          style="border-color:var(--alerta);color:var(--alerta)">Borrar álbum</button>
+      </div></div>`;
+  }).join('');
+
+  return `<p class="nota">Cada álbum es una publicación con su reseña y todas las fotos que quieras
+      ("¡Fotos de la primera fecha!"). Puedes elegir muchas fotos de una vez: se suben una tras otra
+      y se achican solas para que la app no se ponga lenta. Las jugadoras las ven en Noticias, en Galería.</p>
+    ${formulario}
+    ${lista || `<div class="vacio">Todavía no has creado ningún álbum.</div>`}`;
 }
 
 /* --- administración: mandar un aviso suelto --- */
@@ -2947,7 +3233,41 @@ function enlazar(){
   document.querySelectorAll('[data-sub]').forEach(b => b.onclick = () => { subRes = b.dataset.sub; pintar(); });
   document.querySelectorAll('[data-fecha]').forEach(b => b.onclick = () => {
     filtroFecha = b.dataset.fecha === 'todas' ? 'todas' : +b.dataset.fecha; pintar(); });
-  document.querySelectorAll('[data-not]').forEach(b => b.onclick = () => { subNot = b.dataset.not; pintar(); });
+  document.querySelectorAll('[data-not]').forEach(b => b.onclick = () => {
+    subNot = b.dataset.not; galeriaAbierta = null; fotoAbierta = null; pintar(); });
+
+  /* --- la galería, como la ven todas --- */
+  document.querySelectorAll('[data-galeria]').forEach(b => b.onclick = () => {
+    galeriaAbierta = +b.dataset.galeria; pintar(); window.scrollTo({ top:0, behavior:'smooth' }); });
+  if($('#volver-g')) $('#volver-g').onclick = () => { galeriaAbierta = null; pintar(); };
+  document.querySelectorAll('[data-foto]').forEach(b => b.onclick = () => {
+    fotoAbierta = +b.dataset.foto; pintarVisor(); });
+
+  /* --- la galería, desde administración --- */
+  if($('#g-guardar')) $('#g-guardar').onclick = guardarGaleria;
+  if($('#g-cancelar')) $('#g-cancelar').onclick = () => { galeriaEdit = null; pintar(); };
+
+  document.querySelectorAll('.g-editar').forEach(b => b.onclick = () => {
+    galeriaEdit = +b.dataset.id; pintar(); window.scrollTo({ top:0, behavior:'smooth' }); });
+
+  document.querySelectorAll('.g-toggle').forEach(b => b.onclick = async () => {
+    await sb.from('galerias').update({ publicada: b.dataset.pub !== 'true' }).eq('id', +b.dataset.id);
+    await cargar(); pintar();
+  });
+
+  document.querySelectorAll('.g-borrar').forEach(b => b.onclick = async () => {
+    const x = D.galerias.find(y => y.id === +b.dataset.id);
+    if(!confirm(`¿Borrar el álbum "${x.titulo}" con sus ${fotosDe(x.id).length} fotos? No se puede deshacer.`)) return;
+    await sb.from('galerias').delete().eq('id', x.id);
+    if(galeriaEdit === x.id) galeriaEdit = null;
+    await cargar(); pintar();
+  });
+
+  document.querySelectorAll('.gf-borrar').forEach(b => b.onclick = async () => {
+    if(!confirm('¿Quitar esta foto del álbum?')) return;
+    await sb.from('galeria_fotos').delete().eq('id', +b.dataset.foto);
+    await cargar(); pintar();
+  });
   document.querySelectorAll('[data-noticia]').forEach(b => b.onclick = () => { noticiaAbierta = +b.dataset.noticia; pintar(); });
   if($('#ir-entrar')) $('#ir-entrar').onclick = () => { vista = 'entrar'; pintar(); };
   if($('#volver-n')) $('#volver-n').onclick = () => { noticiaAbierta = null; pintar(); };
@@ -2988,10 +3308,15 @@ function enlazar(){
     vista = 'admin'; subAdm = 'equipos'; pintar();
   };
 
-  /* Confirmación a la vista de que el archivo quedó elegido. */
+  /* Confirmación a la vista de que el archivo quedó elegido. En la
+     galería se eligen muchas de una vez, así que ahí se cuentan. */
   document.querySelectorAll('#pantalla input[type=file]').forEach(i => i.onchange = () => {
     const señal = i.parentElement.querySelector('.elegido');
-    if(señal) señal.textContent = i.files?.[0] ? '✓ ' + i.files[0].name : '';
+    if(!señal) return;
+    const cuantos = i.files?.length ?? 0;
+    señal.textContent = !cuantos ? ''
+      : cuantos === 1 ? '✓ ' + i.files[0].name
+      : `✓ ${cuantos} fotos elegidas`;
   });
 
   document.querySelectorAll('.e-guardar').forEach(b => b.onclick = async () => {
@@ -3359,6 +3684,7 @@ async function refrescar(aLaFuerza){
      borraría lo escrito o la foto que acaba de elegir. */
   if(vista === 'admin') return;
   if(partidoEdit || resultadoEdit || auspicioEdit || editandoNoticia || respondiendo) return;
+  if(galeriaEdit || fotoAbierta != null) return;
   const activo = document.activeElement;
   if(activo && ['INPUT','TEXTAREA','SELECT'].includes(activo.tagName)) return;
   /* Un campo de archivo con algo elegido es sagrado: al volver del
@@ -3394,7 +3720,9 @@ function huella(){
   const d = D.duplas.map(x => `${x.id}.${x.jugadora_1}.${x.jugadora_2}.${x.foto_url}`).join('|');
   const t = D.tabla.map(x => `${x.equipo_id}.${x.puntos}`).join('|');
   const v = D.diva ? `${D.diva.nombre}.${D.diva.foto_url}.${D.diva.logo_url}.${D.diva.reglamento_url}.${D.diva.descripcion}` : '';
-  return [p, n, q, e, d, t, v].join('#');
+  const g = D.galerias.map(x => `${x.id}.${x.publicada}.${x.titulo}`).join('|')
+          + '/' + D.galeriaFotos.length;
+  return [p, n, q, e, d, t, v, g].join('#');
 }
 
 /* Tres momentos: al volver a la app, al tocar la pantalla después
