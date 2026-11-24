@@ -293,6 +293,92 @@ td.jug{color:var(--gris);font-size:12px}
 .pizarra .pie .estado.listo{color:var(--verde)}
 .pizarra .pie .estado.perdio{color:#9A8F8C}
 
+/* --- el sorteo de la final --- */
+.franja{position:sticky;top:0;z-index:25;background:var(--lima);
+  animation:asomar .35s ease both}
+.franja.oculta{display:none}
+.cajon a.oculta{display:none}
+.franja button{width:100%;display:flex;align-items:center;gap:10px;padding:11px 16px;
+  background:transparent;border:0;cursor:pointer;text-align:left}
+.franja .regalo{font-size:18px;line-height:1;flex:none}
+.franja .dice{flex:1;min-width:0;font-size:13.5px;font-weight:800;color:var(--tinta);
+  letter-spacing:.01em}
+.franja .flechita{font-size:22px;line-height:1;color:var(--tinta);opacity:.55;flex:none}
+.franja.urge{background:var(--alerta)}
+.franja.urge .dice,.franja.urge .flechita{color:#fff}
+.franja.urge .regalo{animation:latir 1.1s ease-in-out infinite}
+@keyframes asomar{from{transform:translateY(-100%);opacity:0}to{transform:none;opacity:1}}
+@keyframes latir{0%,100%{transform:scale(1)}50%{transform:scale(1.22)}}
+
+.sorteo-caja{background:#fff;border-radius:16px;padding:26px 20px 22px;text-align:center;
+  margin-bottom:14px}
+.sorteo-caja h2{margin:0;font-size:23px;line-height:1.2}
+.baj-sorteo{margin:7px 0 0;font-size:14px;color:var(--gris)}
+.sorteo-caja .rot{display:block;font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gris);font-weight:700}
+.pista2{margin:8px 0 0;font-size:12.5px;color:var(--gris);line-height:1.5}
+.pista3{margin:16px 0 0;font-size:12px;color:var(--gris)}
+
+.cuentale,.dentro{margin:20px 0;padding:18px 14px;border-radius:13px;background:var(--glass)}
+.cuentale strong,.dentro strong{display:block;font-size:19px;margin-top:3px;line-height:1.25}
+.dentro.gris{background:#F3F6F6}
+.dentro .tilde{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;
+  border-radius:50%;background:var(--verde);color:#fff;font-size:21px;margin-bottom:7px}
+.dentro .btn{margin-top:11px}
+
+/* El botón llama la atención con un halo, no moviéndose: si
+   creciera y se encogiera, el dedo podría errarle al borde. */
+.btn-sorteo{display:block;width:100%;margin:22px 0 0;padding:19px 16px;border:0;border-radius:14px;
+  background:var(--alerta);color:#fff;font-size:18px;font-weight:800;letter-spacing:.01em;
+  cursor:pointer;animation:halo 1.7s ease-in-out infinite}
+.btn-sorteo:active{background:#B23B26}
+.btn-sorteo:disabled{animation:none;opacity:.65}
+@keyframes halo{
+  0%,100%{box-shadow:0 0 0 0 rgba(217,72,47,.55)}
+  50%{box-shadow:0 0 0 12px rgba(217,72,47,0)}}
+
+/* A quien pidió menos movimiento en su teléfono, nada se mueve. */
+@media (prefers-reduced-motion: reduce){
+  .franja,.franja.urge .regalo,.btn-sorteo,.tambor strong,.tambor strong.llego{animation:none}
+}
+
+.premio{margin:18px 0 0;padding:16px 14px;border-radius:13px;border:2px dashed var(--linea)}
+.premio strong{display:block;font-size:19px;margin-top:4px;line-height:1.3}
+.premio.revelado{border-style:solid;border-color:var(--lima);background:rgba(215,222,105,.26)}
+.requisitos{margin:16px 0 0;padding-top:14px;border-top:1px solid var(--glass)}
+.requisitos p{margin:4px 0 0;font-size:13px;color:var(--gris);line-height:1.55}
+
+/* La ganadora. */
+.sorteo-caja.ganada{background:linear-gradient(170deg,#0C6E66,#053B37);color:#fff}
+.sorteo-caja.ganada h2,.sorteo-caja.ganada .premio strong{color:#fff}
+.sorteo-caja.ganada .rot{color:var(--claro)}
+.sorteo-caja.ganada .pista2,.sorteo-caja.ganada .pista3{color:var(--claro)}
+.tambor{margin:20px 0;padding:22px 14px;border-radius:14px;background:rgba(255,255,255,.1)}
+.tambor strong{display:block;font-size:30px;line-height:1.15;margin-top:6px;color:var(--lima);
+  animation:aparecer .5s ease both}
+.tambor .de-equipo{display:block;margin-top:6px;font-size:12.5px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--claro)}
+@keyframes aparecer{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+
+/* El redoble: los nombres pasando rápido antes de parar en una. */
+.tambor.rodando{background:rgba(255,255,255,.16)}
+.tambor.rodando strong{animation:none;color:#fff;opacity:.9;font-size:26px}
+.tambor.rodando .de-equipo{visibility:hidden}
+.tambor strong.llego{animation:llega .6s cubic-bezier(.17,1.5,.4,1) both;color:var(--lima)}
+@keyframes llega{
+  0%{transform:scale(.55) rotate(-4deg);opacity:0}
+  60%{transform:scale(1.12) rotate(1.5deg);opacity:1}
+  100%{transform:none;opacity:1}}
+.tambor .puntitos{display:inline-block;width:1.4em;text-align:left}
+
+/* Administración del sorteo. */
+.pasos{display:grid;gap:8px;margin-top:14px}
+.pasos .btn{width:100%;text-align:left}
+.entraron{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.quien-entro{font-size:12.5px;background:var(--glass);border-radius:999px;padding:5px 11px}
+.quien-entro .apk{font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--verde);
+  text-transform:uppercase}
+
 /* --- la galería --- */
 .album{background:#fff;border-radius:12px;overflow:hidden;margin-bottom:12px;cursor:pointer}
 .album .tapa{position:relative;aspect-ratio:16/10;background:var(--glass)}
@@ -643,6 +729,7 @@ body.quieto{overflow:hidden}
   <a data-vista="perfil" data-sub="resultados">Mis resultados</a>
   <h2>El torneo</h2>
   <a data-vista="avisos">Avisos al teléfono</a>
+  <a data-vista="sorteo" id="lnk-sorteo" class="oculta">Sorteo</a>
   <a data-vista="auspiciadores">Auspiciadores</a>
   <h2>Acceso</h2>
   <a data-vista="entrar" id="lnk-entrar">Iniciar sesión</a>
@@ -654,6 +741,7 @@ body.quieto{overflow:hidden}
     <a data-adm="programacion">Programación</a>
     <a data-adm="noticias">Noticias</a>
     <a data-adm="galeria">Galería</a>
+    <a data-adm="sorteo">Sorteo</a>
     <a data-adm="mensaje">Mandar un aviso</a>
     <a data-adm="auspicio">Auspiciadores</a>
     <a data-adm="extra">Puntos extra</a>
@@ -667,6 +755,8 @@ body.quieto{overflow:hidden}
   </a>
 </nav>
 
+<div class="franja oculta" id="franja-sorteo"></div>
+
 <div class="wrap"><div id="pantalla" class="cargando">Conectando…</div></div>
 
 <script type="module">
@@ -677,7 +767,7 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[] };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[], sorteo:null, sorteoPart:[] };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -793,7 +883,7 @@ async function cargarBase(){
 /* Lo demás: tablas calculadas, noticias, la DIVA. Se pide después
    de haber pintado, así la app aparece antes. */
 async function cargarResto(){
-  const [tab, ran, aju, pre, not, div, etq, gal, gfo, lik, com] = await Promise.all([
+  const [tab, ran, aju, pre, not, div, etq, gal, gfo, lik, com, sor, spa] = await Promise.all([
     t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
     sb.from('preguntas').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
     sb.from('noticias').select('*').order('publicada_en',{ascending:false}).then(r => r.data ?? []),
@@ -806,12 +896,17 @@ async function cargarResto(){
     sb.from('galerias').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
     t('galeria_fotos','orden'),
     t('foto_likes'),
-    t('foto_comentarios','creado_en')
+    t('foto_comentarios','creado_en'),
+    /* El sorteo de la final. Si todavía no se corrió su SQL,
+       vuelve vacío y en la app simplemente no aparece. */
+    sb.from('sorteo').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
+    t('sorteo_participantes','creado_en')
   ]);
   D.tabla = tab; D.ranking = ran; D.ajustes = aju;
   D.preguntas = pre; D.noticias = not; D.diva = div; D.etiquetas = etq;
   D.galerias = gal; D.galeriaFotos = gfo;
   D.fotoLikes = lik; D.fotoComentarios = com;
+  D.sorteo = sor; D.sorteoPart = spa;
   restoListo = true;
 }
 
@@ -937,7 +1032,7 @@ function pintar(){
   p.className = '';
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
               noticias:vNoticias, diva:vDiva, entrar:vEntrar, admin:vAdmin,
-              auspiciadores:vAuspiciadores, avisos:vAvisos }[vista] ?? vResultados;
+              auspiciadores:vAuspiciadores, avisos:vAvisos, sorteo:vSorteo }[vista] ?? vResultados;
   const puerta = vista === 'entrar';
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
@@ -949,6 +1044,10 @@ function pintar(){
     enlazar();
     pintarGlobos();
     pintarVisor();
+    pintarFranja();
+    rodarNombres();
+    const lnk = $('#lnk-sorteo');
+    if(lnk) lnk.classList.toggle('oculta', !sorteoVivo());
   }catch(e){
     p.innerHTML = `<div class="vacio">Algo falló al mostrar esta sección.<br><br>
       <span class="mono" style="font-size:12px">${esc(e.message)}</span><br><br>
@@ -2527,20 +2626,223 @@ document.addEventListener('keydown', ev => {
   if(ev.key === 'ArrowLeft'  && fotoAbierta > 0){ fotoAbierta--; pintarVisor(); }
 });
 
+/* ============================================================
+   EL SORTEO DE LA FINAL
+   Mientras el sorteo está en 'oculto' no existe para nadie. Una
+   administradora lo va moviendo de estado con botones: primero
+   el aviso, después abre la inscripción, la cierra, sortea y al
+   final revela el premio.
+
+   Entrar al sorteo es tocar un botón mientras está abierto: eso
+   es lo que prueba que la jugadora tiene la app y está ahí.
+   ============================================================ */
+
+const SORTEO_VIVO = ['anuncio','abierto','cerrado','sorteado'];
+const sorteoVivo = () => D.sorteo && SORTEO_VIVO.includes(D.sorteo.estado);
+const yaEntre = () => yo && D.sorteoPart.some(x => x.jugadora_id === yo.jugadora_id);
+
+/* La franja de arriba. Se dibuja aparte de la pantalla para que
+   acompañe a la jugadora esté donde esté. */
+function pintarFranja(){
+  const f = $('#franja-sorteo');
+  if(!f) return;
+  const puerta = vista === 'entrar';
+  if(!sorteoVivo() || puerta || vista === 'sorteo'){
+    f.className = 'franja oculta'; f.innerHTML = ''; return;
+  }
+  const s = D.sorteo;
+  const texto = {
+    anuncio : `Hoy hay sorteo · ${s.ventana}`,
+    abierto : '¡El sorteo está abierto! Entra ahora',
+    cerrado : 'Inscripción cerrada · ya se sortea',
+    sorteado: '¡Ya hay ganadora!'
+  }[s.estado];
+  const urge = s.estado === 'abierto' || s.estado === 'sorteado';
+  f.className = 'franja' + (urge ? ' urge' : '');
+  f.innerHTML = `<button id="ir-sorteo">
+    <span class="regalo">🎁</span>
+    <span class="dice">${esc(texto)}</span>
+    <span class="flechita">›</span></button>`;
+  $('#ir-sorteo').onclick = () => { vista = 'sorteo'; pintar(); window.scrollTo({top:0}); };
+}
+
+/* --- el redoble del sorteo ---------------------------------------
+   Cuando aparece la ganadora, el teléfono muestra primero los nombres
+   de las que entraron pasando rápido, y va frenando hasta quedarse en
+   una. Es puro adorno: la ganadora ya venía decidida desde la base de
+   datos, acá no se elige nada. Cada teléfono lo ve una sola vez. */
+
+let redoble = false;          /* true mientras los nombres están rodando */
+
+/* La marca del sorteo: si se sortea de nuevo, cambia y se vuelve a ver. */
+const marcaSorteo = s => String(s.sorteado_en ?? s.ganadora_id ?? '');
+
+function hayQueRodar(s){
+  if(s.estado !== 'sorteado' || !s.ganadora_id) return false;
+  if(D.sorteoPart.length < 2) return false;
+  try{ return localStorage.getItem('batalla:sorteo-visto') !== marcaSorteo(s); }
+  catch(e){ return true; }
+}
+
+function rodarNombres(){
+  const caja = $('#tambor');
+  const s = D.sorteo;
+  if(!caja || !s || caja.dataset.rodo || !caja.classList.contains('rodando')) return;
+  caja.dataset.rodo = '1';
+
+  const ganadora = D.jugadoras.find(j => j.id === s.ganadora_id);
+  const el = $('#nombre-ganadora'), rot = $('#rot-tambor'), equipo = $('#equipo-ganadora');
+  if(!ganadora || !el) return;
+
+  const parar = () => {
+    redoble = false;
+    caja.classList.remove('rodando');
+    el.textContent = ganadora.nombre;
+    el.classList.add('llego');
+    if(rot) rot.textContent = 'La ganadora es';
+    if(equipo) equipo.style.visibility = '';
+    try{ localStorage.setItem('batalla:sorteo-visto', marcaSorteo(s)); }catch(e){}
+    try{ if(navigator.vibrate) navigator.vibrate([20, 70, 20, 70, 160]); }catch(e){}
+  };
+
+  /* Los nombres que van a pasar: solo las que de verdad entraron. */
+  const nombres = D.sorteoPart
+    .map(x => { const j = D.jugadoras.find(y => y.id === x.jugadora_id); return j ? j.nombre : null; })
+    .filter(Boolean);
+
+  const quieto = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(quieto || nombres.length < 2) return parar();
+
+  redoble = true;
+  let espera = 55, ultimo = '';
+  const tic = () => {
+    /* Nunca dos veces el mismo nombre seguido: se vería trabado. */
+    let n = ultimo;
+    while(n === ultimo) n = nombres[Math.floor(Math.random() * nombres.length)];
+    ultimo = n;
+    el.textContent = n;
+    espera *= 1.115;
+    if(espera > 430) return setTimeout(parar, 420);
+    setTimeout(tic, espera);
+  };
+  tic();
+}
+
+function vSorteo(){
+  const s = D.sorteo;
+  if(!sorteoVivo())
+    return `<div class="vacio">Por ahora no hay ningún sorteo en marcha.</div>`;
+
+  const cuantas = D.sorteoPart.length;
+  const ganadora = s.ganadora_id ? D.jugadoras.find(j => j.id === s.ganadora_id) : null;
+
+  /* El premio, oculto hasta que lo revelen. */
+  const premio = s.premio_revelado && s.premio
+    ? `<div class="premio revelado">
+         <span class="rot">El premio</span>
+         <strong>${esc(s.premio)}</strong>
+       </div>`
+    : `<div class="premio"><span class="rot">El premio</span>
+         <strong>Sorpresa 🎁</strong>
+         <span class="pista2">Lo contamos en un rato</span></div>`;
+
+  if(s.estado === 'sorteado'){
+    /* Si a este teléfono todavía le falta ver el redoble, la caja parte
+       en blanco y rodarNombres() la llena. Si ya lo vio, sale derecho. */
+    const falta = hayQueRodar(s);
+    return `<div class="sorteo-caja ganada">
+      <h2>${esc(s.titulo)}</h2>
+      <div class="tambor${falta ? ' rodando' : ''}" id="tambor">
+        <span class="rot" id="rot-tambor">${falta
+          ? 'Sorteando<span class="puntitos">…</span>' : 'La ganadora es'}</span>
+        <strong id="nombre-ganadora">${falta ? '' : esc(ganadora ? ganadora.nombre : '—')}</strong>
+        ${ganadora && ganadora.equipo_id
+          ? `<span class="de-equipo" id="equipo-ganadora">${esc(eq(ganadora.equipo_id))}</span>` : ''}
+      </div>
+      ${premio}
+      <p class="pista3">Entraron ${cuantas} jugadora${cuantas === 1 ? '' : 's'} al sorteo.</p>
+    </div>`;
+  }
+
+  let centro = '';
+  if(s.estado === 'anuncio'){
+    centro = `<div class="cuentale">
+        <span class="rot">Cuándo</span>
+        <strong>${esc(s.ventana)}</strong>
+        <p class="pista2">Avisamos por acá cuando se abra. Mantén la app a mano.</p>
+      </div>`;
+  }
+  if(s.estado === 'abierto'){
+    centro = yaEntre()
+      ? `<div class="dentro">
+           <span class="tilde">✓</span>
+           <strong>Estás dentro</strong>
+           <p class="pista2">No cierres la app: el sorteo se hace acá mismo.</p>
+         </div>`
+      : (yo
+        ? `<button class="btn-sorteo" id="entrar-sorteo">Quiero participar</button>
+           <p class="pista2">Toca el botón para entrar. Un solo toque, una sola oportunidad.</p>`
+        : `<div class="dentro gris">
+             <strong>Entra con tu nombre para participar</strong>
+             <p class="pista2">El sorteo es solo para las jugadoras del torneo.</p>
+             <button class="btn claro" id="ir-entrar-sorteo">Elegir mi nombre</button>
+           </div>`);
+  }
+  if(s.estado === 'cerrado'){
+    centro = `<div class="dentro">
+        <strong>Inscripción cerrada</strong>
+        <p class="pista2">${yaEntre() ? 'Estás dentro. ' : ''}Ya viene el sorteo, no te vayas.</p>
+      </div>`;
+  }
+
+  return `<div class="sorteo-caja">
+      <h2>${esc(s.titulo)}</h2>
+      ${s.bajada ? `<p class="baj-sorteo">${esc(s.bajada)}</p>` : ''}
+      ${centro}
+      ${premio}
+      ${s.requisitos ? `<div class="requisitos">
+        <span class="rot">Para participar</span>
+        <p>${esc(s.requisitos)}</p></div>` : ''}
+      <p class="pista3">${cuantas
+        ? `Ya entraron ${cuantas} jugadora${cuantas === 1 ? '' : 's'}.`
+        : 'Todavía no entra nadie.'}</p>
+    </div>`;
+}
+
+async function entrarAlSorteo(){
+  if(!yo) return;
+  const b = $('#entrar-sorteo');
+  if(b){ b.disabled = true; b.textContent = 'Entrando…'; }
+  try{
+    const { error } = await sb.from('sorteo_participantes')
+      .insert({ jugadora_id: yo.jugadora_id, instalada: instalada() });
+    /* Si ya estaba, la base lo rechaza por repetido: da lo mismo,
+       igual quedó dentro. */
+    if(error && !String(error.message).toLowerCase().includes('duplicate')) throw error;
+    await cargar();
+    pintar();
+  }catch(e){
+    if(b){ b.disabled = false; b.textContent = 'Quiero participar'; }
+    alert('No se pudo entrar al sorteo: ' + e.message +
+          '\n\nRevisa tu señal y vuelve a intentarlo.');
+  }
+}
+
 /* --- administración --- */
 function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias','galeria','mensaje','auspicio','extra'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','mensaje','auspicio','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
-       noticias:'Noticias',galeria:'Galería',mensaje:'Mandar un aviso',auspicio:'Auspiciadores',
-       extra:'Puntos extra'}[s]}</button>`).join('');
+       noticias:'Noticias',galeria:'Galería',sorteo:'Sorteo',mensaje:'Mandar un aviso',
+       auspicio:'Auspiciadores',extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
     ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion,
-       noticias:admNoticias, galeria:admGaleria, mensaje:admMensaje, auspicio:admAuspicio,
-       extra:admExtra }[subAdm])();
+       noticias:admNoticias, galeria:admGaleria, sorteo:admSorteo, mensaje:admMensaje,
+       auspicio:admAuspicio, extra:admExtra }[subAdm])();
 }
 
 function admEquipos(){
@@ -2814,6 +3116,175 @@ function admGaleria(){
       y se achican solas para que la app no se ponga lenta. Las jugadoras las ven en Noticias, en Galería.</p>
     ${formulario}
     ${lista || `<div class="vacio">Todavía no has creado ningún álbum.</div>`}`;
+}
+
+/* --- administración: el sorteo --- */
+
+function admSorteo(){
+  const s = D.sorteo;
+  if(!s) return `<div class="vacio">Falta correr el SQL del sorteo (parte 17) en Supabase.</div>`;
+
+  const cuantas = D.sorteoPart.length;
+  const ganadora = s.ganadora_id ? D.jugadoras.find(j => j.id === s.ganadora_id) : null;
+  const paso = {
+    oculto  : 'No se ve nada en la app.',
+    anuncio : s.premio_revelado
+      ? 'Ya saben cuál es el premio. Falta abrir la inscripción.'
+      : 'Se ve el aviso arriba, con el premio tapado y sin botón todavía.',
+    abierto : 'El botón está abierto: las jugadoras pueden entrar.',
+    cerrado : 'Ya no entra nadie más. Falta sortear.',
+    sorteado: 'Ya hay ganadora.'
+  }[s.estado];
+
+  const lista = D.sorteoPart.map(x => {
+    const j = D.jugadoras.find(y => y.id === x.jugadora_id);
+    return `<span class="quien-entro">${esc(j ? j.nombre : '—')}${
+      x.instalada ? ' <span class="apk" title="Entró desde la app instalada">app</span>' : ''}</span>`;
+  }).join('');
+
+  return `<p class="nota">El sorteo se maneja desde acá, paso a paso. Mientras esté en
+      "oculto" no existe para nadie. El premio queda guardado y se muestra como
+      "Sorpresa" hasta que aprietes el paso 2.</p>
+
+    <div class="card">
+      <div class="fila" style="margin:0">
+        <span class="etq ${s.estado === 'oculto' ? '' : 'aviso'}">${esc(s.estado)}</span>
+        <span style="font-size:13px;color:var(--gris)">${esc(paso)}</span>
+      </div>
+      <div class="pasos">
+        <button class="btn ${s.estado === 'oculto' ? 'lima' : 'claro'}" data-sorteo="anuncio">1 · Mostrar el aviso</button>
+        <button class="btn ${s.estado === 'anuncio' && !s.premio_revelado ? 'lima' : 'claro'}"
+          id="revelar-premio" ${s.premio_revelado ? 'disabled' : ''}>2 · Revelar el premio${
+            s.premio_revelado ? ' ✓' : ''}</button>
+        <button class="btn ${s.estado === 'anuncio' && s.premio_revelado ? 'lima' : 'claro'}" data-sorteo="abierto">3 · Abrir la inscripción</button>
+        <button class="btn ${s.estado === 'abierto' ? 'lima' : 'claro'}" data-sorteo="cerrado">4 · Cerrar la inscripción</button>
+        <button class="btn ${s.estado === 'cerrado' ? 'lima' : 'claro'}" id="sortear"
+          ${cuantas ? '' : 'disabled'}>5 · Sortear la ganadora</button>
+      </div>
+      <div class="fila" style="margin:12px 0 0">
+        <button class="btn claro" data-sorteo="oculto"
+          style="border-color:var(--alerta);color:var(--alerta)">Esconder todo</button>
+        ${s.estado === 'sorteado'
+          ? '<button class="btn claro" id="resortear">Sortear de nuevo</button>' : ''}
+      </div>
+      <div id="so-msg"></div>
+    </div>
+
+    ${ganadora ? `<div class="card" style="text-align:center">
+        <span class="rot">Ganadora</span>
+        <div style="font-size:22px;font-weight:800;margin-top:4px">${esc(ganadora.nombre)}</div>
+        <div style="font-size:13px;color:var(--gris)">${esc(eq(ganadora.equipo_id))}</div>
+      </div>` : ''}
+
+    <div class="card">
+      <h3>Los textos</h3>
+      <div style="margin-bottom:8px"><label class="lab">Título</label>
+        <input type="text" id="so-tit" maxlength="80" value="${esc(s.titulo ?? '')}"></div>
+      <div style="margin-bottom:8px"><label class="lab">Bajada</label>
+        <input type="text" id="so-baj" maxlength="120" value="${esc(s.bajada ?? '')}"></div>
+      <div style="margin-bottom:8px"><label class="lab">Cuándo (se muestra en el aviso)</label>
+        <input type="text" id="so-ven" maxlength="80" value="${esc(s.ventana ?? '')}"></div>
+      <div style="margin-bottom:8px"><label class="lab">Requisitos</label>
+        <textarea id="so-req" maxlength="300">${esc(s.requisitos ?? '')}</textarea></div>
+      <div style="margin-bottom:10px"><label class="lab">El premio (oculto hasta que lo reveles)</label>
+        <input type="text" id="so-pre" maxlength="140" value="${esc(s.premio ?? '')}"></div>
+      <button class="btn lima" id="so-guardar">Guardar los textos</button>
+      <div id="so-msg2"></div>
+    </div>
+
+    <div class="card">
+      <h3>Quiénes entraron · ${cuantas}</h3>
+      ${cuantas ? `<div class="entraron">${lista}</div>`
+                : '<p class="pista2">Todavía no entra nadie.</p>'}
+    </div>`;
+}
+
+async function guardarTextosSorteo(){
+  const caja = $('#so-msg2');
+  try{
+    const { error } = await sb.from('sorteo').update({
+      titulo:     $('#so-tit').value.trim() || 'Sorteo de la final',
+      bajada:     $('#so-baj').value.trim() || null,
+      ventana:    $('#so-ven').value.trim() || null,
+      requisitos: $('#so-req').value.trim() || null,
+      premio:     $('#so-pre').value.trim() || null,
+      actualizado_en: new Date().toISOString()
+    }).eq('id', 1);
+    if(error) throw error;
+    await cargar();
+    aviso(caja, 'Guardado.');
+  }catch(e){ problema(caja, e); }
+}
+
+/* Cambia el sorteo de estado y, si corresponde, avisa al teléfono
+   de todas. El aviso es lo que las hace mirar la app. */
+async function moverSorteo(estado){
+  const caja = $('#so-msg');
+  try{
+    const { error } = await sb.from('sorteo')
+      .update({ estado, actualizado_en: new Date().toISOString() }).eq('id', 1);
+    if(error) throw error;
+    let recado = 'Listo.';
+    if(estado === 'abierto'){
+      const r = await avisarATodas('¡Se abrió el sorteo!',
+        'Entra a la app ahora y toca "Quiero participar". Se cierra en unos minutos.');
+      recado = r.ok ? 'Inscripción abierta y avisada.' : 'Abierta, pero el aviso falló: ' + r.mensaje;
+    }
+    await cargar();
+    aviso(caja, recado);
+    setTimeout(pintar, 900);
+  }catch(e){ problema(caja, e); }
+}
+
+/* Saca una ganadora al azar entre las que entraron. Usa el azar
+   del navegador, que es el bueno, no el de Math.random. */
+async function sortearGanadora(){
+  const caja = $('#so-msg');
+  const dentro = D.sorteoPart.slice();
+  if(!dentro.length) return aviso(caja, 'No entró nadie todavía.', true);
+  /* El nombre se saca después de confirmar, a propósito: así nadie
+     —ni la administradora— lo sabe antes, y no hay forma de repetir
+     el sorteo hasta que salga el nombre que a una le gusta. */
+  if(!confirm(`¿Lanzo el sorteo ahora?\n\nEntraron ${dentro.length} jugadora${
+    dentro.length === 1 ? '' : 's'}. El nombre sale al tiro en todos los teléfonos, `
+    + `incluido el tuyo.`)) return;
+  const n = new Uint32Array(1);
+  crypto.getRandomValues(n);
+  const elegida = dentro[n[0] % dentro.length];
+  const j = D.jugadoras.find(y => y.id === elegida.jugadora_id);
+  try{
+    const { error } = await sb.from('sorteo').update({
+      estado: 'sorteado', ganadora_id: elegida.jugadora_id,
+      sorteado_en: new Date().toISOString(), actualizado_en: new Date().toISOString()
+    }).eq('id', 1);
+    if(error) throw error;
+    /* El aviso no dice el nombre: si lo dijera, la notificación
+       arruinaría el redoble antes de que abran la app. */
+    const r = await avisarATodas('¡Ya hay ganadora del sorteo!',
+      'Entra a la app ahora para ver quién se lleva el premio.');
+    await cargar();
+    if(!r.ok) aviso(caja, 'Sorteado, pero el aviso falló: ' + r.mensaje, true);
+    /* Y la administradora ve el redoble igual que todas. */
+    setTimeout(() => { vista = 'sorteo'; pintar(); window.scrollTo({ top: 0 }); },
+      r.ok ? 700 : 3000);
+  }catch(e){ problema(caja, e); }
+}
+
+async function revelarPremio(){
+  const caja = $('#so-msg');
+  try{
+    const cambio = { premio_revelado: true, actualizado_en: new Date().toISOString() };
+    /* La bajada de fábrica dice "Premio sorpresa": ya no corresponde. */
+    if((D.sorteo.bajada ?? '').trim().toLowerCase() === 'premio sorpresa') cambio.bajada = '';
+    const { error } = await sb.from('sorteo').update(cambio).eq('id', 1);
+    if(error) throw error;
+    const r = await avisarATodas('¡Ya se sabe el premio del sorteo!',
+      (D.sorteo.premio ? D.sorteo.premio + '. ' : '') +
+      'Entra a la app y mantenla a mano: avisamos cuando se abra la inscripción.');
+    await cargar();
+    aviso(caja, r.ok ? 'Premio revelado y avisado.' : 'Revelado, pero el aviso falló: ' + r.mensaje, !r.ok);
+    setTimeout(pintar, 900);
+  }catch(e){ problema(caja, e); }
 }
 
 /* --- administración: mandar un aviso suelto --- */
@@ -3521,6 +3992,15 @@ function enlazar(){
   document.querySelectorAll('[data-not]').forEach(b => b.onclick = () => {
     subNot = b.dataset.not; galeriaAbierta = null; fotoAbierta = null; pintar(); });
 
+  /* --- el sorteo --- */
+  if($('#entrar-sorteo'))     $('#entrar-sorteo').onclick     = entrarAlSorteo;
+  if($('#ir-entrar-sorteo'))  $('#ir-entrar-sorteo').onclick  = () => { vista = 'entrar'; pintar(); };
+  document.querySelectorAll('[data-sorteo]').forEach(b => b.onclick = () => moverSorteo(b.dataset.sorteo));
+  if($('#sortear'))        $('#sortear').onclick        = sortearGanadora;
+  if($('#resortear'))      $('#resortear').onclick      = sortearGanadora;
+  if($('#revelar-premio')) $('#revelar-premio').onclick = revelarPremio;
+  if($('#so-guardar'))     $('#so-guardar').onclick     = guardarTextosSorteo;
+
   /* --- la galería, como la ven todas --- */
   document.querySelectorAll('[data-galeria]').forEach(b => b.onclick = () => {
     galeriaAbierta = +b.dataset.galeria; pintar(); window.scrollTo({ top:0, behavior:'smooth' }); });
@@ -3977,6 +4457,8 @@ let ultimoRefresco = Date.now();
    que la administradora esté escribiendo. */
 async function refrescar(aLaFuerza){
   if(refrescando || document.hidden) return;
+  /* Mientras están rodando los nombres no se repinta nada: cortaría el redoble. */
+  if(redoble) return;
   /* Nada de repintar mientras alguien está llenando algo: se le
      borraría lo escrito o la foto que acaba de elegir. */
   if(vista === 'admin') return;
@@ -4020,7 +4502,10 @@ function huella(){
   const g = D.galerias.map(x => `${x.id}.${x.publicada}.${x.titulo}`).join('|')
           + '/' + D.galeriaFotos.length
           + '/' + D.fotoLikes.length + '/' + D.fotoComentarios.length;
-  return [p, n, q, e, d, t, v, g].join('#');
+  const so = D.sorteo
+    ? `${D.sorteo.estado}.${D.sorteo.premio_revelado}.${D.sorteo.ganadora_id}.${D.sorteoPart.length}`
+    : '';
+  return [p, n, q, e, d, t, v, g, so].join('#');
 }
 
 /* Tres momentos: al volver a la app, al tocar la pantalla después
@@ -4030,6 +4515,12 @@ function mantenerAlDia(){
   window.addEventListener('focus', refrescar);
   window.addEventListener('online', refrescar);
   setInterval(refrescar, 120000);
+  /* Mientras el sorteo está en marcha la app mira cada ocho
+     segundos, para que el momento se viva en vivo y no haya que
+     recargar nada. El resto del tiempo sigue cada dos minutos. */
+  setInterval(() => {
+    if(D.sorteo && ['abierto','cerrado','sorteado'].includes(D.sorteo.estado)) refrescar();
+  }, 8000);
 
   tironParaActualizar();
 }
