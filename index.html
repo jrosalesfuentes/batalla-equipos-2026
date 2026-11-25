@@ -375,6 +375,97 @@ td.jug{color:var(--gris);font-size:12px}
   text-transform:uppercase;color:var(--claro)}
 @keyframes aparecer{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 
+/* ---------- los diplomas -------------------------------------
+   Se arman dentro de la app y salen por la impresora: A4
+   horizontal, uno por hoja. En pantalla no se ven nunca; el
+   contenedor existe solo para el momento de imprimir. */
+#hojas-diploma{display:none}
+.dip{width:297mm;height:210mm;position:relative;overflow:hidden;background:#fff;
+  display:flex;font-family:'Poppins',sans-serif;color:var(--tinta)}
+.dip .dip-marco{position:absolute;inset:0;border:9mm solid var(--verde)}
+.dip .dip-marco::after{content:'';position:absolute;inset:0;outline:1.1mm solid var(--lima);
+  outline-offset:-1.6mm}
+.dip .dip-halo{position:absolute;left:50%;top:46%;width:210mm;height:150mm;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:radial-gradient(ellipse,rgba(0,126,118,.06),transparent 68%)}
+.dip .dip-cuerpo{position:relative;z-index:2;flex:1;margin:9mm;padding:7mm 14mm 6mm;
+  display:flex;flex-direction:column;align-items:center;text-align:center}
+.dip .dip-cabeza{display:flex;align-items:center;gap:7mm;justify-content:center}
+.dip .dip-cabeza img{width:24mm;height:24mm;object-fit:contain;border-radius:4mm;
+  box-shadow:0 0 0 .9mm var(--lima)}
+.dip .dip-cabeza h1{font-size:7mm;font-weight:700;line-height:1.05;letter-spacing:.02em;
+  margin:0;text-align:left}
+.dip .dip-cabeza p{font-size:3.5mm;font-weight:500;color:var(--gris);letter-spacing:.26em;
+  text-transform:uppercase;margin:1.4mm 0 0;text-align:left}
+.dip .dip-raya{align-self:stretch;height:.9mm;margin:5mm 0 0;border-radius:1mm;
+  background:linear-gradient(90deg,transparent,var(--lima) 18%,var(--lima) 82%,transparent)}
+.dip .dip-titulo{display:block;font-size:15mm;font-weight:700;color:var(--verde);letter-spacing:.3em;
+  margin:4mm 0 0;text-indent:.3em}
+.dip .dip-rotulo{font-size:4mm;font-weight:500;color:var(--gris);letter-spacing:.2em;
+  text-transform:uppercase;margin:3mm 0 0}
+.dip .dip-nombres{margin:3.5mm 0 0}
+.dip .dip-nombres b{display:block;font-size:10.2mm;font-weight:700;line-height:1.22}
+.dip .dip-de-equipo{display:inline-block;margin-top:3.5mm;padding:1.6mm 6mm;border-radius:99mm;
+  background:var(--glass);color:var(--verde-hondo);font-size:4.2mm;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase}
+.dip .dip-motivo{font-size:5mm;margin:4.5mm 0 0;line-height:1.6}
+.dip .dip-motivo b{font-weight:700;color:var(--verde-hondo)}
+.dip .dip-motivo .dip-cat{display:inline-block;padding:0 2.4mm;border-radius:2mm;
+  background:var(--lima);color:var(--tinta);font-weight:700;font-family:inherit;
+  font-size:inherit}
+.dip .dip-ficha{display:flex;gap:3mm;margin-top:4mm}
+.dip .dip-ficha div{min-width:27mm;padding:2.6mm 3mm;border:.4mm solid var(--linea);
+  border-radius:3mm}
+.dip .dip-ficha i{display:block;font-style:normal;font-size:2.9mm;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
+.dip .dip-ficha b{display:block;font-size:6.4mm;font-weight:700;margin-top:.6mm;
+  font-variant-numeric:tabular-nums}
+.dip .dip-ficha div.dip-total{background:var(--verde);border-color:var(--verde)}
+.dip .dip-ficha div.dip-total i{color:var(--claro)}
+.dip .dip-ficha div.dip-total b{color:var(--lima)}
+.dip .dip-pie{margin-top:auto;padding-top:4mm;align-self:stretch;display:flex;align-items:flex-end;
+  justify-content:space-between;gap:10mm}
+.dip .dip-donde{font-size:3.6mm;color:var(--gris);text-align:left;font-weight:500;margin:0}
+.dip .dip-firma{text-align:center;min-width:76mm}
+.dip .dip-firma hr{border:0;border-top:.4mm solid var(--tinta);margin:0 0 1.8mm}
+.dip .dip-firma b{display:block;font-size:4.2mm;font-weight:700}
+.dip .dip-firma span{font-size:3.2mm;font-weight:600;color:var(--gris);letter-spacing:.16em;
+  text-transform:uppercase}
+.dip .dip-sello{position:absolute;top:17mm;right:17mm;width:34mm;height:34mm;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--lima);box-shadow:0 0 0 1.4mm #fff,0 0 0 2.4mm var(--lima)}
+.dip .dip-sello.dip-tres{background:var(--claro)}
+/* La franja de auspiciadores: todos al mismo alto y separados por
+   aire, para que se lean como un conjunto y no compitan con el
+   nombre de la dupla. */
+.dip .dip-auspicio{align-self:stretch;margin-top:4.5mm;padding-top:3mm;
+  border-top:.35mm solid var(--linea);text-align:center}
+.dip .dip-rot-auspicio{display:block;font-size:2.9mm;font-weight:600;
+  letter-spacing:.3em;text-transform:uppercase;color:var(--gris);margin-bottom:2.4mm}
+.dip .dip-logos{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
+  gap:3mm 9mm}
+.dip .dip-logos img{height:11mm;width:auto;max-width:36mm;object-fit:contain}
+.dip .dip-auspicio.apretado .dip-logos{gap:2.5mm 6mm}
+.dip .dip-auspicio.apretado .dip-logos img{height:8.5mm;max-width:28mm}
+.dip .dip-auspicio.muchos .dip-logos{gap:1.8mm 4mm;max-height:17mm;overflow:hidden}
+.dip .dip-auspicio.muchos .dip-logos img{height:6.2mm;max-width:22mm}
+.dip .dip-sello b{font-size:13mm;font-weight:700;line-height:1}
+.dip .dip-sello span{font-size:2.9mm;font-weight:700;letter-spacing:.16em;
+  text-transform:uppercase;margin-top:.4mm}
+
+@page{size:297mm 210mm;margin:0}
+@media print{
+  /* Mientras se imprimen los diplomas no existe nada más. Fuera de
+     ese momento la app se imprime como siempre: por eso el cambio
+     cuelga de la clase, y no de @media print a secas. */
+  body.imprimiendo > *{display:none!important}
+  body.imprimiendo > #hojas-diploma{display:block!important}
+  body.imprimiendo{background:#fff}
+  #hojas-diploma .dip{page-break-after:always;break-after:page}
+  #hojas-diploma .dip:last-child{page-break-after:auto;break-after:auto}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+
 /* ---------- el podio final, pensado para el proyector ----------
    Todo se mide en vmin y con clamp(), así que la misma pantalla
    sirve en un teléfono y en un telón de tres metros. */
@@ -884,6 +975,7 @@ body.quieto{overflow:hidden}
     <a data-adm="galeria">Galería</a>
     <a data-adm="sorteo">Sorteo</a>
     <a data-adm="podio">Podio y premiación</a>
+    <a data-adm="diplomas">Diplomas</a>
     <a data-adm="mensaje">Mandar un aviso</a>
     <a data-adm="auspicio">Auspiciadores</a>
     <a data-adm="extra">Puntos extra</a>
@@ -1383,8 +1475,11 @@ function rankingDuplas(){
   const por = {};
   base.forEach(x => { por[x.dupla_id] = x; });
 
-  D.partidos.filter(p => p.estado === 'jugado' && p.set1_a != null).forEach(p => {
-    const c = cuentaPartido(p, esFinalDe(p));
+  /* Las finales no entran: sus 60 y 30 son para el equipo, no para
+     la pareja. El ranking de duplas se juega en las cinco fechas. */
+  D.partidos.filter(p => p.estado === 'jugado' && p.set1_a != null && !esFinalDe(p))
+    .forEach(p => {
+    const c = cuentaPartido(p, false);
     const gA = p.set1_a + p.set2_a, gB = p.set1_b + p.set2_b;
     [[p.dupla_a, c.setsA, c.setsB, c.puntosA, gA, gB],
      [p.dupla_b, c.setsB, c.setsA, c.puntosB, gB, gA]].forEach(([id, sg, sp, pts, gg, gp]) => {
@@ -3041,6 +3136,191 @@ function celebrarPodio(){
   fanfarria();
 }
 
+/* ---------- los diplomas ------------------------------------------
+   Segundo y tercer lugar de cada categoría reciben diploma. Las
+   diez duplas salen solas de la tabla de puntajes; lo único que
+   hay que escribir a mano son los nombres completos, porque en la
+   app cada una aparece con el nombre corto que eligió. */
+
+const FECHA_DIPLOMA = 'Santiago, 27 de noviembre de 2026';
+/* El mismo logo que ya está en la cabecera de la app: se reusa
+   en vez de llevar una segunda copia dentro del archivo. */
+const logoBatalla = () => $('#logo-batalla')?.getAttribute('src') ?? '';
+
+function duplasConDiploma(){
+  const premiadas = [];
+  D.categorias.slice()
+    .sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0))
+    .forEach(c => {
+      const tabla = rankingDuplas()
+        .filter(r => r.categoria === c.codigo && r.pj)
+        .slice().sort((a,b) => b.puntos - a.puntos || b.dif_sets - a.dif_sets
+          || b.dif_games - a.dif_games);
+      [2, 3].forEach(lugar => {
+        const f = tabla[lugar - 1];
+        if(f) premiadas.push(Object.assign({ lugar, categoria: c.codigo }, f));
+      });
+    });
+  return premiadas;
+}
+
+/* Las dos jugadoras de una dupla, con el nombre largo si lo tiene. */
+function quienesSon(duplaId){
+  const d = D.duplas.find(x => x.id === duplaId);
+  if(!d) return [];
+  return [d.jugadora_1, d.jugadora_2]
+    .map(id => D.jugadoras.find(j => j.id === id))
+    .filter(Boolean)
+    .map(j => ({ id: j.id, corto: j.nombre,
+                 largo: (j.nombre_completo ?? '').trim() || j.nombre }));
+}
+
+/* La franja de auspiciadores, al pie. Todos del mismo alto, para
+   que ninguno se vea más grande que otro, y en una o dos filas
+   según cuántos sean. */
+function franjaAuspicio(){
+  const todos = (D.auspiciadores ?? []).filter(a => a.logo_url);
+  if(!todos.length) return '';
+  const clase = todos.length > 10 ? 'apretado muchos' : todos.length > 6 ? 'apretado' : '';
+  return `<div class="dip-auspicio ${clase}">
+    <span class="dip-rot-auspicio">Auspician</span>
+    <div class="dip-logos">${todos.map(a =>
+      `<img src="${esc(a.logo_url)}" alt="${esc(a.nombre ?? '')}">`).join('')}</div>
+  </div>`;
+}
+
+function unDiploma(p){
+  const corto = p.lugar === 2 ? '2º' : '3º';
+  const largo = p.lugar === 2 ? 'Segundo lugar' : 'Tercer lugar';
+  const gente = quienesSon(p.dupla_id);
+  const diva = D.diva || {};
+  return `<div class="dip">
+    <div class="dip-marco"></div><div class="dip-halo"></div>
+    <div class="dip-sello ${p.lugar === 3 ? 'dip-tres' : ''}"><b>${corto}</b><span>lugar</span></div>
+    <div class="dip-cuerpo">
+      <div class="dip-cabeza">
+        ${logoBatalla() ? `<img src="${esc(logoBatalla())}" alt="">` : ''}
+        <div><h1>Batalla de Equipos 2026</h1><p>Zona Pádel Club</p></div>
+      </div>
+      <div class="dip-raya"></div>
+      <p class="dip-titulo">DIPLOMA</p>
+      <p class="dip-rotulo">se otorga a la dupla</p>
+      <div class="dip-nombres">
+        ${gente.map(g => `<b>${esc(g.largo)}</b>`).join('')}
+        <span class="dip-de-equipo">${esc(p.equipo ?? '')}</span>
+      </div>
+      <p class="dip-motivo">por obtener el <b>${largo}</b>
+        de la <span class="dip-cat">categoría ${esc(p.categoria)}</span></p>
+      <div class="dip-ficha">
+        <div><i>Ganados</i><b>${p.pg}</b></div>
+        <div><i>Perdidos</i><b>${p.pp}</b></div>
+        <div><i>Games</i><b>${signo(p.dif_games)}</b></div>
+        <div class="dip-total"><i>Puntaje</i><b>${p.puntos}</b></div>
+      </div>
+      <div class="dip-pie">
+        <p class="dip-donde">${esc(FECHA_DIPLOMA)}<br>Zona Pádel Club</p>
+        <div class="dip-firma"><hr>
+          ${diva.nombre ? `<b>${esc(diva.nombre)}</b>` : ''}
+          <span>La DIVA</span></div>
+      </div>
+      ${franjaAuspicio()}
+    </div>
+  </div>`;
+}
+
+async function imprimirDiplomas(){
+  const premiadas = duplasConDiploma();
+  if(!premiadas.length) return;
+  /* Los logos de los auspiciadores se bajan aparte y pesan: si
+     alguien entra directo a imprimir sin haber pasado por esa
+     pantalla, todavía no están. Se esperan acá. */
+  const boton = $('#dip-imprimir');
+  if(D.auspiciadores === null){
+    if(boton){ boton.disabled = true; boton.textContent = 'Preparando los logos…'; }
+    await cargarAuspicios();
+    if(boton){ boton.disabled = false; }
+  }
+  let caja = $('#hojas-diploma');
+  if(!caja){
+    caja = document.createElement('div');
+    caja.id = 'hojas-diploma';
+    document.body.appendChild(caja);
+  }
+  caja.innerHTML = premiadas.map(unDiploma).join('');
+  document.body.classList.add('imprimiendo');
+  const limpiar = () => document.body.classList.remove('imprimiendo');
+  window.addEventListener('afterprint', limpiar, { once: true });
+  /* Un respiro para que el navegador dibuje antes de abrir el
+     diálogo de impresión; si no, algunos imprimen hojas vacías. */
+  setTimeout(() => { window.print(); setTimeout(limpiar, 1200); }, 250);
+}
+
+function admDiplomas(){
+  const premiadas = duplasConDiploma();
+  if(!premiadas.length)
+    return `<p class="nota">Los diplomas se arman con la tabla de puntajes.
+      Todavía no hay partidos jugados suficientes.</p>`;
+
+  const filas = premiadas.map(p => {
+    const gente = quienesSon(p.dupla_id);
+    return `<div class="card">
+      <h3>${p.lugar}º de ${esc(p.categoria)} · ${esc(p.equipo ?? '')}</h3>
+      <p class="nota" style="margin:2px 0 10px">${
+        p.pg}G · ${p.pp}P · ${signo(p.dif_games)} games · ${p.puntos} pts</p>
+      ${gente.map(g => `<div style="margin-bottom:8px">
+        <label class="lab">${esc(g.corto)}</label>
+        <input type="text" data-nombre-largo="${g.id}" maxlength="60"
+          placeholder="Nombre y apellido" value="${esc(
+            D.jugadoras.find(j => j.id === g.id)?.nombre_completo ?? '')}">
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+
+  /* Se piden los logos apenas se abre la pantalla, para que estén
+     listos cuando aprieta imprimir. */
+  if(D.auspiciadores === null) cargarAuspicios();
+  const auspicios = (D.auspiciadores ?? []).filter(a => a.logo_url).length;
+
+  return `<p class="nota">Reciben diploma el segundo y el tercer lugar de cada
+      categoría. Las duplas salen solas de la tabla, así que esto se mantiene al
+      día aunque cambien los resultados.</p>
+    <p class="nota">Escribe el nombre y apellido de cada una: en el diploma se ve
+      mejor que el nombre corto. Si dejas alguno en blanco, sale el corto.</p>
+    <p class="nota">${D.auspiciadores === null
+      ? 'Buscando los logos de los auspiciadores…'
+      : auspicios
+        ? `Al pie van los logos de los ${auspicios} auspiciadores.`
+        : 'Todavía no hay auspiciadores con logo cargado, así que el pie va sin la franja.'}</p>
+    <div class="pasos" style="margin-bottom:14px">
+      <button class="btn lima" id="dip-imprimir">Imprimir los ${premiadas.length} diplomas</button>
+      <button class="btn claro" id="dip-guardar">Guardar los nombres</button>
+    </div>
+    <div id="dip-msg"></div>
+    ${filas}`;
+}
+
+async function guardarNombresLargos(){
+  const caja = $('#dip-msg');
+  const campos = [...document.querySelectorAll('[data-nombre-largo]')];
+  try{
+    const cambios = [];
+    campos.forEach(c => {
+      const id = Number(c.dataset.nombreLargo);
+      const valor = c.value.trim() || null;
+      const antes = D.jugadoras.find(j => j.id === id)?.nombre_completo ?? null;
+      if(valor !== antes) cambios.push({ id, nombre_completo: valor });
+    });
+    if(!cambios.length) return aviso(caja, 'No había nada que cambiar.');
+    for(const c of cambios){
+      const { error } = await sb.from('jugadoras')
+        .update({ nombre_completo: c.nombre_completo }).eq('id', c.id);
+      if(error) throw error;
+    }
+    await cargar();
+    aviso(caja, `Guardado: ${cambios.length} nombre${cambios.length === 1 ? '' : 's'}.`);
+  }catch(e){ aviso(caja, 'No se pudo guardar: ' + (e.message ?? e), true); }
+}
+
 /* --- administración: el podio --- */
 function admPodio(){
   const p = D.podio;
@@ -3266,16 +3546,17 @@ function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','podio','mensaje','auspicio','extra'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','podio','diplomas','mensaje','auspicio','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
        noticias:'Noticias',galeria:'Galería',sorteo:'Sorteo',podio:'Podio',
-       mensaje:'Mandar un aviso',
+       diplomas:'Diplomas',mensaje:'Mandar un aviso',
        auspicio:'Auspiciadores',extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
     ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion,
        noticias:admNoticias, galeria:admGaleria, sorteo:admSorteo, mensaje:admMensaje,
-       auspicio:admAuspicio, extra:admExtra, podio:admPodio }[subAdm])();
+       auspicio:admAuspicio, extra:admExtra, podio:admPodio,
+      diplomas:admDiplomas }[subAdm])();
 }
 
 function admEquipos(){
@@ -4453,6 +4734,9 @@ function enlazar(){
     moverPodio({ revelado: Math.min(3, (D.podio?.revelado ?? 0) + 1) });
   if($('#pd-atras'))  $('#pd-atras').onclick  = () =>
     moverPodio({ revelado: Math.max(0, (D.podio?.revelado ?? 0) - 1) });
+  if($('#dip-imprimir')) $('#dip-imprimir').onclick = imprimirDiplomas;
+  if($('#dip-guardar'))  $('#dip-guardar').onclick  = guardarNombresLargos;
+
   if($('#pd-siguiente')) $('#pd-siguiente').onclick = () => {
     grupoAdm = $('#pd-siguiente').dataset.sigue;
     moverPodio({ grupo: grupoAdm, revelado: 0 });
