@@ -1452,8 +1452,12 @@ function totalProgramados(){
   const porEquipo = {}, porDupla = {};
   const sumar = (caja, id) => { if(id != null) caja[id] = (caja[id] ?? 0) + 1; };
   D.partidos.forEach(p => {
+    /* La final cuenta para el equipo pero no para la pareja, así que
+       tampoco va en el "de cuántos" del ranking de duplas: si no, una
+       dupla que ya jugó todo lo suyo queda mostrando 5/6 para siempre. */
+    const final = esFinalDe(p);
     sumar(porEquipo, ladoA(p));  sumar(porEquipo, ladoB(p));
-    sumar(porDupla,  p.dupla_a); sumar(porDupla,  p.dupla_b);
+    if(!final){ sumar(porDupla, p.dupla_a); sumar(porDupla, p.dupla_b); }
   });
   return { porEquipo, porDupla };
 }
