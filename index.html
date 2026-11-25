@@ -222,6 +222,18 @@ tr:last-child td.pts{border-bottom:0}
 td.prom{color:var(--gris)}
 td.jug{color:var(--gris);font-size:12px}
 .dequien{display:block;font-size:11px;color:var(--gris);font-weight:400;margin-top:1px}
+.dequien.mas{color:var(--verde);font-weight:700}
+.caja-extra{background:#fff;border:1px solid var(--borde);border-radius:14px;
+  padding:12px 14px;margin:12px 0 0}
+.caja-extra h4{margin:0 0 8px;font-size:12px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gris)}
+.caja-extra .fila-extra{display:flex;align-items:baseline;gap:10px;padding:5px 0;
+  border-top:1px solid var(--borde)}
+.caja-extra .fila-extra:first-of-type{border-top:0}
+.caja-extra .fila-extra b{flex:0 0 auto;font-size:14px}
+.caja-extra .fila-extra span{flex:1;font-size:13px;color:var(--gris)}
+.caja-extra .fila-extra em{font-style:normal;font-weight:700;font-size:15px;color:var(--verde)}
+.caja-extra .nota{color:var(--gris);font-size:12.5px}
 .leyenda{font-size:11.5px;color:var(--claro);line-height:1.55;margin:0 0 16px;max-width:62ch}
 .leyenda b{color:#fff}
 /* En el teléfono se esconden Sets y Games (quedan sus
@@ -359,6 +371,106 @@ td.jug{color:var(--gris);font-size:12px}
 .tambor .de-equipo{display:block;margin-top:6px;font-size:12.5px;letter-spacing:.07em;
   text-transform:uppercase;color:var(--claro)}
 @keyframes aparecer{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+
+/* ---------- el podio final, pensado para el proyector ----------
+   Todo se mide en vmin y con clamp(), así que la misma pantalla
+   sirve en un teléfono y en un telón de tres metros. */
+.podio-pantalla{position:fixed;inset:0;z-index:70;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 18%,#0A6F66 0%,#024C46 55%,#012E2A 100%);
+  color:#fff;display:flex;flex-direction:column}
+.podio-pantalla .pd-encabeza{text-align:center;padding:clamp(14px,3.2vmin,42px) 16px 0;flex:0 0 auto}
+.podio-pantalla .pd-torneo{font-size:clamp(11px,1.7vmin,22px);letter-spacing:.22em;
+  text-transform:uppercase;color:var(--claro);margin:0}
+.podio-pantalla .pd-grupo{font-size:clamp(23px,5.4vmin,74px);font-weight:800;margin:.18em 0 0;
+  line-height:1.05;letter-spacing:-.01em}
+.podio-pantalla .pd-cancha{flex:1;display:flex;align-items:flex-end;justify-content:center;
+  gap:clamp(8px,1.6vmin,22px);padding:clamp(10px,2.4vmin,34px) clamp(8px,2vmin,30px)
+  clamp(16px,3.4vmin,46px)}
+
+/* Cada cajón. Vacío hasta que lo destapen: así el espacio ya está
+   hecho y nada salta de pd-lugar cuando aparece el nombre. */
+.pd-cajon{flex:1 1 0;max-width:clamp(150px,27vmin,420px);display:flex;flex-direction:column;
+  justify-content:flex-end;align-items:center;text-align:center}
+.pd-cajon .pd-ficha{width:100%;opacity:0;transform:translateY(22px) scale(.94)}
+.pd-cajon.abierto .pd-ficha{animation:sube .72s cubic-bezier(.17,1.25,.4,1) both}
+@keyframes sube{from{opacity:0;transform:translateY(26px) scale(.93)}
+  to{opacity:1;transform:none}}
+.pd-cajon .pd-quien{font-weight:800;line-height:1.1;font-size:clamp(15px,3.1vmin,42px);
+  margin:0 0 .18em;word-break:break-word;hyphens:auto}
+.pd-cajon .pd-suyo{display:block;font-weight:600;color:var(--claro);
+  font-size:clamp(10px,1.5vmin,19px);letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:.5em}
+.pd-cajon .pd-cuanto{font-weight:800;font-size:clamp(14px,2.4vmin,32px);color:var(--lima)}
+.pd-cajon .pd-cuanto small{font-weight:600;font-size:.56em;letter-spacing:.1em;
+  text-transform:uppercase;opacity:.75;margin-left:.3em}
+.pd-cajon .pd-escalon{width:100%;border-radius:16px 16px 0 0;margin-top:clamp(8px,1.6vmin,20px);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding-top:clamp(6px,1.2vmin,16px);
+  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.07))}
+.pd-cajon .pd-lugar{font-weight:800;font-size:clamp(22px,5vmin,70px);line-height:1;
+  color:rgba(255,255,255,.92)}
+.pd-cajon.pd-tercero .pd-escalon{height:clamp(54px,13vmin,170px)}
+.pd-cajon.pd-segundo .pd-escalon{height:clamp(80px,19vmin,250px)}
+.pd-cajon.pd-primero .pd-escalon{height:clamp(110px,26vmin,340px);
+  background:linear-gradient(180deg,rgba(215,222,105,.95),rgba(215,222,105,.45))}
+.pd-cajon.pd-primero .pd-lugar{color:var(--tinta)}
+.pd-cajon.pd-primero .pd-quien{color:var(--lima);font-size:clamp(18px,3.9vmin,54px)}
+.pd-cajon.pd-primero.abierto .pd-ficha{animation:pd-corona 1s cubic-bezier(.17,1.5,.35,1) both}
+@keyframes pd-corona{0%{opacity:0;transform:translateY(34px) scale(.7)}
+  55%{opacity:1;transform:translateY(0) scale(1.1)}100%{transform:none;opacity:1}}
+.pd-cajon .pd-corona{display:block;font-size:clamp(20px,3.6vmin,48px);line-height:1;
+  margin-bottom:.12em}
+
+/* En pantalla angosta no caben tres columnas con nombres largos:
+   se apilan, y el primero queda arriba. */
+@media (max-aspect-ratio:3/4){
+  .podio-pantalla .pd-cancha{flex-direction:column;align-items:stretch;justify-content:center;
+    gap:10px}
+  /* Apilados se leen como un ranking: primero, segundo, tercero. */
+  .pd-cajon.pd-primero{order:1}
+  .pd-cajon.pd-segundo{order:2}
+  .pd-cajon.pd-tercero{order:3}
+  .pd-cajon{max-width:none;flex:0 0 auto;flex-direction:row;align-items:center;gap:14px;
+    text-align:left;background:rgba(255,255,255,.1);border-radius:16px;padding:12px 14px}
+  .pd-cajon .pd-escalon{width:auto;height:auto!important;background:none;margin:0;padding:0;
+    order:-1;flex:0 0 auto}
+  .pd-cajon.pd-primero .pd-escalon{background:none}
+  .pd-cajon .pd-ficha{flex:1;min-width:0}
+  .pd-cajon.pd-primero{background:rgba(215,222,105,.18);outline:2px solid var(--lima)}
+  .pd-cajon.pd-primero .pd-lugar{color:var(--lima)}
+}
+
+/* Los botones de la ceremonia, abajo. Solo los ve la admin. */
+.podio-mando{flex:0 0 auto;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  padding:0 12px clamp(12px,2.4vmin,26px)}
+.podio-mando button{font:inherit;font-weight:700;font-size:clamp(13px,1.7vmin,18px);
+  padding:.65em 1.2em;border-radius:999px;border:2px solid rgba(255,255,255,.5);
+  background:transparent;color:#fff;cursor:pointer}
+.podio-mando button.destaca{background:var(--lima);border-color:var(--lima);color:var(--tinta)}
+.podio-mando button:disabled{opacity:.35;cursor:default}
+
+/* Para que las que miran desde el teléfono puedan pasear por los
+   podios cuando termine la ceremonia. */
+.podio-paso{flex:0 0 auto;display:flex;gap:6px;justify-content:center;flex-wrap:wrap;
+  padding:0 12px 10px}
+.podio-paso button{font:inherit;font-size:clamp(11px,1.4vmin,15px);font-weight:700;
+  padding:.45em 1em;border-radius:999px;border:1.5px solid rgba(255,255,255,.35);
+  background:transparent;color:rgba(255,255,255,.8);cursor:pointer}
+.podio-paso button.on{background:#fff;border-color:#fff;color:var(--tinta)}
+.podio-vacio{margin:auto;text-align:center;color:var(--claro);
+  font-size:clamp(14px,2vmin,24px);padding:24px}
+
+/* El confeti del primer lugar. */
+.pd-confeti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.pd-confeti i{position:absolute;top:-6vh;width:.8vmin;height:1.8vmin;min-width:5px;min-height:11px;
+  border-radius:1px;animation:cae-confeti linear forwards}
+@keyframes cae-confeti{
+  0%{transform:translateY(0) rotate(0);opacity:1}
+  100%{transform:translateY(112vh) rotate(760deg);opacity:.85}}
+@media (prefers-reduced-motion:reduce){
+  .pd-confeti{display:none}
+  .pd-cajon.abierto .pd-ficha,.pd-cajon.pd-primero.abierto .pd-ficha{animation:none;opacity:1;transform:none}
+}
 
 /* El redoble: los nombres pasando rápido antes de parar en una. */
 .tambor.rodando{background:rgba(255,255,255,.16)}
@@ -730,6 +842,7 @@ body.quieto{overflow:hidden}
   <h2>El torneo</h2>
   <a data-vista="avisos">Avisos al teléfono</a>
   <a data-vista="sorteo" id="lnk-sorteo" class="oculta">Sorteo</a>
+  <a data-vista="podio" id="lnk-podio" class="oculta">Podio</a>
   <a data-vista="auspiciadores">Auspiciadores</a>
   <h2>Acceso</h2>
   <a data-vista="entrar" id="lnk-entrar">Iniciar sesión</a>
@@ -742,6 +855,7 @@ body.quieto{overflow:hidden}
     <a data-adm="noticias">Noticias</a>
     <a data-adm="galeria">Galería</a>
     <a data-adm="sorteo">Sorteo</a>
+    <a data-adm="podio">Podio y premiación</a>
     <a data-adm="mensaje">Mandar un aviso</a>
     <a data-adm="auspicio">Auspiciadores</a>
     <a data-adm="extra">Puntos extra</a>
@@ -767,7 +881,7 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[], sorteo:null, sorteoPart:[] };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[], sorteo:null, sorteoPart:[], podio:null };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -864,6 +978,13 @@ const diaCorto = f => new Date(f + 'T12:00:00')
 const diaDe = p => p.fecha_real
   || D.jornadas.find(j => j.id === p.jornada_id)?.fecha || null;
 
+/* Un partido es final si está marcado él, o si está en una fecha
+   marcada como final. Lo segundo es la red de seguridad: así los
+   partidos del viernes valen 60 y 30 aunque se carguen a mano y
+   a nadie se le haya ocurrido marcarlos uno por uno. */
+const esFinalDe = p => !!(p.es_final
+  || D.jornadas.find(j => j.id === p.jornada_id)?.es_final);
+
 /* ---------- datos ---------- */
 const t = async (n, o) => (await sb.from(n).select('*').order(o ?? 'id')).data ?? [];
 
@@ -883,7 +1004,7 @@ async function cargarBase(){
 /* Lo demás: tablas calculadas, noticias, la DIVA. Se pide después
    de haber pintado, así la app aparece antes. */
 async function cargarResto(){
-  const [tab, ran, aju, pre, not, div, etq, gal, gfo, lik, com, sor, spa] = await Promise.all([
+  const [tab, ran, aju, pre, not, div, etq, gal, gfo, lik, com, sor, spa, pod] = await Promise.all([
     t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
     sb.from('preguntas').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
     sb.from('noticias').select('*').order('publicada_en',{ascending:false}).then(r => r.data ?? []),
@@ -900,13 +1021,16 @@ async function cargarResto(){
     /* El sorteo de la final. Si todavía no se corrió su SQL,
        vuelve vacío y en la app simplemente no aparece. */
     sb.from('sorteo').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
-    t('sorteo_participantes','creado_en')
+    t('sorteo_participantes','creado_en'),
+    /* El podio de la premiación. Mismo caso que el sorteo: si no
+       se corrió su SQL, vuelve vacío y no aparece. */
+    sb.from('podio').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null)
   ]);
   D.tabla = tab; D.ranking = ran; D.ajustes = aju;
   D.preguntas = pre; D.noticias = not; D.diva = div; D.etiquetas = etq;
   D.galerias = gal; D.galeriaFotos = gfo;
   D.fotoLikes = lik; D.fotoComentarios = com;
-  D.sorteo = sor; D.sorteoPart = spa;
+  D.sorteo = sor; D.sorteoPart = spa; D.podio = pod;
   restoListo = true;
 }
 
@@ -1032,7 +1156,8 @@ function pintar(){
   p.className = '';
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
               noticias:vNoticias, diva:vDiva, entrar:vEntrar, admin:vAdmin,
-              auspiciadores:vAuspiciadores, avisos:vAvisos, sorteo:vSorteo }[vista] ?? vResultados;
+              auspiciadores:vAuspiciadores, avisos:vAvisos, sorteo:vSorteo,
+              podio:vPodio }[vista] ?? vResultados;
   const puerta = vista === 'entrar';
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
@@ -1046,8 +1171,11 @@ function pintar(){
     pintarVisor();
     pintarFranja();
     rodarNombres();
+    celebrarPodio();
     const lnk = $('#lnk-sorteo');
     if(lnk) lnk.classList.toggle('oculta', !sorteoVivo());
+    const lnkP = $('#lnk-podio');
+    if(lnkP) lnkP.classList.toggle('oculta', !podioVivo());
   }catch(e){
     p.innerHTML = `<div class="vacio">Algo falló al mostrar esta sección.<br><br>
       <span class="mono" style="font-size:12px">${esc(e.message)}</span><br><br>
@@ -1075,8 +1203,14 @@ function vResultados(){
   if(subRes === 'equipos'){
     cuerpo = tablaEquipos().some(x => x.pj)
       ? tablaPos(tablaEquipos(),'Equipo') + leyendaTabla('equipos') : sinDatos();
-    if(D.ajustes.length) cuerpo += `<p class="nota">Incluye puntos extra: ${
-      D.ajustes.map(a => `${esc(eq(a.equipo_id))} ${a.puntos>0?'+':''}${a.puntos} (${esc(a.motivo)})`).join(' · ')}</p>`;
+    if(D.ajustes.length) cuerpo += `<div class="caja-extra">
+      <h4>Puntos que no vienen de la cancha</h4>
+      ${D.ajustes.map(a => `<div class="fila-extra">
+        <b>${esc(nombreDeTabla(eq(a.equipo_id)))}</b>
+        <span>${esc(a.motivo)}</span>
+        <em>${signo(a.puntos)}</em></div>`).join('')}
+      <p class="nota" style="margin:8px 0 0">Ya están sumados en la columna Pts.</p>
+    </div>`;
   }
   if(subRes === 'duplas'){
     const ran = rankingDuplas();
@@ -1130,7 +1264,7 @@ function casillasSet(p, lado){
 function pizarra(p, opciones){
   const o = opciones ?? {};
   const jugado = p.estado === 'jugado' && p.set1_a != null;
-  const c = jugado ? cuentaPartido(p, p.es_final) : null;
+  const c = jugado ? cuentaPartido(p, esFinalDe(p)) : null;
   const ganaA = jugado && c.setsA > c.setsB;
   const ganaB = jugado && c.setsB > c.setsA;
   const j = D.jornadas.find(x => x.id === p.jornada_id);
@@ -1222,7 +1356,7 @@ function rankingDuplas(){
   base.forEach(x => { por[x.dupla_id] = x; });
 
   D.partidos.filter(p => p.estado === 'jugado' && p.set1_a != null).forEach(p => {
-    const c = cuentaPartido(p, p.es_final);
+    const c = cuentaPartido(p, esFinalDe(p));
     const gA = p.set1_a + p.set2_a, gB = p.set1_b + p.set2_b;
     [[p.dupla_a, c.setsA, c.setsB, c.puntosA, gA, gB],
      [p.dupla_b, c.setsB, c.setsA, c.puntosB, gB, gA]].forEach(([id, sg, sp, pts, gg, gp]) => {
@@ -1270,11 +1404,20 @@ function tablaPos(lista, etiqueta){
     const total = esEquipo ? tope.porEquipo[f.equipo_id] : tope.porDupla[f.dupla_id];
     return total ? `${f.pj}/${total}` : String(f.pj);
   };
+  /* Los puntos que no vienen de la cancha —la presentación de bailes,
+     por ejemplo— van debajo del nombre del equipo, para que se vea de
+     dónde sale la diferencia y no parezca un error de suma. */
+  const extraDe = {};
+  if(esEquipo) D.ajustes.forEach(a => {
+    extraDe[a.equipo_id] = (extraDe[a.equipo_id] ?? 0) + a.puntos;
+  });
+  const bajoElNombre = f => esEquipo
+    ? (extraDe[f.equipo_id] ? `<span class="dequien mas">${signo(extraDe[f.equipo_id])} extra</span>` : '')
+    : (f.equipo ? `<span class="dequien">${esc(nombreDeTabla(f.equipo))}</span>` : '');
   return `<div class="tabla-caja"><table><thead><tr><th>#</th><th>${etiqueta}</th><th>PJ</th><th>G</th><th>P</th>
     <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Prom.</th><th class="pts">Pts</th></tr></thead><tbody>` +
     lista.map((f,i) => `<tr ${f.equipo_id&&etiqueta==='Equipo'?`data-equipo="${f.equipo_id}" style="cursor:pointer"`:''}><td class="pos">${i+1}</td>
-      <td>${esc(comoSeLlama(f))}${esEquipo || !f.equipo ? ''
-        : `<span class="dequien">${esc(nombreDeTabla(f.equipo))}</span>`}</td><td class="jug">${esc(jugados(f))}</td><td>${f.pg}</td><td>${f.pp}</td>
+      <td>${esc(comoSeLlama(f))}${bajoElNombre(f)}</td><td class="jug">${esc(jugados(f))}</td><td>${f.pg}</td><td>${f.pp}</td>
       <td>${f.sets_g ?? '—'}${f.sets_g!=null?'-'+f.sets_p:''}</td><td>${signo(f.dif_sets)}</td>
       <td>${f.games_g ?? '—'}${f.games_g!=null?'-'+f.games_p:''}</td><td>${signo(f.dif_games)}</td>
       <td class="prom">${promedio(f)}</td>
@@ -1341,7 +1484,7 @@ function unaParrilla(lista){
                              && (c === null || x.cancha === c));
       if(!p) return `<div class="celda libre">—</div>`;
       const jugado = p.estado === 'jugado' && p.set1_a != null;
-      const gA = jugado && cuentaPartido(p, p.es_final).setsA > cuentaPartido(p, p.es_final).setsB;
+      const gA = jugado && cuentaPartido(p, esFinalDe(p)).setsA > cuentaPartido(p, esFinalDe(p)).setsB;
       return `<div class="celda ${esMio(p) ? 'mio' : ''} ${rotuloEstado(p) ? 'suspendido' : ''}">
         <span class="cat">${esc(cat(p.categoria_id))}</span>
         ${ladoParrilla(p.dupla_a, ladoA(p), jugado && gA)}
@@ -1455,7 +1598,7 @@ function tablaEquipos(){
   base.forEach(x => { por[x.equipo_id] = x; });
 
   D.partidos.filter(p => p.estado === 'jugado' && p.set1_a != null).forEach(p => {
-    const c = cuentaPartido(p, p.es_final);
+    const c = cuentaPartido(p, esFinalDe(p));
     const gA = p.set1_a + p.set2_a, gB = p.set1_b + p.set2_b;
     [[ladoA(p), c.setsA, c.setsB, c.puntosA, gA, gB],
      [ladoB(p), c.setsB, c.setsA, c.puntosB, gB, gA]].forEach(([id, sg, sp, pts, gg, gp]) => {
@@ -1595,7 +1738,7 @@ function partidosDelEquipo(id, ps){
 function tarjetaEquipo(p, id){
   const jugado = p.estado === 'jugado' && p.set1_a != null;
   if(!jugado) return pizarra(p);
-  const c = cuentaPartido(p, p.es_final);
+  const c = cuentaPartido(p, esFinalDe(p));
   const gano = ladoA(p) === id ? c.setsA > c.setsB : c.setsB > c.setsA;
   return pizarra(p, { extra: gano ? 'Ganado' : 'Perdido', tono: gano ? 'listo' : 'perdio' });
 }
@@ -2666,6 +2809,230 @@ function pintarFranja(){
   $('#ir-sorteo').onclick = () => { vista = 'sorteo'; pintar(); window.scrollTo({top:0}); };
 }
 
+/* ---------- el podio final ----------------------------------------
+   Pensado para proyectarlo: la administradora destapa el tercer
+   lugar, después el segundo, después el primero. Lo que ella ve
+   en el telón y lo que ven ellas en el teléfono es la misma fila
+   de la base de datos, así que van juntas.
+
+   Cuando la ceremonia termina, lo deja en "libre" y cada una
+   puede recorrer los podios de todas las categorías por su
+   cuenta. */
+
+const podioVivo  = () => D.podio && ['vivo','libre'].includes(D.podio.estado);
+const gruposPodio = () => ['equipos', ...D.categorias.map(c => c.codigo)];
+const tituloGrupo = g => g === 'equipos' ? 'Podio de equipos' : 'Categoría ' + g;
+
+/* Los tres primeros del podio que esté en pantalla. */
+function podioDe(grupo){
+  if(grupo === 'equipos'){
+    return tablaEquipos().filter(x => x.pj)
+      .slice().sort((a,b) => b.puntos - a.puntos || b.dif_sets - a.dif_sets
+        || b.dif_games - a.dif_games)
+      .slice(0, 3)
+      .map(x => ({ quien: x.nombre, suyo: null, puntos: x.puntos }));
+  }
+  return rankingDuplas().filter(r => r.categoria === grupo && r.pj)
+    .slice().sort((a,b) => b.puntos - a.puntos || b.dif_sets - a.dif_sets
+      || b.dif_games - a.dif_games)
+    .slice(0, 3)
+    .map(x => ({ quien: x.dupla_id ? nomDupla(x.dupla_id) : (x.nombre ?? '—'),
+                 suyo: x.equipo ? nombreDeTabla(x.equipo) : null, puntos: x.puntos }));
+}
+
+/* Un cajón del podio. Se dibuja siempre, aunque esté tapado: así
+   el espacio ya está tomado y nada se corre de lugar al abrirlo. */
+function cajonPodio(lugar, quien, abierto){
+  const clase = ['pd-tercero','pd-segundo','pd-primero'][3 - lugar];
+  return `<div class="pd-cajon ${clase}${abierto ? ' abierto' : ''}">
+    <div class="pd-ficha">${abierto && quien ? `
+      ${lugar === 1 ? '<span class="pd-corona">👑</span>' : ''}
+      <p class="pd-quien">${esc(quien.quien)}</p>
+      ${quien.suyo ? `<span class="pd-suyo">${esc(quien.suyo)}</span>` : ''}
+      <span class="pd-cuanto">${quien.puntos}<small>pts</small></span>` : ''}</div>
+    <div class="pd-escalon"><span class="pd-lugar">${lugar}º</span></div>
+  </div>`;
+}
+
+function vPodio(){
+  const p = D.podio;
+  if(!p || p.estado === 'oculto')
+    return `<div class="vacio">La premiación todavía no empieza.</div>`;
+
+  const grupo = p.estado === 'libre' ? (grupoMirado ?? p.grupo) : p.grupo;
+  const tres  = podioDe(grupo);
+  /* En "libre" ya está todo destapado; en la ceremonia manda ella. */
+  const hasta = p.estado === 'libre' ? 3 : (p.revelado ?? 0);
+
+  const cancha = tres.length
+    ? [2, 1, 3].map(l => cajonPodio(l, tres[l - 1], hasta >= (4 - l))).join('')
+    : `<p class="podio-vacio">Todavía no hay partidos jugados en ${esc(tituloGrupo(grupo).toLowerCase())}.</p>`;
+
+  /* Los botones de la ceremonia: solo para la administradora. */
+  const mando = (sesion && p.estado === 'vivo') ? `<div class="podio-mando">
+      <button id="pd-atras" ${hasta === 0 ? 'disabled' : ''}>← Atrás</button>
+      <button id="pd-sigue" class="destaca" ${hasta >= 3 ? 'disabled' : ''}>${
+        ['Destapar el 3º', 'Destapar el 2º', 'Destapar el 1º 🏆', 'Listo'][Math.min(hasta, 3)]}</button>
+      <button id="pd-pantalla">⛶ Pantalla completa</button>
+    </div>` : '';
+
+  /* Y los paseos por categoría, cuando la ceremonia ya pasó. */
+  const paseo = p.estado === 'libre' ? `<div class="podio-paso">${
+    gruposPodio().map(g => `<button class="${g === grupo ? 'on' : ''}" data-podio-grupo="${
+      esc(g)}">${g === 'equipos' ? 'Equipos' : esc(g)}</button>`).join('')}</div>` : '';
+
+  return `<div class="podio-pantalla">
+    <button class="cerrar-visor" id="pd-cerrar" aria-label="Salir">✕</button>
+    <div class="pd-encabeza">
+      <p class="pd-torneo">${esc(p.titulo ?? 'Batalla de Equipos 2026')}</p>
+      <h1 class="pd-grupo">${esc(tituloGrupo(grupo))}</h1>
+    </div>
+    <div class="pd-cancha">${cancha}</div>
+    ${paseo}${mando}
+    <div class="pd-confeti" id="pd-confeti"></div>
+  </div>`;
+}
+
+/* Qué podio está mirando esta persona por su cuenta, en "libre". */
+let grupoMirado = null;
+
+/* Pantalla completa, para el proyector. No todos los navegadores
+   la dejan; si no se puede, la pantalla igual se ve entera. */
+function pantallaCompleta(){
+  try{
+    const e = document.documentElement;
+    if(document.fullscreenElement) return document.exitFullscreen();
+    (e.requestFullscreen || e.webkitRequestFullscreen || (() => {})).call(e);
+  }catch(e){ }
+}
+function salirDePantallaCompleta(){
+  try{ if(document.fullscreenElement) document.exitFullscreen(); }catch(e){ }
+}
+/* Para no repetir el confeti ni la fanfarria en cada repintado. */
+let fanfarriaHecha = '';
+
+/* Cuando la premiación se pone en vivo, el teléfono de cada una se
+   va solo al podio: es el momento de mirar, no de andar buscando
+   dónde está. Pasa una vez por podio, así que si alguien lo cierra
+   no la volvemos a arrastrar hasta que cambie de categoría. */
+let podioSaltado = '';
+function seguirAlPodio(){
+  const p = D.podio;
+  if(!p || p.estado !== 'vivo') return;
+  const marca = p.grupo + '/' + p.estado;
+  if(podioSaltado === marca) return;
+  podioSaltado = marca;
+  if(vista === 'admin') return;   /* a la admin no la sacamos de su panel */
+  grupoMirado = null;
+  vista = 'podio';
+}
+
+/* Papelitos de colores cayendo. Puro CSS, sin imágenes. */
+function tirarConfeti(){
+  const caja = $('#pd-confeti');
+  if(!caja || caja.childElementCount) return;
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const tonos = ['#D7DE69','#FFFFFF','#9ED8D1','#FFD166','#64C9BE'];
+  let html = '';
+  for(let i = 0; i < 70; i++){
+    html += `<i style="left:${(Math.random()*100).toFixed(1)}%;
+      background:${tonos[i % tonos.length]};
+      animation-duration:${(2.6 + Math.random()*2.4).toFixed(2)}s;
+      animation-delay:${(Math.random()*1.1).toFixed(2)}s;
+      transform:rotate(${Math.floor(Math.random()*360)}deg)"></i>`;
+  }
+  caja.innerHTML = html;
+  setTimeout(() => { if(caja) caja.innerHTML = ''; }, 7000);
+}
+
+/* La fanfarria. Se arma con el sintetizador del navegador, sin
+   archivo de sonido. Solo suena donde alguien tocó algo antes
+   —o sea, en el teléfono de la admin, que es el del proyector—:
+   los demás navegadores no dejan sonar nada sin permiso. */
+function fanfarria(){
+  try{
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if(!Ctx) return;
+    const ac = new Ctx();
+    if(ac.state === 'suspended') ac.resume();
+    const notas = [[523.25,0],[659.25,.13],[783.99,.26],[1046.5,.42]];
+    notas.forEach(([hz, t], i) => {
+      const o = ac.createOscillator(), g = ac.createGain();
+      o.type = 'triangle'; o.frequency.value = hz;
+      const t0 = ac.currentTime + t, dur = i === notas.length - 1 ? 1.1 : .22;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(.22, t0 + .02);
+      g.gain.exponentialRampToValueAtTime(.0008, t0 + dur);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t0); o.stop(t0 + dur + .05);
+    });
+    setTimeout(() => { try{ ac.close(); }catch(e){} }, 2600);
+  }catch(e){ /* sin sonido, el podio igual se ve */ }
+}
+
+/* Se llama después de pintar: si acaba de aparecer el primer
+   lugar, suelta el confeti y la fanfarria una sola vez. */
+function celebrarPodio(){
+  const p = D.podio;
+  if(!p || p.estado !== 'vivo' || (p.revelado ?? 0) < 3) return;
+  const marca = `${p.grupo}:${p.actualizado_en ?? ''}`;
+  if(fanfarriaHecha === marca) return;
+  fanfarriaHecha = marca;
+  tirarConfeti();
+  fanfarria();
+}
+
+/* --- administración: el podio --- */
+function admPodio(){
+  const p = D.podio;
+  if(!p) return `<div class="vacio">Falta correr esquema-parte19.sql en Supabase.</div>`;
+  const tres = podioDe(p.grupo);
+  const estado = { oculto:'No se ve nada en la app.',
+    vivo:'En vivo: todas están viendo lo mismo que tú.',
+    libre:'Terminó. Cada una puede recorrer los podios por su cuenta.' }[p.estado];
+
+  return `<p class="nota">La premiación se proyecta desde acá. Eliges el podio,
+      lo pones en vivo y destapas de a un lugar. Los teléfonos van siguiendo
+      lo que tú haces.</p>
+    <div class="card">
+      <h3>Qué podio</h3>
+      <div class="chips" style="margin:10px 0 0">${gruposPodio().map(g =>
+        `<button class="chip ${g === p.grupo ? 'on' : ''}" data-adm-podio="${esc(g)}">${
+          g === 'equipos' ? 'Equipos' : esc(g)}</button>`).join('')}</div>
+      <p class="nota" style="margin:12px 0 0">${tres.length
+        ? tres.map((x, i) => `${i + 1}º ${esc(x.quien)} · ${x.puntos}`).join('<br>')
+        : 'Todavía no hay partidos jugados en este podio.'}</p>
+    </div>
+    <div class="card">
+      <h3>La ceremonia</h3>
+      <p class="nota" style="margin:4px 0 12px">Ahora: <b>${esc(estado)}</b>${
+        p.estado === 'vivo' ? ` Lugares destapados: <b>${p.revelado ?? 0}</b> de 3.` : ''}</p>
+      <div class="pasos">
+        <button class="btn ${p.estado === 'oculto' ? 'lima' : 'claro'}" data-podio="vivo">
+          Poner en vivo y abrir en pantalla</button>
+        <button class="btn claro" data-podio="libre">Dejarlo libre para que lo recorran</button>
+        <button class="btn claro" id="pd-reiniciar">Volver a tapar los tres lugares</button>
+        <button class="btn claro" data-podio="oculto"
+          style="border-color:var(--alerta);color:var(--alerta)">Esconder todo</button>
+      </div>
+      <div id="pd-msg"></div>
+    </div>`;
+}
+
+async function moverPodio(cambio){
+  const caja = $('#pd-msg');
+  try{
+    const { error } = await sb.from('podio')
+      .update(Object.assign({ actualizado_en: new Date().toISOString() }, cambio)).eq('id', 1);
+    if(error) throw error;
+    await cargar();
+    /* Al ponerlo en vivo, su propia pantalla se va al podio: es la
+       que está proyectando. */
+    if(cambio.estado === 'vivo'){ vista = 'podio'; grupoMirado = null; }
+    pintar();
+  }catch(e){ aviso(caja, 'No se pudo: ' + (e.message ?? e), true); }
+}
+
 /* --- el redoble del sorteo ---------------------------------------
    Cuando aparece la ganadora, el teléfono muestra primero los nombres
    de las que entraron pasando rápido, y va frenando hasta quedarse en
@@ -2834,15 +3201,16 @@ function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','mensaje','auspicio','extra'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','podio','mensaje','auspicio','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
-       noticias:'Noticias',galeria:'Galería',sorteo:'Sorteo',mensaje:'Mandar un aviso',
+       noticias:'Noticias',galeria:'Galería',sorteo:'Sorteo',podio:'Podio',
+       mensaje:'Mandar un aviso',
        auspicio:'Auspiciadores',extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
     ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion,
        noticias:admNoticias, galeria:admGaleria, sorteo:admSorteo, mensaje:admMensaje,
-       auspicio:admAuspicio, extra:admExtra }[subAdm])();
+       auspicio:admAuspicio, extra:admExtra, podio:admPodio }[subAdm])();
 }
 
 function admEquipos(){
@@ -3712,7 +4080,7 @@ function previaResultado(){
   form.classList.toggle('con-tb2', huboTieBreak(m.set2_a, m.set2_b));
   if(m.set1_a == null && m.set1_b == null && m.set2_a == null && m.set2_b == null)
     return caja.innerHTML = '';
-  const c = cuentaPartido(m, p.es_final);
+  const c = cuentaPartido(m, esFinalDe(p));
   const r = reparos(m);
   const gana = c.setsA === c.setsB ? null : (c.setsA > c.setsB ? 'a' : 'b');
   caja.innerHTML = `
@@ -3731,7 +4099,7 @@ async function guardarResultado(){
   const id = +$('#r-form').dataset.id;
   const p  = D.partidos.find(x => x.id === id);
   const m  = leerMarcador();
-  const c  = cuentaPartido(m, p.es_final);
+  const c  = cuentaPartido(m, esFinalDe(p));
   if(c.setsA === c.setsB)
     return problema($('#r-msg'), new Error('El partido no puede quedar empatado en sets.'));
   try{
@@ -3857,7 +4225,7 @@ async function armarExcel(){
       .sort((a,b) => (a.hora||'').localeCompare(b.hora||'')
                   || String(a.cancha||'').localeCompare(String(b.cancha||'')));
     for(const p of suyos){
-      const c = jugados(p) ? cuentaPartido(p, p.es_final) : null;
+      const c = jugados(p) ? cuentaPartido(p, esFinalDe(p)) : null;
       det.push([
         j.nombre, diaDe(p) || j.fecha, p.hora ? p.hora.slice(0,5) : '', p.cancha ?? '',
         cat(p.categoria_id),
@@ -4000,6 +4368,22 @@ function enlazar(){
   if($('#resortear'))      $('#resortear').onclick      = sortearGanadora;
   if($('#revelar-premio')) $('#revelar-premio').onclick = revelarPremio;
   if($('#so-guardar'))     $('#so-guardar').onclick     = guardarTextosSorteo;
+
+  /* --- el podio --- */
+  document.querySelectorAll('[data-podio]').forEach(b => b.onclick = () =>
+    moverPodio({ estado: b.dataset.podio, revelado: b.dataset.podio === 'vivo' ? 0 : undefined }));
+  document.querySelectorAll('[data-adm-podio]').forEach(b => b.onclick = () =>
+    moverPodio({ grupo: b.dataset.admPodio, revelado: 0 }));
+  if($('#pd-reiniciar')) $('#pd-reiniciar').onclick = () => moverPodio({ revelado: 0 });
+  if($('#pd-sigue'))  $('#pd-sigue').onclick  = () =>
+    moverPodio({ revelado: Math.min(3, (D.podio?.revelado ?? 0) + 1) });
+  if($('#pd-atras'))  $('#pd-atras').onclick  = () =>
+    moverPodio({ revelado: Math.max(0, (D.podio?.revelado ?? 0) - 1) });
+  if($('#pd-cerrar')) $('#pd-cerrar').onclick = () => {
+    salirDePantallaCompleta(); vista = 'resultados'; pintar(); };
+  if($('#pd-pantalla')) $('#pd-pantalla').onclick = pantallaCompleta;
+  document.querySelectorAll('[data-podio-grupo]').forEach(b => b.onclick = () => {
+    grupoMirado = b.dataset.podioGrupo; pintar(); });
 
   /* --- la galería, como la ven todas --- */
   document.querySelectorAll('[data-galeria]').forEach(b => b.onclick = () => {
@@ -4478,6 +4862,7 @@ async function refrescar(aLaFuerza){
     const antes = huella();
     await cargar();
     ultimoRefresco = Date.now();
+    seguirAlPodio();
     /* Solo repintamos si de verdad cambió algo: así no se mueve la
        pantalla bajo el dedo de alguien que está leyendo. */
     if(aLaFuerza || huella() !== antes){
@@ -4505,7 +4890,8 @@ function huella(){
   const so = D.sorteo
     ? `${D.sorteo.estado}.${D.sorteo.premio_revelado}.${D.sorteo.ganadora_id}.${D.sorteoPart.length}`
     : '';
-  return [p, n, q, e, d, t, v, g, so].join('#');
+  const po = D.podio ? `${D.podio.estado}.${D.podio.grupo}.${D.podio.revelado}` : '';
+  return [p, n, q, e, d, t, v, g, so, po].join('#');
 }
 
 /* Tres momentos: al volver a la app, al tocar la pantalla después
@@ -4518,9 +4904,13 @@ function mantenerAlDia(){
   /* Mientras el sorteo está en marcha la app mira cada ocho
      segundos, para que el momento se viva en vivo y no haya que
      recargar nada. El resto del tiempo sigue cada dos minutos. */
+  /* Durante el sorteo y durante la premiación la app mira más
+     seguido: son los dos momentos en que lo que pasa en una
+     pantalla tiene que verse al tiro en todas las demás. */
   setInterval(() => {
-    if(D.sorteo && ['abierto','cerrado','sorteado'].includes(D.sorteo.estado)) refrescar();
-  }, 8000);
+    if(D.sorteo && ['abierto','cerrado','sorteado'].includes(D.sorteo.estado)) return refrescar();
+    if(D.podio && D.podio.estado === 'vivo') refrescar();
+  }, 5000);
 
   tironParaActualizar();
 }
@@ -4589,7 +4979,7 @@ function tironParaActualizar(){
     mantenerAlDia();
     arrancarAvisos();
     /* El resto llega en segundo plano y la pantalla se completa sola. */
-    cargarResto().then(pintar).catch(() => {});
+    cargarResto().then(() => { seguirAlPodio(); pintar(); }).catch(() => {});
   }catch(e){
     $('#pantalla').className = '';
     $('#pantalla').innerHTML = `<div class="vacio">No se pudo conectar con la base de datos.<br><br>
