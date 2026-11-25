@@ -389,7 +389,7 @@ td.jug{color:var(--gris);font-size:12px}
 /* flex:0 1 auto + margin auto deja el podio centrado a lo alto en
    vez de pegado abajo: en un teléfono vertical sobra mucho sitio. */
 .podio-pantalla .pd-cancha{flex:0 1 auto;margin:auto 0;display:flex;align-items:flex-end;
-  justify-content:center;gap:clamp(4px,1vmin,16px);
+  justify-content:center;gap:clamp(9px,2vmin,20px);
   padding:clamp(8px,2vmin,30px) clamp(6px,1.6vmin,26px) clamp(10px,2.6vmin,40px);
   width:100%;box-sizing:border-box}
 
@@ -410,11 +410,41 @@ td.jug{color:var(--gris);font-size:12px}
 .pd-cajon .pd-suyo{display:block;font-weight:600;color:var(--claro);
   font-size:clamp(8.5px,1.5vmin,18px);letter-spacing:.1em;text-transform:uppercase;
   margin-bottom:.45em;overflow-wrap:anywhere}
+/* La ficha: ganados, perdidos y diferencia de games, una debajo de
+   otra para que las tres columnas del podio se comparen de un
+   vistazo aunque la pantalla sea angosta. */
+.pd-cajon .pd-detalle{display:flex;flex-direction:column;gap:1px;
+  margin:0 auto clamp(5px,1vmin,12px);width:100%;max-width:16ch}
+.pd-cajon .pd-detalle span{display:flex;justify-content:space-between;align-items:baseline;
+  gap:6px;border-top:1px solid rgba(255,255,255,.18);
+  padding:clamp(1px,.35vmin,4px) 0;min-width:0}
+.pd-cajon .pd-detalle span:first-child{border-top:0}
+.pd-cajon .pd-detalle i{font-style:normal;font-size:clamp(9px,1.3vmin,16px);
+  letter-spacing:.04em;text-transform:uppercase;color:var(--claro);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* En el teléfono las tres columnas son angostas: ahí las etiquetas
+   se abrevian a PG, PP y ±G, las mismas de la tabla de puntajes. */
+.pd-cajon .pd-detalle i u{text-decoration:none}
+.pd-cajon .pd-detalle i em{display:none;font-style:normal}
+@media (max-width:560px){
+  .pd-cajon .pd-detalle i u{display:none}
+  .pd-cajon .pd-detalle i em{display:inline}
+}
+.pd-cajon .pd-detalle b{font-size:clamp(10px,1.8vmin,23px);font-weight:800;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
 .pd-cajon .pd-cuanto{font-weight:800;font-size:clamp(12px,2.3vmin,30px);color:var(--lima)}
+.pd-cajon .pd-extra{display:block;font-size:clamp(8px,1.3vmin,15px);color:var(--claro);
+  margin-top:.2em}
 .pd-cajon .pd-cuanto small{font-weight:600;font-size:.56em;letter-spacing:.08em;
   text-transform:uppercase;opacity:.75;margin-left:.25em}
 .pd-cajon .pd-corona{display:block;font-size:clamp(17px,3.4vmin,46px);line-height:1;
   margin-bottom:.1em}
+/* El logo del equipo, redondo y sin marco: los escudos vienen con
+   fondo transparente. */
+.pd-cajon .pd-logo{display:block;margin:0 auto clamp(3px,.8vmin,10px);
+  width:clamp(30px,7vmin,96px);height:clamp(30px,7vmin,96px);
+  object-fit:contain;border-radius:50%}
+.pd-cajon.pd-primero .pd-logo{width:clamp(40px,9.5vmin,128px);height:clamp(40px,9.5vmin,128px)}
 
 /* El escalón: una tapa clara arriba y el frente con el número. */
 .pd-cajon .pd-escalon{position:relative;width:100%;display:flex;align-items:center;
@@ -443,6 +473,9 @@ td.jug{color:var(--gris);font-size:12px}
   background:transparent;color:#fff;cursor:pointer}
 .podio-mando button.destaca{background:var(--lima);border-color:var(--lima);color:var(--tinta)}
 .podio-mando button:disabled{opacity:.35;cursor:default}
+.podio-cuenta{flex:0 0 auto;text-align:center;margin:0 0 clamp(8px,1.8vmin,20px);
+  font-size:clamp(10px,1.4vmin,15px);letter-spacing:.14em;text-transform:uppercase;
+  color:var(--claro)}
 
 /* Para que las que miran desde el teléfono puedan pasear por los
    podios cuando termine la ceremonia. */
@@ -2790,7 +2823,7 @@ function pintarFranja(){
   }
   const s = D.sorteo;
   const texto = {
-    anuncio : `Hoy hay sorteo · ${s.ventana}`,
+    anuncio : s.ventana ? `Hoy hay sorteo · ${s.ventana}` : 'Hoy hay sorteo',
     abierto : '¡El sorteo está abierto! Entra ahora',
     cerrado : 'Inscripción cerrada · ya se sortea',
     sorteado: '¡Ya hay ganadora!'
@@ -2820,19 +2853,27 @@ const tituloGrupo = g => g === 'equipos' ? 'Podio de equipos' : 'Categoría ' + 
 
 /* Los tres primeros del podio que esté en pantalla. */
 function podioDe(grupo){
+  /* Además del nombre va la ficha: ganados, perdidos, diferencia de
+     games y el total. Así el podio no es solo quién ganó, sino por
+     cuánto, que es lo que la gente quiere comparar. */
+  const ficha = x => ({ pg: x.pg ?? 0, pp: x.pp ?? 0,
+    dif: x.dif_games ?? 0, puntos: x.puntos ?? 0 });
   if(grupo === 'equipos'){
     return tablaEquipos().filter(x => x.pj)
       .slice().sort((a,b) => b.puntos - a.puntos || b.dif_sets - a.dif_sets
         || b.dif_games - a.dif_games)
       .slice(0, 3)
-      .map(x => ({ quien: x.nombre, suyo: null, puntos: x.puntos }));
+      .map(x => Object.assign({ quien: x.nombre, suyo: null,
+                                logo: x.logo_url || logoEq(x.equipo_id),
+                                extra: x.puntos_extra ?? 0 }, ficha(x)));
   }
   return rankingDuplas().filter(r => r.categoria === grupo && r.pj)
     .slice().sort((a,b) => b.puntos - a.puntos || b.dif_sets - a.dif_sets
       || b.dif_games - a.dif_games)
     .slice(0, 3)
-    .map(x => ({ quien: x.dupla_id ? nomDupla(x.dupla_id) : (x.nombre ?? '—'),
-                 suyo: x.equipo ? nombreDeTabla(x.equipo) : null, puntos: x.puntos }));
+    .map(x => Object.assign({ quien: x.dupla_id ? nomDupla(x.dupla_id) : (x.nombre ?? '—'),
+                 suyo: x.equipo ? nombreDeTabla(x.equipo) : null,
+                 logo: logoEq(x.equipo_id), extra: 0 }, ficha(x)));
 }
 
 /* Un cajón del podio. Se dibuja siempre, aunque esté tapado: así
@@ -2842,9 +2883,17 @@ function cajonPodio(lugar, quien, abierto){
   return `<div class="pd-cajon ${clase}${abierto ? ' abierto' : ''}">
     <div class="pd-ficha">${abierto && quien ? `
       ${lugar === 1 ? '<span class="pd-corona">👑</span>' : ''}
+      ${quien.logo ? `<img class="pd-logo" src="${esc(quien.logo)}" alt="">` : ''}
       <p class="pd-quien">${esc(quien.quien)}</p>
       ${quien.suyo ? `<span class="pd-suyo">${esc(quien.suyo)}</span>` : ''}
-      <span class="pd-cuanto">${quien.puntos}<small>pts</small></span>` : ''}</div>
+      <div class="pd-detalle">
+        <span><i><u>Ganados</u><em>PG</em></i><b>${quien.pg}</b></span>
+        <span><i><u>Perdidos</u><em>PP</em></i><b>${quien.pp}</b></span>
+        <span><i><u>Games</u><em>±G</em></i><b>${signo(quien.dif)}</b></span>
+      </div>
+      <span class="pd-cuanto">${quien.puntos}<small>pts</small></span>
+      ${quien.extra ? `<span class="pd-extra">${signo(quien.extra)} de presentación</span>` : ''}`
+      : ''}</div>
     <div class="pd-escalon"><span class="pd-lugar">${lugar}º</span></div>
   </div>`;
 }
@@ -2864,12 +2913,24 @@ function vPodio(){
     : `<p class="podio-vacio">Todavía no hay partidos jugados en ${esc(tituloGrupo(grupo).toLowerCase())}.</p>`;
 
   /* Los botones de la ceremonia: solo para la administradora. */
+  /* Los podios se muestran de a uno. Cuando termina éste, el mismo
+     botón pasa al siguiente sin tener que volver al panel. */
+  const lista = gruposPodio();
+  const dónde = lista.indexOf(grupo);
+  const queSigue = dónde >= 0 && dónde < lista.length - 1 ? lista[dónde + 1] : null;
+
   const mando = (sesion && p.estado === 'vivo') ? `<div class="podio-mando">
       <button id="pd-atras" ${hasta === 0 ? 'disabled' : ''}>← Atrás</button>
-      <button id="pd-sigue" class="destaca" ${hasta >= 3 ? 'disabled' : ''}>${
-        ['Destapar el 3º', 'Destapar el 2º', 'Destapar el 1º 🏆', 'Listo'][Math.min(hasta, 3)]}</button>
+      ${hasta >= 3
+        ? (queSigue
+            ? `<button id="pd-siguiente" class="destaca" data-sigue="${esc(queSigue)}">${
+                queSigue === 'equipos' ? 'Podio de equipos' : 'Categoría ' + esc(queSigue)} →</button>`
+            : `<button id="pd-fin" class="destaca">Terminar la premiación</button>`)
+        : `<button id="pd-sigue" class="destaca">${
+            ['Destapar el 3º', 'Destapar el 2º', 'Destapar el 1º 🏆'][hasta]}</button>`}
       <button id="pd-pantalla">⛶ Pantalla completa</button>
-    </div>` : '';
+    </div>
+    <p class="podio-cuenta">Podio ${dónde + 1} de ${lista.length}</p>` : '';
 
   /* Y los paseos por categoría, cuando la ceremonia ya pasó. */
   const paseo = p.estado === 'libre' ? `<div class="podio-paso">${
@@ -3140,7 +3201,7 @@ function vSorteo(){
   if(s.estado === 'anuncio'){
     centro = `<div class="cuentale">
         <span class="rot">Cuándo</span>
-        <strong>${esc(s.ventana)}</strong>
+        <strong>${esc(s.ventana || 'Hoy, en la cancha')}</strong>
         <p class="pista2">Avisamos por acá cuando se abra. Mantén la app a mano.</p>
       </div>`;
   }
@@ -3554,7 +3615,7 @@ function admSorteo(){
         <input type="text" id="so-tit" maxlength="80" value="${esc(s.titulo ?? '')}"></div>
       <div style="margin-bottom:8px"><label class="lab">Bajada</label>
         <input type="text" id="so-baj" maxlength="120" value="${esc(s.bajada ?? '')}"></div>
-      <div style="margin-bottom:8px"><label class="lab">Cuándo (se muestra en el aviso)</label>
+      <div style="margin-bottom:8px"><label class="lab">Cuándo (texto libre: una hora, o "Antes de la final de A/B")</label>
         <input type="text" id="so-ven" maxlength="80" value="${esc(s.ventana ?? '')}"></div>
       <div style="margin-bottom:8px"><label class="lab">Requisitos</label>
         <textarea id="so-req" maxlength="300">${esc(s.requisitos ?? '')}</textarea></div>
@@ -4392,6 +4453,11 @@ function enlazar(){
     moverPodio({ revelado: Math.min(3, (D.podio?.revelado ?? 0) + 1) });
   if($('#pd-atras'))  $('#pd-atras').onclick  = () =>
     moverPodio({ revelado: Math.max(0, (D.podio?.revelado ?? 0) - 1) });
+  if($('#pd-siguiente')) $('#pd-siguiente').onclick = () => {
+    grupoAdm = $('#pd-siguiente').dataset.sigue;
+    moverPodio({ grupo: grupoAdm, revelado: 0 });
+  };
+  if($('#pd-fin')) $('#pd-fin').onclick = () => moverPodio({ estado: 'libre' });
   if($('#pd-cerrar')) $('#pd-cerrar').onclick = () => {
     salirDePantallaCompleta(); vista = 'resultados'; pintar(); };
   if($('#pd-pantalla')) $('#pd-pantalla').onclick = pantallaCompleta;
