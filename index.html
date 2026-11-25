@@ -93,6 +93,9 @@ h2.sec{color:#fff;font-weight:700;text-transform:uppercase;font-size:14px;letter
 h2.sec:first-child{margin-top:6px}
 h3{margin:0 0 8px;font-size:16px;font-weight:700}
 .nota{font-size:12.5px;color:var(--claro);margin:2px 0 16px;max-width:62ch}
+/* Sobre el verde el texto claro se lee bien; sobre una tarjeta
+   blanca, no. */
+.card .nota{color:var(--gris)}
 .vacio{background:rgba(255,255,255,.1);border-radius:12px;padding:22px;color:#fff;font-size:14px;text-align:center}
 
 .fila{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
@@ -383,62 +386,54 @@ td.jug{color:var(--gris);font-size:12px}
   text-transform:uppercase;color:var(--claro);margin:0}
 .podio-pantalla .pd-grupo{font-size:clamp(23px,5.4vmin,74px);font-weight:800;margin:.18em 0 0;
   line-height:1.05;letter-spacing:-.01em}
-.podio-pantalla .pd-cancha{flex:1;display:flex;align-items:flex-end;justify-content:center;
-  gap:clamp(8px,1.6vmin,22px);padding:clamp(10px,2.4vmin,34px) clamp(8px,2vmin,30px)
-  clamp(16px,3.4vmin,46px)}
+/* flex:0 1 auto + margin auto deja el podio centrado a lo alto en
+   vez de pegado abajo: en un teléfono vertical sobra mucho sitio. */
+.podio-pantalla .pd-cancha{flex:0 1 auto;margin:auto 0;display:flex;align-items:flex-end;
+  justify-content:center;gap:clamp(4px,1vmin,16px);
+  padding:clamp(8px,2vmin,30px) clamp(6px,1.6vmin,26px) clamp(10px,2.6vmin,40px);
+  width:100%;box-sizing:border-box}
 
-/* Cada cajón. Vacío hasta que lo destapen: así el espacio ya está
-   hecho y nada salta de pd-lugar cuando aparece el nombre. */
-.pd-cajon{flex:1 1 0;max-width:clamp(150px,27vmin,420px);display:flex;flex-direction:column;
-  justify-content:flex-end;align-items:center;text-align:center}
-.pd-cajon .pd-ficha{width:100%;opacity:0;transform:translateY(22px) scale(.94)}
+/* Cada puesto del podio: el nombre arriba y abajo su escalón, como
+   en una premiación de verdad. El escalón se dibuja siempre, aunque
+   el nombre esté tapado, para que nada salte de lugar al destaparlo. */
+.pd-cajon{flex:1 1 0;min-width:0;max-width:clamp(104px,30vmin,420px);
+  display:flex;flex-direction:column;justify-content:flex-end;align-items:center;
+  text-align:center}
+.pd-cajon .pd-ficha{width:100%;opacity:0;transform:translateY(18px) scale(.94);
+  padding:0 2px clamp(5px,1.2vmin,14px)}
 .pd-cajon.abierto .pd-ficha{animation:sube .72s cubic-bezier(.17,1.25,.4,1) both}
-@keyframes sube{from{opacity:0;transform:translateY(26px) scale(.93)}
+@keyframes sube{from{opacity:0;transform:translateY(22px) scale(.93)}
   to{opacity:1;transform:none}}
-.pd-cajon .pd-quien{font-weight:800;line-height:1.1;font-size:clamp(15px,3.1vmin,42px);
-  margin:0 0 .18em;word-break:break-word;hyphens:auto}
+.pd-cajon .pd-quien{font-weight:800;line-height:1.12;
+  font-size:clamp(12px,3.3vmin,40px);margin:0 0 .2em;
+  overflow-wrap:anywhere;hyphens:auto}
 .pd-cajon .pd-suyo{display:block;font-weight:600;color:var(--claro);
-  font-size:clamp(10px,1.5vmin,19px);letter-spacing:.12em;text-transform:uppercase;
-  margin-bottom:.5em}
-.pd-cajon .pd-cuanto{font-weight:800;font-size:clamp(14px,2.4vmin,32px);color:var(--lima)}
-.pd-cajon .pd-cuanto small{font-weight:600;font-size:.56em;letter-spacing:.1em;
-  text-transform:uppercase;opacity:.75;margin-left:.3em}
-.pd-cajon .pd-escalon{width:100%;border-radius:16px 16px 0 0;margin-top:clamp(8px,1.6vmin,20px);
-  display:flex;align-items:flex-start;justify-content:center;
-  padding-top:clamp(6px,1.2vmin,16px);
-  background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(255,255,255,.07))}
-.pd-cajon .pd-lugar{font-weight:800;font-size:clamp(22px,5vmin,70px);line-height:1;
-  color:rgba(255,255,255,.92)}
-.pd-cajon.pd-tercero .pd-escalon{height:clamp(54px,13vmin,170px)}
-.pd-cajon.pd-segundo .pd-escalon{height:clamp(80px,19vmin,250px)}
-.pd-cajon.pd-primero .pd-escalon{height:clamp(110px,26vmin,340px);
-  background:linear-gradient(180deg,rgba(215,222,105,.95),rgba(215,222,105,.45))}
-.pd-cajon.pd-primero .pd-lugar{color:var(--tinta)}
-.pd-cajon.pd-primero .pd-quien{color:var(--lima);font-size:clamp(18px,3.9vmin,54px)}
-.pd-cajon.pd-primero.abierto .pd-ficha{animation:pd-corona 1s cubic-bezier(.17,1.5,.35,1) both}
-@keyframes pd-corona{0%{opacity:0;transform:translateY(34px) scale(.7)}
-  55%{opacity:1;transform:translateY(0) scale(1.1)}100%{transform:none;opacity:1}}
-.pd-cajon .pd-corona{display:block;font-size:clamp(20px,3.6vmin,48px);line-height:1;
-  margin-bottom:.12em}
+  font-size:clamp(8.5px,1.5vmin,18px);letter-spacing:.1em;text-transform:uppercase;
+  margin-bottom:.45em;overflow-wrap:anywhere}
+.pd-cajon .pd-cuanto{font-weight:800;font-size:clamp(12px,2.3vmin,30px);color:var(--lima)}
+.pd-cajon .pd-cuanto small{font-weight:600;font-size:.56em;letter-spacing:.08em;
+  text-transform:uppercase;opacity:.75;margin-left:.25em}
+.pd-cajon .pd-corona{display:block;font-size:clamp(17px,3.4vmin,46px);line-height:1;
+  margin-bottom:.1em}
 
-/* En pantalla angosta no caben tres columnas con nombres largos:
-   se apilan, y el primero queda arriba. */
-@media (max-aspect-ratio:3/4){
-  .podio-pantalla .pd-cancha{flex-direction:column;align-items:stretch;justify-content:center;
-    gap:10px}
-  /* Apilados se leen como un ranking: primero, segundo, tercero. */
-  .pd-cajon.pd-primero{order:1}
-  .pd-cajon.pd-segundo{order:2}
-  .pd-cajon.pd-tercero{order:3}
-  .pd-cajon{max-width:none;flex:0 0 auto;flex-direction:row;align-items:center;gap:14px;
-    text-align:left;background:rgba(255,255,255,.1);border-radius:16px;padding:12px 14px}
-  .pd-cajon .pd-escalon{width:auto;height:auto!important;background:none;margin:0;padding:0;
-    order:-1;flex:0 0 auto}
-  .pd-cajon.pd-primero .pd-escalon{background:none}
-  .pd-cajon .pd-ficha{flex:1;min-width:0}
-  .pd-cajon.pd-primero{background:rgba(215,222,105,.18);outline:2px solid var(--lima)}
-  .pd-cajon.pd-primero .pd-lugar{color:var(--lima)}
-}
+/* El escalón: una tapa clara arriba y el frente con el número. */
+.pd-cajon .pd-escalon{position:relative;width:100%;display:flex;align-items:center;
+  justify-content:center;border-radius:5px 5px 0 0;
+  border-top:clamp(5px,1.1vmin,13px) solid rgba(255,255,255,.75);
+  background:linear-gradient(180deg,rgba(255,255,255,.26),rgba(255,255,255,.08));
+  box-shadow:inset 0 -1px 0 rgba(0,0,0,.12)}
+.pd-cajon .pd-lugar{font-weight:800;line-height:1;color:rgba(255,255,255,.95);
+  font-size:clamp(19px,5.2vmin,72px);text-shadow:0 2px 6px rgba(0,0,0,.18)}
+.pd-cajon.pd-tercero .pd-escalon{height:clamp(52px,max(13vmin,11vh),170px)}
+.pd-cajon.pd-segundo .pd-escalon{height:clamp(78px,max(19vmin,16vh),250px)}
+.pd-cajon.pd-primero .pd-escalon{height:clamp(108px,max(26vmin,22vh),340px);
+  border-top-color:#FFF4B8;
+  background:linear-gradient(180deg,rgba(215,222,105,.95),rgba(215,222,105,.42))}
+.pd-cajon.pd-primero .pd-lugar{color:var(--tinta);text-shadow:none}
+.pd-cajon.pd-primero .pd-quien{color:var(--lima);font-size:clamp(13px,3.8vmin,52px)}
+.pd-cajon.pd-primero.abierto .pd-ficha{animation:pd-corona 1s cubic-bezier(.17,1.5,.35,1) both}
+@keyframes pd-corona{0%{opacity:0;transform:translateY(30px) scale(.7)}
+  55%{opacity:1;transform:translateY(0) scale(1.1)}100%{transform:none;opacity:1}}
 
 /* Los botones de la ceremonia, abajo. Solo los ve la admin. */
 .podio-mando{flex:0 0 auto;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
@@ -2895,6 +2890,9 @@ function vPodio(){
 
 /* Qué podio está mirando esta persona por su cuenta, en "libre". */
 let grupoMirado = null;
+/* Y cuál tiene elegido la administradora en su panel, antes de
+   ponerlo en vivo. */
+let grupoAdm = null;
 
 /* Pantalla completa, para el proyector. No todos los navegadores
    la dejan; si no se puede, la pantalla igual se ve entera. */
@@ -2986,7 +2984,12 @@ function celebrarPodio(){
 function admPodio(){
   const p = D.podio;
   if(!p) return `<div class="vacio">Falta correr esquema-parte19.sql en Supabase.</div>`;
-  const tres = podioDe(p.grupo);
+  /* Elegir el podio es cosa de ella y de su pantalla: no toca la base
+     de datos hasta que lo ponga en vivo. Así puede mirar los seis
+     antes de la ceremonia sin que nadie vea nada, y el botón responde
+     al toque aunque en ese momento no haya señal. */
+  const cual = grupoAdm ?? p.grupo;
+  const tres = podioDe(cual);
   const estado = { oculto:'No se ve nada en la app.',
     vivo:'En vivo: todas están viendo lo mismo que tú.',
     libre:'Terminó. Cada una puede recorrer los podios por su cuenta.' }[p.estado];
@@ -2997,11 +3000,12 @@ function admPodio(){
     <div class="card">
       <h3>Qué podio</h3>
       <div class="chips" style="margin:10px 0 0">${gruposPodio().map(g =>
-        `<button class="chip ${g === p.grupo ? 'on' : ''}" data-adm-podio="${esc(g)}">${
-          g === 'equipos' ? 'Equipos' : esc(g)}</button>`).join('')}</div>
+        `<button class="chip ${g === cual ? 'on' : 'enblanco'}" data-adm-podio="${esc(g)}">${
+          g === 'equipos' ? 'Equipos' : 'Categoría ' + esc(g)}</button>`).join('')}</div>
       <p class="nota" style="margin:12px 0 0">${tres.length
-        ? tres.map((x, i) => `${i + 1}º ${esc(x.quien)} · ${x.puntos}`).join('<br>')
+        ? tres.map((x, i) => `${i + 1}º ${esc(x.quien)}${x.suyo ? ' · ' + esc(x.suyo) : ''} · ${x.puntos} pts`).join('<br>')
         : 'Todavía no hay partidos jugados en este podio.'}</p>
+      <div id="pd-msg2"></div>
     </div>
     <div class="card">
       <h3>La ceremonia</h3>
@@ -3020,7 +3024,7 @@ function admPodio(){
 }
 
 async function moverPodio(cambio){
-  const caja = $('#pd-msg');
+  const caja = $('#pd-msg') ?? $('#pd-msg2');
   try{
     const { error } = await sb.from('podio')
       .update(Object.assign({ actualizado_en: new Date().toISOString() }, cambio)).eq('id', 1);
@@ -4370,10 +4374,19 @@ function enlazar(){
   if($('#so-guardar'))     $('#so-guardar').onclick     = guardarTextosSorteo;
 
   /* --- el podio --- */
-  document.querySelectorAll('[data-podio]').forEach(b => b.onclick = () =>
-    moverPodio({ estado: b.dataset.podio, revelado: b.dataset.podio === 'vivo' ? 0 : undefined }));
-  document.querySelectorAll('[data-adm-podio]').forEach(b => b.onclick = () =>
-    moverPodio({ grupo: b.dataset.admPodio, revelado: 0 }));
+  document.querySelectorAll('[data-podio]').forEach(b => b.onclick = () => {
+    const e = b.dataset.podio;
+    moverPodio(e === 'vivo'
+      ? { estado:'vivo', grupo: grupoAdm ?? D.podio?.grupo ?? 'equipos', revelado: 0 }
+      : { estado: e });
+  });
+  document.querySelectorAll('[data-adm-podio]').forEach(b => b.onclick = () => {
+    grupoAdm = b.dataset.admPodio;
+    /* Si ya está en vivo, cambiar de podio es parte de la ceremonia
+       y sí hay que avisarle a todos los teléfonos. */
+    if(D.podio && D.podio.estado === 'vivo') moverPodio({ grupo: grupoAdm, revelado: 0 });
+    else pintar();
+  });
   if($('#pd-reiniciar')) $('#pd-reiniciar').onclick = () => moverPodio({ revelado: 0 });
   if($('#pd-sigue'))  $('#pd-sigue').onclick  = () =>
     moverPodio({ revelado: Math.min(3, (D.podio?.revelado ?? 0) + 1) });
