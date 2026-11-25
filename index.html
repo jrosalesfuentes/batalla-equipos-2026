@@ -237,6 +237,24 @@ td.jug{color:var(--gris);font-size:12px}
 .caja-extra .fila-extra span{flex:1;font-size:13px;color:var(--gris)}
 .caja-extra .fila-extra em{font-style:normal;font-weight:700;font-size:15px;color:var(--verde)}
 .caja-extra .nota{color:var(--gris);font-size:12.5px}
+
+/* La sección de finales: bajo cada marcador, quién se llevó qué. */
+.final-card{margin-bottom:14px}
+.final-card .pizarra{margin:10px 0 0}
+.reparto{margin-top:12px;border-top:1px solid var(--borde);padding-top:4px}
+.fila-final{display:flex;align-items:center;gap:10px;padding:7px 0;
+  border-top:1px solid var(--borde)}
+.fila-final:first-child{border-top:0}
+.fila-final .quienes{flex:1;min-width:0}
+.fila-final .quienes b{display:block;font-size:14px;line-height:1.25;color:var(--tinta)}
+.fila-final .quienes span{display:block;font-size:11px;color:var(--gris);
+  letter-spacing:.07em;text-transform:uppercase;margin-top:1px}
+.fila-final em{flex:0 0 auto;font-style:normal;font-weight:800;font-size:19px;
+  color:var(--gris)}
+.fila-final em small{font-size:.55em;font-weight:600;letter-spacing:.08em;
+  text-transform:uppercase;margin-left:.25em;opacity:.8}
+.fila-final.gano em{color:var(--verde)}
+.fila-final.gano .quienes b{color:var(--verde)}
 .leyenda{font-size:11.5px;color:var(--claro);line-height:1.55;margin:0 0 16px;max-width:62ch}
 .leyenda b{color:#fff}
 /* En el teléfono se esconden Sets y Games (quedan sus
@@ -1306,9 +1324,10 @@ function pintar(){
 
 /* --- resultados --- */
 function vResultados(){
-  const chips = ['partidos','equipos','duplas'].map(s =>
+  const chips = ['partidos','equipos','duplas','finales'].map(s =>
     `<button class="chip ${subRes===s?'on':''}" data-sub="${s}">${
-      {partidos:'Partidos',equipos:'Puntajes por equipo',duplas:'Ranking de duplas'}[s]}</button>`).join('');
+      {partidos:'Partidos',equipos:'Puntajes por equipo',duplas:'Ranking de duplas',
+       finales:'Finales'}[s]}</button>`).join('');
   let cuerpo = '';
   if(subRes === 'partidos'){
     const fechas = ['todas', ...D.jornadas.map(j => j.id)];
@@ -1339,9 +1358,65 @@ function vResultados(){
       return l.length ? `<h2 class="sec">Categoría ${esc(c.codigo)}</h2>` + tablaPos(l,'Dupla') : '';
     }).join('') + leyendaTabla('duplas') : sinDatos();
   }
+  if(subRes === 'finales') cuerpo = vFinales();
   return `<h2 class="sec">Resultados</h2><div class="chips">${chips}</div>${cuerpo}`;
 }
 const sinDatos = () => `<div class="vacio">Aún no hay partidos jugados. La tabla aparece sola en cuanto se cargue el primer resultado.</div>`;
+
+/* Las finales, aparte del resto. Acá lo importante no es el
+   ranking sino de dónde salieron esos 60 y 30, y para quién. */
+function vFinales(){
+  const jugadas = finalesJugadas();
+  const porJugar = D.partidos.filter(p => esFinalDe(p) && p.estado !== 'jugado');
+
+  const aviso = `<div class="caja-extra" style="margin:0 0 14px">
+    <h4>Cómo se reparten estos puntos</h4>
+    <p class="nota" style="margin:0">Las finales entregan <b>60 puntos al equipo de la
+      dupla que gana</b> y <b>30 al equipo de la que pierde</b>. Son puntos
+      <b>para el equipo</b>: no se suman al ranking de duplas, que quedó cerrado con
+      las cinco fechas del torneo.</p>
+  </div>`;
+
+  if(!jugadas.length && !porJugar.length)
+    return `<div class="vacio">Todavía no hay finales programadas.</div>`;
+
+  const tarjeta = p => {
+    const c = cuentaPartido(p, true);
+    const eqA = ladoA(p), eqB = ladoB(p);
+    const fila = (dupla, equipo, pts, gano) => `<div class="fila-final${gano ? ' gano' : ''}">
+      <div class="quienes"><b>${esc(nomDupla(dupla))}</b>
+        <span>${esc(nombreDeTabla(eq(equipo)))}</span></div>
+      <em>${pts}<small>pts</small></em></div>`;
+    return `<div class="card final-card">
+      <h3>Categoría ${esc(cat(p.categoria_id))}</h3>
+      ${pizarra(p, { fecha: false })}
+      <div class="reparto">
+        ${fila(p.dupla_a, eqA, c.puntosA, c.puntosA > c.puntosB)}
+        ${fila(p.dupla_b, eqB, c.puntosB, c.puntosB > c.puntosA)}
+      </div>
+    </div>`;
+  };
+
+  let cuerpo = aviso;
+  cuerpo += jugadas.length
+    ? jugadas.map(tarjeta).join('')
+    : `<div class="vacio">Las finales todavía no se juegan.</div>`;
+
+  if(porJugar.length) cuerpo += `<h2 class="sec">Por jugarse</h2>` +
+    porJugar.map(p => tarjetaPartido(p, true)).join('');
+
+  /* Y el resumen: cuánto le dejó a cada equipo el día de las finales. */
+  const suma = puntosDeFinales();
+  const filas = Object.entries(suma).sort((a,b) => b[1] - a[1]);
+  if(filas.length) cuerpo += `<div class="caja-extra">
+    <h4>Lo que sumó cada equipo en las finales</h4>
+    ${filas.map(([id, pts]) => `<div class="fila-extra">
+      <b>${esc(nombreDeTabla(eq(Number(id))))}</b><span></span>
+      <em>${signo(pts)}</em></div>`).join('')}
+    <p class="nota" style="margin:8px 0 0">Ya están sumados en Puntajes por equipo.</p>
+  </div>`;
+  return cuerpo;
+}
 
 /* ============================================================
    LA PIZARRA DEL MARCADOR
@@ -1452,14 +1527,51 @@ function totalProgramados(){
   const porEquipo = {}, porDupla = {};
   const sumar = (caja, id) => { if(id != null) caja[id] = (caja[id] ?? 0) + 1; };
   D.partidos.forEach(p => {
-    /* La final cuenta para el equipo pero no para la pareja, así que
-       tampoco va en el "de cuántos" del ranking de duplas: si no, una
-       dupla que ya jugó todo lo suyo queda mostrando 5/6 para siempre. */
-    const final = esFinalDe(p);
+    /* Las finales no entran en la cuenta de partidos, ni para la
+       pareja ni para el equipo. Si entraran, cada equipo mostraría
+       un total distinto —Atenea juega cuatro finales y Las Avatar
+       ninguna— y la columna dejaría de servir para comparar. Los
+       puntos de las finales sí están, aparte, bajo el nombre. */
+    if(esFinalDe(p)) return;
     sumar(porEquipo, ladoA(p));  sumar(porEquipo, ladoB(p));
-    if(!final){ sumar(porDupla, p.dupla_a); sumar(porDupla, p.dupla_b); }
+    sumar(porDupla,  p.dupla_a); sumar(porDupla,  p.dupla_b);
   });
   return { porEquipo, porDupla };
+}
+
+/* Las finales jugadas, en orden de categoría. */
+function finalesJugadas(){
+  const orden = {};
+  D.categorias.forEach(c => { orden[c.id] = c.orden ?? 0; });
+  return D.partidos
+    .filter(p => esFinalDe(p) && p.estado === 'jugado' && p.set1_a != null)
+    .slice().sort((a,b) => (orden[a.categoria_id] ?? 0) - (orden[b.categoria_id] ?? 0));
+}
+
+/* Cuántos puntos le dio a cada equipo el haber jugado finales.
+   Van aparte porque no salen de los 25 partidos del torneo. */
+function puntosDeFinales(){
+  const caja = {};
+  finalesJugadas().forEach(p => {
+    const c = cuentaPartido(p, true);
+    const a = ladoA(p), b = ladoB(p);
+    if(a != null) caja[a] = (caja[a] ?? 0) + c.puntosA;
+    if(b != null) caja[b] = (caja[b] ?? 0) + c.puntosB;
+  });
+  return caja;
+}
+
+/* Y cuántas finales jugó cada equipo. La columna PJ cuenta los
+   25 partidos del torneo, así que hay que descontarlas: el total
+   que trae la vista de la base de datos sí las incluye. */
+function finalesPorEquipo(){
+  const caja = {};
+  finalesJugadas().forEach(p => {
+    [ladoA(p), ladoB(p)].forEach(id => {
+      if(id != null) caja[id] = (caja[id] ?? 0) + 1;
+    });
+  });
+  return caja;
 }
 
 /* El ranking de duplas. Igual que la tabla de equipos: si la
@@ -1527,9 +1639,14 @@ function tablaPos(lista, etiqueta){
      como su equipo, que va abajo chiquitito. */
   const comoSeLlama = f => esEquipo ? nombreDeTabla(f.nombre ?? f.equipo)
     : (f.dupla_id ? nomDupla(f.dupla_id) : (f.nombre ?? f.equipo));
+  /* PJ cuenta solo los partidos del torneo. Las finales no entran
+     ni arriba ni abajo de la barra: se muestran aparte, en su
+     propia pestaña y como "+60 finales" bajo el nombre. */
+  const finalesEq = esEquipo ? finalesPorEquipo() : {};
   const jugados = f => {
     const total = esEquipo ? tope.porEquipo[f.equipo_id] : tope.porDupla[f.dupla_id];
-    return total ? `${f.pj}/${total}` : String(f.pj);
+    const hechos = esEquipo ? f.pj - (finalesEq[f.equipo_id] ?? 0) : f.pj;
+    return total ? `${hechos}/${total}` : String(hechos);
   };
   /* Los puntos que no vienen de la cancha —la presentación de bailes,
      por ejemplo— van debajo del nombre del equipo, para que se vea de
@@ -1538,9 +1655,15 @@ function tablaPos(lista, etiqueta){
   if(esEquipo) D.ajustes.forEach(a => {
     extraDe[a.equipo_id] = (extraDe[a.equipo_id] ?? 0) + a.puntos;
   });
-  const bajoElNombre = f => esEquipo
-    ? (extraDe[f.equipo_id] ? `<span class="dequien mas">${signo(extraDe[f.equipo_id])} extra</span>` : '')
-    : (f.equipo ? `<span class="dequien">${esc(nombreDeTabla(f.equipo))}</span>` : '');
+  const deFinales = esEquipo ? puntosDeFinales() : {};
+  const bajoElNombre = f => {
+    if(!esEquipo)
+      return f.equipo ? `<span class="dequien">${esc(nombreDeTabla(f.equipo))}</span>` : '';
+    const trozos = [];
+    if(deFinales[f.equipo_id]) trozos.push(signo(deFinales[f.equipo_id]) + ' finales');
+    if(extraDe[f.equipo_id])   trozos.push(signo(extraDe[f.equipo_id]) + ' extra');
+    return trozos.length ? `<span class="dequien mas">${esc(trozos.join(' · '))}</span>` : '';
+  };
   return `<div class="tabla-caja"><table><thead><tr><th>#</th><th>${etiqueta}</th><th>PJ</th><th>G</th><th>P</th>
     <th>Sets</th><th>±S</th><th>Games</th><th>±G</th><th>Prom.</th><th class="pts">Pts</th></tr></thead><tbody>` +
     lista.map((f,i) => `<tr ${f.equipo_id&&etiqueta==='Equipo'?`data-equipo="${f.equipo_id}" style="cursor:pointer"`:''}><td class="pos">${i+1}</td>
