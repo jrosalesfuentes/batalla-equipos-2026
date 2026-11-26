@@ -393,95 +393,84 @@ td.jug{color:var(--gris);font-size:12px}
   text-transform:uppercase;color:var(--claro)}
 @keyframes aparecer{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
 
-/* ---------- los diplomas -------------------------------------
-   Se arman dentro de la app y salen por la impresora: A4
-   horizontal, uno por hoja. En pantalla no se ven nunca; el
-   contenedor existe solo para el momento de imprimir. */
-#hojas-diploma{display:none}
-.dip{width:297mm;height:210mm;position:relative;overflow:hidden;background:#fff;
-  display:flex;font-family:'Poppins',sans-serif;color:var(--tinta)}
-.dip .dip-marco{position:absolute;inset:0;border:9mm solid var(--verde)}
-.dip .dip-marco::after{content:'';position:absolute;inset:0;outline:1.1mm solid var(--lima);
-  outline-offset:-1.6mm}
-.dip .dip-halo{position:absolute;left:50%;top:46%;width:210mm;height:150mm;
-  transform:translate(-50%,-50%);border-radius:50%;
-  background:radial-gradient(ellipse,rgba(0,126,118,.06),transparent 68%)}
-.dip .dip-cuerpo{position:relative;z-index:2;flex:1;margin:9mm;padding:7mm 14mm 6mm;
-  display:flex;flex-direction:column;align-items:center;text-align:center}
-.dip .dip-cabeza{display:flex;align-items:center;gap:7mm;justify-content:center}
-.dip .dip-cabeza img{width:24mm;height:24mm;object-fit:contain;border-radius:4mm;
-  box-shadow:0 0 0 .9mm var(--lima)}
-.dip .dip-cabeza h1{font-size:7mm;font-weight:700;line-height:1.05;letter-spacing:.02em;
-  margin:0;text-align:left}
-.dip .dip-cabeza p{font-size:3.5mm;font-weight:500;color:var(--gris);letter-spacing:.26em;
-  text-transform:uppercase;margin:1.4mm 0 0;text-align:left}
-.dip .dip-raya{align-self:stretch;height:.9mm;margin:5mm 0 0;border-radius:1mm;
-  background:linear-gradient(90deg,transparent,var(--lima) 18%,var(--lima) 82%,transparent)}
-.dip .dip-titulo{display:block;font-size:15mm;font-weight:700;color:var(--verde);letter-spacing:.3em;
-  margin:4mm 0 0;text-indent:.3em}
-.dip .dip-rotulo{font-size:4mm;font-weight:500;color:var(--gris);letter-spacing:.2em;
-  text-transform:uppercase;margin:3mm 0 0}
-.dip .dip-nombres{margin:3.5mm 0 0}
-.dip .dip-nombres b{display:block;font-size:10.2mm;font-weight:700;line-height:1.22}
-.dip .dip-de-equipo{display:inline-block;margin-top:3.5mm;padding:1.6mm 6mm;border-radius:99mm;
-  background:var(--glass);color:var(--verde-hondo);font-size:4.2mm;font-weight:700;
-  letter-spacing:.18em;text-transform:uppercase}
-.dip .dip-motivo{font-size:5mm;margin:4.5mm 0 0;line-height:1.6}
-.dip .dip-motivo b{font-weight:700;color:var(--verde-hondo)}
-.dip .dip-motivo .dip-cat{display:inline-block;padding:0 2.4mm;border-radius:2mm;
-  background:var(--lima);color:var(--tinta);font-weight:700;font-family:inherit;
-  font-size:inherit}
-.dip .dip-ficha{display:flex;gap:3mm;margin-top:4mm}
-.dip .dip-ficha div{min-width:27mm;padding:2.6mm 3mm;border:.4mm solid var(--linea);
-  border-radius:3mm}
-.dip .dip-ficha i{display:block;font-style:normal;font-size:2.9mm;font-weight:600;
-  letter-spacing:.14em;text-transform:uppercase;color:var(--gris)}
-.dip .dip-ficha b{display:block;font-size:6.4mm;font-weight:700;margin-top:.6mm;
-  font-variant-numeric:tabular-nums}
-.dip .dip-ficha div.dip-total{background:var(--verde);border-color:var(--verde)}
-.dip .dip-ficha div.dip-total i{color:var(--claro)}
-.dip .dip-ficha div.dip-total b{color:var(--lima)}
-.dip .dip-pie{margin-top:auto;padding-top:4mm;align-self:stretch;display:flex;align-items:flex-end;
-  justify-content:space-between;gap:10mm}
-.dip .dip-donde{font-size:3.6mm;color:var(--gris);text-align:left;font-weight:500;margin:0}
-.dip .dip-firma{text-align:center;min-width:76mm}
-.dip .dip-firma hr{border:0;border-top:.4mm solid var(--tinta);margin:0 0 1.8mm}
-.dip .dip-firma b{display:block;font-size:4.2mm;font-weight:700}
-.dip .dip-firma span{font-size:3.2mm;font-weight:600;color:var(--gris);letter-spacing:.16em;
-  text-transform:uppercase}
-.dip .dip-sello{position:absolute;top:17mm;right:17mm;width:34mm;height:34mm;border-radius:50%;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:var(--lima);box-shadow:0 0 0 1.4mm #fff,0 0 0 2.4mm var(--lima)}
-.dip .dip-sello.dip-tres{background:var(--claro)}
-/* La franja de auspiciadores: todos al mismo alto y separados por
-   aire, para que se lean como un conjunto y no compitan con el
-   nombre de la dupla. */
-.dip .dip-auspicio{align-self:stretch;margin-top:4.5mm;padding-top:3mm;
-  border-top:.35mm solid var(--linea);text-align:center}
-.dip .dip-rot-auspicio{display:block;font-size:2.9mm;font-weight:600;
-  letter-spacing:.3em;text-transform:uppercase;color:var(--gris);margin-bottom:2.4mm}
-.dip .dip-logos{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;
-  gap:3mm 9mm}
-.dip .dip-logos img{height:11mm;width:auto;max-width:36mm;object-fit:contain}
-.dip .dip-auspicio.apretado .dip-logos{gap:2.5mm 6mm}
-.dip .dip-auspicio.apretado .dip-logos img{height:8.5mm;max-width:28mm}
-.dip .dip-auspicio.muchos .dip-logos{gap:1.8mm 4mm;max-height:17mm;overflow:hidden}
-.dip .dip-auspicio.muchos .dip-logos img{height:6.2mm;max-width:22mm}
-.dip .dip-sello b{font-size:13mm;font-weight:700;line-height:1}
-.dip .dip-sello span{font-size:2.9mm;font-weight:700;letter-spacing:.16em;
-  text-transform:uppercase;margin-top:.4mm}
+/* ---------- la tómbola -----------------------------------------
+   Tres premios grandes, uno tras otro. El bombo gira, sale una
+   bolita y se abre con el nombre. Todo se mide en vmin para que
+   sirva igual en un teléfono y proyectada en la pared. */
+.tom-pantalla{position:fixed;inset:0;z-index:72;overflow:hidden;color:#fff;
+  background:radial-gradient(ellipse at 50% 16%,#0A6F66 0%,#024C46 58%,#012E2A 100%);
+  display:flex;flex-direction:column}
+.tom-pantalla .encabeza{flex:0 0 auto;text-align:center;padding:clamp(14px,3vmin,40px) 16px 0}
+.tom-pantalla .torneo{margin:0;font-size:clamp(10px,1.6vmin,20px);letter-spacing:.24em;
+  text-transform:uppercase;color:var(--claro)}
+.tom-pantalla .premio-nom{margin:.2em 0 0;font-size:clamp(24px,5.6vmin,76px);font-weight:800;
+  line-height:1.05;color:var(--lima)}
+.tom-pantalla .premio-det{margin:.45em 0 0;font-size:clamp(12px,2.1vmin,27px);
+  color:#fff;opacity:.92;line-height:1.35}
+.tom-medio{flex:1;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:clamp(10px,2vmin,26px);padding:clamp(10px,2vmin,28px) 16px}
 
-@page{size:297mm 210mm;margin:0}
-@media print{
-  /* Mientras se imprimen los diplomas no existe nada más. Fuera de
-     ese momento la app se imprime como siempre: por eso el cambio
-     cuelga de la clase, y no de @media print a secas. */
-  body.imprimiendo > *{display:none!important}
-  body.imprimiendo > #hojas-diploma{display:block!important}
-  body.imprimiendo{background:#fff}
-  #hojas-diploma .dip{page-break-after:always;break-after:page}
-  #hojas-diploma .dip:last-child{page-break-after:auto;break-after:auto}
-  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+/* El bombo. */
+.bombo{position:relative;width:clamp(215px,50vmin,440px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.26),rgba(255,255,255,.07) 60%,
+    rgba(0,0,0,.14));
+  box-shadow:inset 0 0 0 clamp(4px,.9vmin,12px) rgba(255,255,255,.5),
+    inset 0 -8px 26px rgba(0,0,0,.22), 0 14px 40px rgba(0,0,0,.3);
+  overflow:hidden}
+.bombo .vidrio{position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(135deg,rgba(255,255,255,.3) 0%,transparent 42%);
+  pointer-events:none;z-index:3}
+.bolitas{position:absolute;inset:clamp(6px,1.4vmin,18px);border-radius:50%}
+/* Cada bolita va en su sitio con left/top; la que se mueve es la de
+   adentro, para que el temblor no le pise la posición. */
+.bolitas i{position:absolute;transform:translate(-50%,-50%);display:block}
+.bolitas i b{display:block;width:clamp(20px,4.6vmin,46px);aspect-ratio:1;border-radius:50%;
+  box-shadow:inset -2px -3px 6px rgba(0,0,0,.25), 0 2px 4px rgba(0,0,0,.22)}
+.tom-pantalla.girando .bolitas{animation:gira-bombo 1.05s linear infinite}
+.tom-pantalla.girando .bolitas i b{animation:tiembla .3s ease-in-out infinite alternate}
+.tom-pantalla.saliendo .bolitas{animation:gira-bombo 2.6s linear infinite}
+@keyframes gira-bombo{to{transform:rotate(360deg)}}
+@keyframes tiembla{from{transform:scale(1) translateY(0)}
+  to{transform:scale(1.14) translateY(-9%)}}
+
+/* La bolita que sale, con el nombre. */
+.bolita-premio{width:clamp(250px,48vmin,560px);border-radius:999px;
+  background:linear-gradient(180deg,#fff,#E9EFE6);color:var(--tinta);
+  padding:clamp(12px,2.4vmin,30px) clamp(16px,3vmin,40px);text-align:center;
+  box-shadow:0 10px 30px rgba(0,0,0,.28);opacity:0;transform:translateY(-16px) scale(.8)}
+.tom-pantalla.saliendo .bolita-premio,
+.tom-pantalla.listo .bolita-premio{animation:sale-bolita .85s cubic-bezier(.17,1.4,.38,1) both}
+@keyframes sale-bolita{0%{opacity:0;transform:translateY(-30px) scale(.7) rotate(-8deg)}
+  60%{opacity:1;transform:translateY(0) scale(1.08) rotate(2deg)}
+  100%{opacity:1;transform:none}}
+.bolita-premio .rot{display:block;font-size:clamp(9px,1.4vmin,17px);letter-spacing:.2em;
+  text-transform:uppercase;color:var(--gris);font-weight:700}
+.bolita-premio strong{display:block;font-size:clamp(20px,4.4vmin,58px);font-weight:800;
+  line-height:1.12;margin-top:.14em;overflow-wrap:anywhere}
+.bolita-premio .suyo{display:block;font-size:clamp(10px,1.6vmin,20px);letter-spacing:.12em;
+  text-transform:uppercase;color:var(--verde);font-weight:700;margin-top:.3em}
+.tom-espera{font-size:clamp(13px,2vmin,24px);color:var(--claro);text-align:center;
+  line-height:1.5;max-width:28ch}
+
+/* Los premios de abajo, para seguir el hilo. */
+.tom-pasos{flex:0 0 auto;display:flex;gap:7px;justify-content:center;flex-wrap:wrap;
+  padding:0 12px clamp(8px,1.6vmin,18px)}
+.tom-pasos span{font-size:clamp(9.5px,1.4vmin,16px);font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;padding:.42em 1em;border-radius:999px;
+  border:1.5px solid rgba(255,255,255,.3);color:rgba(255,255,255,.75)}
+.tom-pasos span.hecho{background:rgba(255,255,255,.16);border-color:transparent}
+.tom-pasos span.ahora{background:var(--lima);border-color:var(--lima);color:var(--tinta)}
+.tom-mando{flex:0 0 auto;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;
+  padding:0 12px clamp(12px,2.2vmin,24px)}
+.tom-mando button{font:inherit;font-weight:700;font-size:clamp(13px,1.7vmin,18px);
+  padding:.65em 1.2em;border-radius:999px;border:2px solid rgba(255,255,255,.5);
+  background:transparent;color:#fff;cursor:pointer}
+.tom-mando button.destaca{background:var(--lima);border-color:var(--lima);color:var(--tinta)}
+.tom-mando button:disabled{opacity:.35;cursor:default}
+@media (prefers-reduced-motion:reduce){
+  .tom-pantalla.girando .bolitas,.tom-pantalla.girando .bolitas i{animation:none}
+  .tom-pantalla.saliendo .bolita-premio,.tom-pantalla.listo .bolita-premio{
+    animation:none;opacity:1;transform:none}
 }
 
 /* ---------- la encuesta ---------------------------------------- */
@@ -1037,6 +1026,7 @@ body.quieto{overflow:hidden}
   <a data-vista="sorteo" id="lnk-sorteo" class="oculta">Sorteo</a>
   <a data-vista="podio" id="lnk-podio" class="oculta">Podio</a>
   <a data-vista="encuesta" id="lnk-encuesta" class="oculta">Encuesta</a>
+  <a data-vista="tombola" id="lnk-tombola" class="oculta">Tómbola</a>
   <a data-vista="auspiciadores">Auspiciadores</a>
   <h2>Acceso</h2>
   <a data-vista="entrar" id="lnk-entrar">Iniciar sesión</a>
@@ -1048,10 +1038,10 @@ body.quieto{overflow:hidden}
     <a data-adm="programacion">Programación</a>
     <a data-adm="noticias">Noticias</a>
     <a data-adm="galeria">Galería</a>
-    <a data-adm="sorteo">Sorteo</a>
+    <a data-adm="sorteo">Sorteos</a>
+    <a data-adm="tombola">Tómbola</a>
     <a data-adm="podio">Podio y premiación</a>
     <a data-adm="encuesta">Encuesta</a>
-    <a data-adm="diplomas">Diplomas</a>
     <a data-adm="mensaje">Mandar un aviso</a>
     <a data-adm="auspicio">Auspiciadores</a>
     <a data-adm="extra">Puntos extra</a>
@@ -1077,8 +1067,9 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[], sorteo:null, sorteoPart:[], podio:null,
-  encuesta:null, encPreguntas:[], encRespuestas:[], encDetalle:[] };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[], sorteos:[], sorteoPart:[], podio:null,
+  encuesta:null, encPreguntas:[], encRespuestas:[], encDetalle:[],
+  tombola:null, tombolaPremios:[] };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -1202,7 +1193,7 @@ async function cargarBase(){
    de haber pintado, así la app aparece antes. */
 async function cargarResto(){
   const [tab, ran, aju, pre, not, div, etq, gal, gfo, lik, com, sor, spa, pod,
-         enc, epr, ere, ede] = await Promise.all([
+         enc, epr, ere, ede, tom, tpr] = await Promise.all([
     t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
     sb.from('preguntas').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
     sb.from('noticias').select('*').order('publicada_en',{ascending:false}).then(r => r.data ?? []),
@@ -1218,7 +1209,7 @@ async function cargarResto(){
     t('foto_comentarios','creado_en'),
     /* El sorteo de la final. Si todavía no se corrió su SQL,
        vuelve vacío y en la app simplemente no aparece. */
-    sb.from('sorteo').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
+    t('sorteo','orden'),
     t('sorteo_participantes','creado_en'),
     /* El podio de la premiación. Mismo caso que el sorteo: si no
        se corrió su SQL, vuelve vacío y no aparece. */
@@ -1228,14 +1219,17 @@ async function cargarResto(){
     sb.from('encuesta').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
     t('encuesta_preguntas','orden'),
     t('encuesta_respuestas','enviado_en'),
-    t('encuesta_detalle','id')
+    t('encuesta_detalle','id'),
+    sb.from('tombola').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
+    t('tombola_premios','orden')
   ]);
   D.tabla = tab; D.ranking = ran; D.ajustes = aju;
   D.preguntas = pre; D.noticias = not; D.diva = div; D.etiquetas = etq;
   D.galerias = gal; D.galeriaFotos = gfo;
   D.fotoLikes = lik; D.fotoComentarios = com;
-  D.sorteo = sor; D.sorteoPart = spa; D.podio = pod;
+  D.sorteos = sor; D.sorteoPart = spa; D.podio = pod;
   D.encuesta = enc; D.encPreguntas = epr; D.encRespuestas = ere; D.encDetalle = ede;
+  D.tombola = tom; D.tombolaPremios = tpr;
   restoListo = true;
 }
 
@@ -1362,7 +1356,7 @@ function pintar(){
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
               noticias:vNoticias, diva:vDiva, entrar:vEntrar, admin:vAdmin,
               auspiciadores:vAuspiciadores, avisos:vAvisos, sorteo:vSorteo,
-              podio:vPodio, encuesta:vEncuesta }[vista] ?? vResultados;
+              podio:vPodio, encuesta:vEncuesta, tombola:vTombola }[vista] ?? vResultados;
   const puerta = vista === 'entrar';
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
@@ -1377,12 +1371,15 @@ function pintar(){
     pintarFranja();
     rodarNombres();
     celebrarPodio();
+    revisarTombola();
     const lnk = $('#lnk-sorteo');
     if(lnk) lnk.classList.toggle('oculta', !sorteoVivo());
     const lnkP = $('#lnk-podio');
     if(lnkP) lnkP.classList.toggle('oculta', !podioVivo());
     const lnkE = $('#lnk-encuesta');
     if(lnkE) lnkE.classList.toggle('oculta', !encuestaViva());
+    const lnkT = $('#lnk-tombola');
+    if(lnkT) lnkT.classList.toggle('oculta', !tombolaALaVista());
   }catch(e){
     p.innerHTML = `<div class="vacio">Algo falló al mostrar esta sección.<br><br>
       <span class="mono" style="font-size:12px">${esc(e.message)}</span><br><br>
@@ -3100,16 +3097,42 @@ document.addEventListener('keydown', ev => {
    ============================================================ */
 
 const SORTEO_VIVO = ['anuncio','abierto','cerrado','sorteado'];
-const sorteoVivo = () => D.sorteo && SORTEO_VIVO.includes(D.sorteo.estado);
 
-/* De dónde salen las participantes. Hay dos sorteos distintos en
-   el torneo y funcionan igual salvo en esto:
+/* El viernes hay dos sorteos en horarios distintos, así que la app
+   maneja una lista y no uno solo:
+     · el de las 18:00, entre quienes respondan la encuesta
+     · el de antes de la final de A/B, entre quienes aprieten el
+       botón teniendo la app
+
+   Funcionan igual salvo en de dónde salen las participantes:
      boton    · entra la que aprieta el botón durante la ventana
-     encuesta · entra sola la que respondió la encuesta
-   Todo lo demás —los pasos, el redoble, la ganadora— es lo mismo. */
-const porEncuesta = () => D.sorteo && D.sorteo.fuente === 'encuesta';
-const participantes = () => porEncuesta() ? D.encRespuestas : D.sorteoPart;
-const yaEntre = () => yo && participantes().some(x => x.jugadora_id === yo.jugadora_id);
+     encuesta · entra sola la que respondió la encuesta */
+
+const sorteosOrdenados = () => D.sorteos.slice()
+  .sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0) || a.id - b.id);
+const sorteosVivos = () => sorteosOrdenados().filter(s => SORTEO_VIVO.includes(s.estado));
+const sorteoVivo   = () => sorteosVivos().length > 0;
+
+/* Cuál se le muestra a la jugadora: el que esté más avanzado, que
+   es el que está pasando ahora mismo. */
+const RANGO = { abierto:4, sorteado:3, cerrado:2, anuncio:1 };
+function sorteoEnPantalla(){
+  const vivos = sorteosVivos();
+  if(sorteoMirado != null){
+    const elegido = vivos.find(s => s.id === sorteoMirado);
+    if(elegido) return elegido;
+  }
+  return vivos.slice().sort((a,b) =>
+    (RANGO[b.estado] ?? 0) - (RANGO[a.estado] ?? 0) || (a.orden ?? 0) - (b.orden ?? 0))[0] ?? null;
+}
+let sorteoMirado = null;   /* si la jugadora elige mirar otro */
+let sorteoAdm    = null;   /* cuál está manejando la administradora */
+
+const porEncuesta   = s => s && s.fuente === 'encuesta';
+const participantesDe = s => !s ? []
+  : porEncuesta(s) ? D.encRespuestas : D.sorteoPart.filter(x => x.sorteo_id === s.id);
+const yaEntreEn = s => yo && participantesDe(s).some(x => x.jugadora_id === yo.jugadora_id);
+const sorteoAdmin = () => sorteosOrdenados().find(s => s.id === sorteoAdm) ?? sorteosOrdenados()[0];
 
 /* La franja de arriba. Se dibuja aparte de la pantalla para que
    acompañe a la jugadora esté donde esté. */
@@ -3134,10 +3157,11 @@ function pintarFranja(){
   if(!sorteoVivo() || puerta || vista === 'sorteo'){
     f.className = 'franja oculta'; f.innerHTML = ''; return;
   }
-  const s = D.sorteo;
+  const s = sorteoEnPantalla();
+  if(!s){ f.className = 'franja oculta'; f.innerHTML = ''; return; }
   const texto = {
     anuncio : s.ventana ? `Hoy hay sorteo · ${s.ventana}` : 'Hoy hay sorteo',
-    abierto : porEncuesta()
+    abierto : porEncuesta(s)
       ? 'Responde la encuesta y entras al sorteo'
       : '¡El sorteo está abierto! Entra ahora',
     cerrado : 'Inscripción cerrada · ya se sortea',
@@ -3150,6 +3174,269 @@ function pintarFranja(){
     <span class="dice">${esc(texto)}</span>
     <span class="flechita">›</span></button>`;
   $('#ir-sorteo').onclick = () => { vista = 'sorteo'; pintar(); window.scrollTo({top:0}); };
+}
+
+/* ---------- la tómbola --------------------------------------------
+   Tres premios grandes que se sortean uno tras otro. Participan
+   TODAS las jugadoras más los nombres extra que haya cargados
+   (José Pinto), y quien gana uno queda fuera de los siguientes.
+
+   La administradora la ve siempre, aunque esté apagada para el
+   resto: así puede probarla antes sin que nadie se entere. */
+
+const tombolaVisible = () => D.tombola && D.tombola.estado === 'visible';
+const tombolaALaVista = () => tombolaVisible() || sesion;
+
+const premiosTombola = () => D.tombolaPremios.slice()
+  .sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0) || a.id - b.id);
+
+/* Quién puede salir: todas, menos las que ya ganaron algo. */
+function candidatasTombola(){
+  const ganaron = new Set(premiosTombola()
+    .map(p => (p.ganadora_nombre ?? '').trim()).filter(Boolean));
+  const gente = D.jugadoras.map(j => ({ id: j.id, nombre: j.nombre,
+    equipo: j.equipo_id ? eq(j.equipo_id) : null }));
+  (D.tombola?.extras ?? []).forEach(n => {
+    if(n && n.trim()) gente.push({ id: null, nombre: n.trim(), equipo: null });
+  });
+  return gente.filter(g => !ganaron.has(g.nombre.trim()));
+}
+
+const premioPendiente = () => premiosTombola().find(p => !p.ganadora_nombre) ?? null;
+
+/* Lo que se está mostrando en pantalla, y en qué momento va la
+   animación. No vive en la base de datos: el estado compartido es
+   "este premio ya tiene ganadora", y la animación es local. */
+let tomFase = 'quieto';     /* quieto · girando · saliendo · listo */
+let tomPremio = null;       /* el premio que se está mostrando */
+let tomNombre = '';         /* el nombre que se ve en la bolita */
+let tomVisto = {};          /* qué premios ya vio este teléfono */
+
+function colorBolita(i){
+  const tonos = ['#D7DE69','#FFFFFF','#9ED8D1','#FFD166','#64C9BE','#F4978E'];
+  return tonos[i % tonos.length];
+}
+
+function vTombola(){
+  const t = D.tombola;
+  if(!t) return `<div class="vacio">Falta correr esquema-parte25.sql en Supabase.</div>`;
+  if(!tombolaALaVista())
+    return `<div class="vacio">La tómbola todavía no está disponible.</div>`;
+
+  const premios = premiosTombola();
+  const mostrando = premios.find(p => p.id === tomPremio) ?? premioPendiente() ?? premios.at(-1);
+  if(!mostrando) return `<div class="vacio">La tómbola no tiene premios cargados.</div>`;
+
+  /* Las bolitas del bombo, repartidas en el círculo. */
+  const cuantas = Math.min(26, Math.max(12, candidatasTombola().length));
+  const bolitas = Array.from({ length: cuantas }, (_, i) => {
+    /* Repartidas en tres anillos, con un desfase para que no queden
+       en línea recta y parezca un bombo de verdad. */
+    const anillo = i % 3;
+    const radio = [17, 29, 39][anillo];
+    const vuelta = (i / cuantas) * Math.PI * 2 + anillo * 0.7;
+    const x = 50 + Math.cos(vuelta) * radio;
+    const y = 50 + Math.sin(vuelta) * radio;
+    return `<i style="left:${x.toFixed(1)}%;top:${y.toFixed(1)}%;
+      animation-delay:${(i % 7) * 0.04}s"><b style="background:${
+      colorBolita(i)}"></b></i>`;
+  }).join('');
+
+  const ganadora = mostrando.ganadora_nombre;
+  const fase = tomFase;
+
+  const centro = (fase === 'saliendo' || fase === 'listo')
+    ? `<div class="bolita-premio">
+         <span class="rot">${fase === 'listo' ? 'Se lo lleva' : 'Sale…'}</span>
+         <strong id="tom-nombre">${esc(fase === 'listo' ? (ganadora ?? tomNombre) : tomNombre)}</strong>
+         ${fase === 'listo' && mostrando.ganadora_id
+           ? `<span class="suyo">${esc(eq((D.jugadoras.find(j =>
+               j.id === mostrando.ganadora_id) ?? {}).equipo_id) ?? '')}</span>` : ''}
+       </div>`
+    : (ganadora && fase === 'quieto'
+      ? `<div class="bolita-premio" style="opacity:1;transform:none">
+           <span class="rot">Se lo lleva</span>
+           <strong>${esc(ganadora)}</strong>
+         </div>`
+      : `<p class="tom-espera">${fase === 'girando'
+          ? 'Girando…'
+          : 'Participan todas. Quien gana un premio sale de los siguientes.'}</p>`);
+
+  const pasos = `<div class="tom-pasos">${premios.map(p =>
+    `<span class="${p.id === mostrando.id ? 'ahora' : (p.ganadora_nombre ? 'hecho' : '')}">${
+      esc(p.nombre)}</span>`).join('')}</div>`;
+
+  const mando = sesion ? `<div class="tom-mando">
+      <button id="tom-girar" class="destaca" ${
+        mostrando.ganadora_nombre || fase !== 'quieto' ? 'disabled' : ''}>Sortear ${
+        esc(mostrando.nombre)}</button>
+      <button id="tom-siguiente" ${premioPendiente() ? '' : 'disabled'}>Siguiente premio →</button>
+      <button id="tom-pantalla">⛶ Pantalla completa</button>
+    </div>` : '';
+
+  return `<div class="tom-pantalla ${fase}" id="tom-pantalla-caja">
+    <button class="cerrar-visor" id="tom-cerrar" aria-label="Salir">✕</button>
+    <div class="encabeza">
+      <p class="torneo">${esc(t.titulo ?? 'Tómbola')}</p>
+      <h1 class="premio-nom">${esc(mostrando.nombre)}</h1>
+      ${mostrando.detalle ? `<p class="premio-det">${esc(mostrando.detalle)}</p>` : ''}
+    </div>
+    <div class="tom-medio">
+      <div class="bombo"><div class="bolitas">${bolitas}</div><div class="vidrio"></div></div>
+      ${centro}
+    </div>
+    ${pasos}${mando}
+    <div class="confeti" id="pd-confeti"></div>
+  </div>`;
+}
+
+/* El sorteo de un premio. La ganadora se decide acá y se guarda
+   antes de que nada se vea, igual que en el otro sorteo: la
+   animación muestra lo que ya está escrito. */
+async function girarTombola(){
+  const premio = premiosTombola().find(p => p.id === tomPremio) ?? premioPendiente();
+  if(!premio || premio.ganadora_nombre || tomFase !== 'quieto') return;
+  const gente = candidatasTombola();
+  if(!gente.length) return alert('No queda nadie para sortear.');
+
+  if(!confirm(`¿Sorteo el premio ${premio.nombre}?\n\nParticipan ${gente.length} personas. `
+    + 'El nombre sale al tiro en todas las pantallas.')) return;
+
+  const n = new Uint32Array(1);
+  crypto.getRandomValues(n);
+  const elegida = gente[n[0] % gente.length];
+
+  try{
+    const { error } = await sb.from('tombola_premios').update({
+      ganadora_id: elegida.id, ganadora_nombre: elegida.nombre,
+      sorteado_en: new Date().toISOString() }).eq('id', premio.id);
+    if(error) throw error;
+    await cargar();
+    tomPremio = premio.id;
+    girarYMostrar(premio.id);
+  }catch(e){ alert('No se pudo sortear: ' + (e.message ?? e)); }
+}
+
+/* La animación: gira, saca la bolita, revela. Se usa igual en el
+   teléfono de la admin y en el de todas, porque la dispara el
+   cambio en la base de datos. */
+function girarYMostrar(premioId){
+  const premio = premiosTombola().find(p => p.id === premioId);
+  if(!premio) return;
+  tomPremio = premioId;
+  tomVisto[premioId] = true;
+
+  const quieto = window.matchMedia
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(quieto){ tomFase = 'listo'; pintar(); return; }
+
+  const nombres = candidatasTombola().map(g => g.nombre)
+    .concat(premio.ganadora_nombre ? [premio.ganadora_nombre] : []);
+
+  tomFase = 'girando'; tomNombre = ''; pintar();
+
+  /* Primero el bombo girando solo, después la bolita saliendo con
+     los nombres pasando, y al final se queda en el que salió. */
+  setTimeout(() => {
+    tomFase = 'saliendo'; pintar();
+    let espera = 70, ultimo = '';
+    const tic = () => {
+      let x = ultimo;
+      while(x === ultimo && nombres.length > 1)
+        x = nombres[Math.floor(Math.random() * nombres.length)];
+      ultimo = x; tomNombre = x;
+      const el = $('#tom-nombre');
+      if(el) el.textContent = x;
+      espera *= 1.13;
+      if(espera > 420){
+        setTimeout(() => {
+          tomFase = 'listo'; pintar();
+          tirarConfeti(); fanfarria();
+          try{ if(navigator.vibrate) navigator.vibrate([25, 80, 25, 80, 200]); }catch(e){}
+        }, 400);
+        return;
+      }
+      setTimeout(tic, espera);
+    };
+    tic();
+  }, 2200);
+}
+
+/* Si llegó una ganadora nueva que este teléfono no ha visto, se
+   dispara la animación sola. Así todas lo ven al mismo tiempo. */
+function revisarTombola(){
+  if(!tombolaALaVista() || tomFase !== 'quieto') return;
+  const nuevo = premiosTombola().find(p => p.ganadora_nombre && !tomVisto[p.id]);
+  if(!nuevo) return;
+  tomVisto[nuevo.id] = true;
+  if(vista !== 'tombola'){ vista = 'tombola'; }
+  girarYMostrar(nuevo.id);
+}
+
+async function moverTombola(estado){
+  try{
+    const { error } = await sb.from('tombola')
+      .update({ estado, actualizado_en: new Date().toISOString() }).eq('id', 1);
+    if(error) throw error;
+    await cargar(); pintar();
+  }catch(e){ alert('No se pudo: ' + (e.message ?? e)); }
+}
+
+function admTombola(){
+  const t = D.tombola;
+  if(!t) return `<div class="vacio">Falta correr esquema-parte25.sql en Supabase.</div>`;
+  const premios = premiosTombola();
+  const quedan = candidatasTombola().length;
+
+  return `<p class="nota">Tres premios grandes, uno tras otro. Participan todas las
+      jugadoras más los nombres extra, y quien gana uno sale de los siguientes.
+      <b>Tú la ves siempre</b>, aunque esté apagada para el resto: así puedes probarla
+      antes sin que nadie se entere.</p>
+    <div class="card">
+      <h3>¿La ven las jugadoras?</h3>
+      <div class="pasos fila" style="margin-top:10px">
+        <button class="btn ${tombolaVisible() ? 'claro' : 'lima'}"
+          data-tombola="visible">Mostrarla a todas</button>
+        <button class="btn ${tombolaVisible() ? 'lima' : 'claro'}"
+          data-tombola="oculta">Dejarla solo para mí</button>
+      </div>
+      <p class="nota" style="margin:12px 0 0">Ahora: <b>${tombolaVisible()
+        ? 'la ven todas' : 'solo tú'}</b>. Participan <b>${quedan}</b> personas,
+        incluyendo ${esc((t.extras ?? []).join(', ') || 'ningún nombre extra')}.</p>
+      <div class="pasos" style="margin-top:12px">
+        <button class="btn claro" id="tom-abrir">Abrir la tómbola en pantalla</button>
+      </div>
+    </div>
+
+    ${premios.map((p, i) => `<div class="card">
+      <p class="nota" style="margin:0 0 4px">Premio ${i + 1}</p>
+      <p style="margin:0;font-weight:800;font-size:17px">${esc(p.nombre)}</p>
+      ${p.detalle ? `<p class="nota" style="margin:4px 0 0">${esc(p.detalle)}</p>` : ''}
+      <p style="margin:10px 0 0;font-size:15px">${p.ganadora_nombre
+        ? `Ganó <b>${esc(p.ganadora_nombre)}</b>`
+        : '<span style="color:var(--gris)">Todavía sin sortear</span>'}</p>
+      ${p.ganadora_nombre ? `<div class="pasos fila" style="margin-top:10px">
+        <button class="btn claro" data-tom-borra="${p.id}"
+          style="border-color:var(--alerta);color:var(--alerta)">Deshacer este sorteo</button>
+      </div>` : ''}
+    </div>`).join('')}
+
+    <div id="tom-msg"></div>`;
+}
+
+async function deshacerTombola(id){
+  const p = premiosTombola().find(x => x.id === id);
+  if(!p) return;
+  if(!confirm(`¿Deshago el sorteo de ${p.nombre}?\n\n${p.ganadora_nombre} vuelve a `
+    + 'participar en los premios que queden.')) return;
+  try{
+    const { error } = await sb.from('tombola_premios').update({
+      ganadora_id: null, ganadora_nombre: null, sorteado_en: null }).eq('id', id);
+    if(error) throw error;
+    delete tomVisto[id];
+    tomFase = 'quieto'; tomPremio = null;
+    await cargar(); pintar();
+  }catch(e){ alert('No se pudo: ' + (e.message ?? e)); }
 }
 
 /* ---------- la encuesta de satisfacción ---------------------------
@@ -3493,185 +3780,6 @@ function celebrarPodio(){
    diez duplas salen solas de la tabla de puntajes; lo único que
    hay que escribir a mano son los nombres completos, porque en la
    app cada una aparece con el nombre corto que eligió. */
-
-const FECHA_DIPLOMA = 'Santiago, 27 de noviembre de 2026';
-/* El mismo logo que ya está en la cabecera de la app: se reusa
-   en vez de llevar una segunda copia dentro del archivo. */
-const logoBatalla = () => $('#logo-batalla')?.getAttribute('src') ?? '';
-
-function duplasConDiploma(){
-  const premiadas = [];
-  D.categorias.slice()
-    .sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0))
-    .forEach(c => {
-      const tabla = rankingDuplas()
-        .filter(r => r.categoria === c.codigo && r.pj)
-        .slice().sort((a,b) => b.puntos - a.puntos || b.dif_sets - a.dif_sets
-          || b.dif_games - a.dif_games);
-      [2, 3].forEach(lugar => {
-        const f = tabla[lugar - 1];
-        if(f) premiadas.push(Object.assign({ lugar, categoria: c.codigo }, f));
-      });
-    });
-  return premiadas;
-}
-
-/* Las dos jugadoras de una dupla, con el nombre largo si lo tiene. */
-function quienesSon(duplaId){
-  const d = D.duplas.find(x => x.id === duplaId);
-  if(!d) return [];
-  return [d.jugadora_1, d.jugadora_2]
-    .map(id => D.jugadoras.find(j => j.id === id))
-    .filter(Boolean)
-    .map(j => ({ id: j.id, corto: j.nombre,
-                 largo: (j.nombre_completo ?? '').trim() || j.nombre }));
-}
-
-/* La franja de auspiciadores, al pie. Todos del mismo alto, para
-   que ninguno se vea más grande que otro, y en una o dos filas
-   según cuántos sean. */
-function franjaAuspicio(){
-  const todos = (D.auspiciadores ?? []).filter(a => a.logo_url);
-  if(!todos.length) return '';
-  const clase = todos.length > 10 ? 'apretado muchos' : todos.length > 6 ? 'apretado' : '';
-  return `<div class="dip-auspicio ${clase}">
-    <span class="dip-rot-auspicio">Auspician</span>
-    <div class="dip-logos">${todos.map(a =>
-      `<img src="${esc(a.logo_url)}" alt="${esc(a.nombre ?? '')}">`).join('')}</div>
-  </div>`;
-}
-
-function unDiploma(p){
-  const corto = p.lugar === 2 ? '2º' : '3º';
-  const largo = p.lugar === 2 ? 'Segundo lugar' : 'Tercer lugar';
-  const gente = quienesSon(p.dupla_id);
-  const diva = D.diva || {};
-  return `<div class="dip">
-    <div class="dip-marco"></div><div class="dip-halo"></div>
-    <div class="dip-sello ${p.lugar === 3 ? 'dip-tres' : ''}"><b>${corto}</b><span>lugar</span></div>
-    <div class="dip-cuerpo">
-      <div class="dip-cabeza">
-        ${logoBatalla() ? `<img src="${esc(logoBatalla())}" alt="">` : ''}
-        <div><h1>Batalla de Equipos 2026</h1><p>Zona Pádel Club</p></div>
-      </div>
-      <div class="dip-raya"></div>
-      <p class="dip-titulo">DIPLOMA</p>
-      <p class="dip-rotulo">se otorga a la dupla</p>
-      <div class="dip-nombres">
-        ${gente.map(g => `<b>${esc(g.largo)}</b>`).join('')}
-        <span class="dip-de-equipo">${esc(p.equipo ?? '')}</span>
-      </div>
-      <p class="dip-motivo">por obtener el <b>${largo}</b>
-        de la <span class="dip-cat">categoría ${esc(p.categoria)}</span></p>
-      <div class="dip-ficha">
-        <div><i>Ganados</i><b>${p.pg}</b></div>
-        <div><i>Perdidos</i><b>${p.pp}</b></div>
-        <div><i>Games</i><b>${signo(p.dif_games)}</b></div>
-        <div class="dip-total"><i>Puntaje</i><b>${p.puntos}</b></div>
-      </div>
-      <div class="dip-pie">
-        <p class="dip-donde">${esc(FECHA_DIPLOMA)}<br>Zona Pádel Club</p>
-        <div class="dip-firma"><hr>
-          ${diva.nombre ? `<b>${esc(diva.nombre)}</b>` : ''}
-          <span>La DIVA</span></div>
-      </div>
-      ${franjaAuspicio()}
-    </div>
-  </div>`;
-}
-
-async function imprimirDiplomas(){
-  const premiadas = duplasConDiploma();
-  if(!premiadas.length) return;
-  /* Los logos de los auspiciadores se bajan aparte y pesan: si
-     alguien entra directo a imprimir sin haber pasado por esa
-     pantalla, todavía no están. Se esperan acá. */
-  const boton = $('#dip-imprimir');
-  if(D.auspiciadores === null){
-    if(boton){ boton.disabled = true; boton.textContent = 'Preparando los logos…'; }
-    await cargarAuspicios();
-    if(boton){ boton.disabled = false; }
-  }
-  let caja = $('#hojas-diploma');
-  if(!caja){
-    caja = document.createElement('div');
-    caja.id = 'hojas-diploma';
-    document.body.appendChild(caja);
-  }
-  caja.innerHTML = premiadas.map(unDiploma).join('');
-  document.body.classList.add('imprimiendo');
-  const limpiar = () => document.body.classList.remove('imprimiendo');
-  window.addEventListener('afterprint', limpiar, { once: true });
-  /* Un respiro para que el navegador dibuje antes de abrir el
-     diálogo de impresión; si no, algunos imprimen hojas vacías. */
-  setTimeout(() => { window.print(); setTimeout(limpiar, 1200); }, 250);
-}
-
-function admDiplomas(){
-  const premiadas = duplasConDiploma();
-  if(!premiadas.length)
-    return `<p class="nota">Los diplomas se arman con la tabla de puntajes.
-      Todavía no hay partidos jugados suficientes.</p>`;
-
-  const filas = premiadas.map(p => {
-    const gente = quienesSon(p.dupla_id);
-    return `<div class="card">
-      <h3>${p.lugar}º de ${esc(p.categoria)} · ${esc(p.equipo ?? '')}</h3>
-      <p class="nota" style="margin:2px 0 10px">${
-        p.pg}G · ${p.pp}P · ${signo(p.dif_games)} games · ${p.puntos} pts</p>
-      ${gente.map(g => `<div style="margin-bottom:8px">
-        <label class="lab">${esc(g.corto)}</label>
-        <input type="text" data-nombre-largo="${g.id}" maxlength="60"
-          placeholder="Nombre y apellido" value="${esc(
-            D.jugadoras.find(j => j.id === g.id)?.nombre_completo ?? '')}">
-      </div>`).join('')}
-    </div>`;
-  }).join('');
-
-  /* Se piden los logos apenas se abre la pantalla, para que estén
-     listos cuando aprieta imprimir. */
-  if(D.auspiciadores === null) cargarAuspicios();
-  const auspicios = (D.auspiciadores ?? []).filter(a => a.logo_url).length;
-
-  return `<p class="nota">Reciben diploma el segundo y el tercer lugar de cada
-      categoría. Las duplas salen solas de la tabla, así que esto se mantiene al
-      día aunque cambien los resultados.</p>
-    <p class="nota">Escribe el nombre y apellido de cada una: en el diploma se ve
-      mejor que el nombre corto. Si dejas alguno en blanco, sale el corto.</p>
-    <p class="nota">${D.auspiciadores === null
-      ? 'Buscando los logos de los auspiciadores…'
-      : auspicios
-        ? `Al pie van los logos de los ${auspicios} auspiciadores.`
-        : 'Todavía no hay auspiciadores con logo cargado, así que el pie va sin la franja.'}</p>
-    <div class="pasos" style="margin-bottom:14px">
-      <button class="btn lima" id="dip-imprimir">Imprimir los ${premiadas.length} diplomas</button>
-      <button class="btn claro" id="dip-guardar">Guardar los nombres</button>
-    </div>
-    <div id="dip-msg"></div>
-    ${filas}`;
-}
-
-async function guardarNombresLargos(){
-  const caja = $('#dip-msg');
-  const campos = [...document.querySelectorAll('[data-nombre-largo]')];
-  try{
-    const cambios = [];
-    campos.forEach(c => {
-      const id = Number(c.dataset.nombreLargo);
-      const valor = c.value.trim() || null;
-      const antes = D.jugadoras.find(j => j.id === id)?.nombre_completo ?? null;
-      if(valor !== antes) cambios.push({ id, nombre_completo: valor });
-    });
-    if(!cambios.length) return aviso(caja, 'No había nada que cambiar.');
-    for(const c of cambios){
-      const { error } = await sb.from('jugadoras')
-        .update({ nombre_completo: c.nombre_completo }).eq('id', c.id);
-      if(error) throw error;
-    }
-    await cargar();
-    aviso(caja, `Guardado: ${cambios.length} nombre${cambios.length === 1 ? '' : 's'}.`);
-  }catch(e){ aviso(caja, 'No se pudo guardar: ' + (e.message ?? e), true); }
-}
 
 /* --- administración: la encuesta --- */
 
@@ -4020,18 +4128,18 @@ async function moverPodio(cambio){
 let redoble = false;          /* true mientras los nombres están rodando */
 
 /* La marca del sorteo: si se sortea de nuevo, cambia y se vuelve a ver. */
-const marcaSorteo = s => String(s.sorteado_en ?? s.ganadora_id ?? '');
+const marcaSorteo = s => `${s.id}:${s.sorteado_en ?? s.ganadora_id ?? ''}`;
 
 function hayQueRodar(s){
-  if(s.estado !== 'sorteado' || !s.ganadora_id) return false;
-  if(participantes().length < 2) return false;
-  try{ return localStorage.getItem('batalla:sorteo-visto') !== marcaSorteo(s); }
+  if(!s || s.estado !== 'sorteado' || !s.ganadora_id) return false;
+  if(participantesDe(s).length < 2) return false;
+  try{ return localStorage.getItem('batalla:sorteo-visto:' + s.id) !== marcaSorteo(s); }
   catch(e){ return true; }
 }
 
 function rodarNombres(){
   const caja = $('#tambor');
-  const s = D.sorteo;
+  const s = sorteoEnPantalla();
   if(!caja || !s || caja.dataset.rodo || !caja.classList.contains('rodando')) return;
   caja.dataset.rodo = '1';
 
@@ -4046,12 +4154,12 @@ function rodarNombres(){
     el.classList.add('llego');
     if(rot) rot.textContent = 'La ganadora es';
     if(equipo) equipo.style.visibility = '';
-    try{ localStorage.setItem('batalla:sorteo-visto', marcaSorteo(s)); }catch(e){}
+    try{ localStorage.setItem('batalla:sorteo-visto:' + s.id, marcaSorteo(s)); }catch(e){}
     try{ if(navigator.vibrate) navigator.vibrate([20, 70, 20, 70, 160]); }catch(e){}
   };
 
   /* Los nombres que van a pasar: solo las que de verdad entraron. */
-  const nombres = participantes()
+  const nombres = participantesDe(s)
     .map(x => { const j = D.jugadoras.find(y => y.id === x.jugadora_id); return j ? j.nombre : null; })
     .filter(Boolean);
 
@@ -4075,11 +4183,18 @@ function rodarNombres(){
 }
 
 function vSorteo(){
-  const s = D.sorteo;
-  if(!sorteoVivo())
+  const s = sorteoEnPantalla();
+  if(!s)
     return `<div class="vacio">Por ahora no hay ningún sorteo en marcha.</div>`;
 
-  const cuantas = participantes().length;
+  /* Si hay dos en marcha, unas pastillas arriba para pasar de uno
+     al otro. Con uno solo no aparece nada. */
+  const vivos = sorteosVivos();
+  const pestanas = vivos.length > 1 ? `<div class="chips" style="margin-bottom:12px">${
+    vivos.map(x => `<button class="chip ${x.id === s.id ? 'on' : ''}" data-mirar-sorteo="${
+      x.id}">${esc(x.nombre ?? x.titulo ?? 'Sorteo')}</button>`).join('')}</div>` : '';
+
+  const cuantas = participantesDe(s).length;
   const ganadora = s.ganadora_id ? D.jugadoras.find(j => j.id === s.ganadora_id) : null;
 
   /* El premio, oculto hasta que lo revelen. */
@@ -4096,7 +4211,7 @@ function vSorteo(){
     /* Si a este teléfono todavía le falta ver el redoble, la caja parte
        en blanco y rodarNombres() la llena. Si ya lo vio, sale derecho. */
     const falta = hayQueRodar(s);
-    return `<div class="sorteo-caja ganada">
+    return `${pestanas}<div class="sorteo-caja ganada">
       <h2>${esc(s.titulo)}</h2>
       <div class="tambor${falta ? ' rodando' : ''}" id="tambor">
         <span class="rot" id="rot-tambor">${falta
@@ -4119,16 +4234,16 @@ function vSorteo(){
       </div>`;
   }
   if(s.estado === 'abierto'){
-    centro = yaEntre()
+    centro = yaEntreEn(s)
       ? `<div class="dentro">
            <span class="tilde">✓</span>
            <strong>Estás dentro</strong>
-           <p class="pista2">${porEncuesta()
+           <p class="pista2">${porEncuesta(s)
              ? 'Ya respondiste, así que estás participando. Te avisamos cuando se sortee.'
              : 'No cierres la app: el sorteo se hace acá mismo.'}</p>
          </div>`
       : (yo
-        ? (porEncuesta()
+        ? (porEncuesta(s)
           ? `<button class="btn-sorteo" id="ir-a-encuesta">Responder la encuesta</button>
              <p class="pista2">Entras al sorteo con solo responderla. Son tres preguntas.</p>`
           : `<button class="btn-sorteo" id="entrar-sorteo">Quiero participar</button>
@@ -4141,12 +4256,12 @@ function vSorteo(){
   }
   if(s.estado === 'cerrado'){
     centro = `<div class="dentro">
-        <strong>${porEncuesta() ? 'Encuesta cerrada' : 'Inscripción cerrada'}</strong>
-        <p class="pista2">${yaEntre() ? 'Estás dentro. ' : ''}Ya viene el sorteo, no te vayas.</p>
+        <strong>${porEncuesta(s) ? 'Encuesta cerrada' : 'Inscripción cerrada'}</strong>
+        <p class="pista2">${yaEntreEn(s) ? 'Estás dentro. ' : ''}Ya viene el sorteo, no te vayas.</p>
       </div>`;
   }
 
-  return `<div class="sorteo-caja">
+  return `${pestanas}<div class="sorteo-caja">
       <h2>${esc(s.titulo)}</h2>
       ${s.bajada ? `<p class="baj-sorteo">${esc(s.bajada)}</p>` : ''}
       ${centro}
@@ -4163,10 +4278,12 @@ function vSorteo(){
 async function entrarAlSorteo(){
   if(!yo) return;
   const b = $('#entrar-sorteo');
+  const id = Number(b?.dataset.sorteoId) || sorteoEnPantalla()?.id;
+  if(!id) return;
   if(b){ b.disabled = true; b.textContent = 'Entrando…'; }
   try{
     const { error } = await sb.from('sorteo_participantes')
-      .insert({ jugadora_id: yo.jugadora_id, instalada: instalada() });
+      .insert({ sorteo_id: id, jugadora_id: yo.jugadora_id, instalada: instalada() });
     /* Si ya estaba, la base lo rechaza por repetido: da lo mismo,
        igual quedó dentro. */
     if(error && !String(error.message).toLowerCase().includes('duplicate')) throw error;
@@ -4184,17 +4301,17 @@ function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','podio','encuesta','diplomas','mensaje','auspicio','extra'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','tombola','podio','encuesta','mensaje','auspicio','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
-       noticias:'Noticias',galeria:'Galería',sorteo:'Sorteo',podio:'Podio',
-       encuesta:'Encuesta',diplomas:'Diplomas',mensaje:'Mandar un aviso',
+       noticias:'Noticias',galeria:'Galería',sorteo:'Sorteos',tombola:'Tómbola',podio:'Podio',
+       encuesta:'Encuesta',mensaje:'Mandar un aviso',
        auspicio:'Auspiciadores',extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
     ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion,
        noticias:admNoticias, galeria:admGaleria, sorteo:admSorteo, mensaje:admMensaje,
        auspicio:admAuspicio, extra:admExtra, podio:admPodio,
-      diplomas:admDiplomas, encuesta:admEncuesta }[subAdm])();
+      encuesta:admEncuesta, tombola:admTombola }[subAdm])();
 }
 
 function admEquipos(){
@@ -4473,39 +4590,51 @@ function admGaleria(){
 /* --- administración: el sorteo --- */
 
 function admSorteo(){
-  const s = D.sorteo;
-  if(!s) return `<div class="vacio">Falta correr el SQL del sorteo (parte 17) en Supabase.</div>`;
+  const todos = sorteosOrdenados();
+  if(!todos.length) return `<div class="vacio">Falta correr el SQL del sorteo en Supabase.</div>`;
+  const s = sorteoAdmin();
 
-  const cuantas = participantes().length;
+  /* Un selector arriba: cuál de los dos estás manejando. */
+  const cual = todos.length > 1 ? `<div class="card">
+      <h3>Qué sorteo</h3>
+      <div class="chips" style="margin:10px 0 0">${todos.map(x =>
+        `<button class="chip ${x.id === s.id ? 'on' : 'enblanco'}" data-adm-sorteo="${x.id}">${
+          esc(x.nombre ?? x.titulo ?? ('Sorteo ' + x.id))}</button>`).join('')}</div>
+      <p class="nota" style="margin:12px 0 0">${todos.map(x =>
+        `${esc(x.nombre ?? '')}: <b>${x.estado}</b>`).join(' · ')}</p>
+    </div>` : '';
+
+  const cuantas = participantesDe(s).length;
   const ganadora = s.ganadora_id ? D.jugadoras.find(j => j.id === s.ganadora_id) : null;
   const paso = {
     oculto  : 'No se ve nada en la app.',
     anuncio : s.premio_revelado
       ? 'Ya saben cuál es el premio. Falta abrir la inscripción.'
       : 'Se ve el aviso arriba, con el premio tapado y sin botón todavía.',
-    abierto : porEncuesta()
+    abierto : porEncuesta(s)
       ? 'La encuesta está abierta: cada una que responde entra al sorteo.'
       : 'El botón está abierto: las jugadoras pueden entrar.',
     cerrado : 'Ya no entra nadie más. Falta sortear.',
     sorteado: 'Ya hay ganadora.'
   }[s.estado];
 
-  const lista = participantes().map(x => {
+  const lista = participantesDe(s).map(x => {
     const j = D.jugadoras.find(y => y.id === x.jugadora_id);
     return `<span class="quien-entro">${esc(j ? j.nombre : '—')}${
       x.instalada ? ' <span class="apk" title="Entró desde la app instalada">app</span>' : ''}</span>`;
   }).join('');
 
-  return `<p class="nota">El sorteo se maneja desde acá, paso a paso. Mientras esté en
-      "oculto" no existe para nadie. El premio queda guardado y se muestra como
+  return `<p class="nota">Cada sorteo se maneja por separado, paso a paso. Mientras esté
+      en "oculto" no existe para nadie. El premio queda guardado y se muestra como
       "Sorpresa" hasta que aprietes el paso 2.</p>
+    ${cual}
     <div class="card">
       <h3>Quiénes participan</h3>
       <div class="chips" style="margin:10px 0 0">
-        <button class="chip ${porEncuesta() ? 'enblanco' : 'on'}" data-fuente="boton">Las que aprietan el botón</button>
-        <button class="chip ${porEncuesta() ? 'on' : 'enblanco'}" data-fuente="encuesta">Las que responden la encuesta</button>
+        <button class="chip ${porEncuesta(s) ? 'enblanco' : 'on'}" data-fuente="boton">Las que aprietan el botón</button>
+        <button class="chip ${porEncuesta(s) ? 'on' : 'enblanco'}" data-fuente="encuesta">Las que responden la encuesta</button>
       </div>
-      <p class="nota" style="margin:12px 0 0">${porEncuesta()
+      <p class="nota" style="margin:12px 0 0">${porEncuesta(s)
         ? `Entran solas al responder, sin apretar nada. Los pasos 3 y 4 abren y cierran
            la encuesta. Van <b>${cuantas}</b> respuestas.`
         : `Cada una entra tocando el botón durante la ventana. Van <b>${cuantas}</b> inscritas.`}</p>
@@ -4525,9 +4654,9 @@ function admSorteo(){
           id="revelar-premio" ${s.premio_revelado ? 'disabled' : ''}>2 · Revelar el premio${
             s.premio_revelado ? ' ✓' : ''}</button>
         <button class="btn ${s.estado === 'anuncio' && s.premio_revelado ? 'lima' : 'claro'}"
-          data-sorteo="abierto">3 · ${porEncuesta() ? 'Lanzar la encuesta' : 'Abrir la inscripción'}</button>
+          data-sorteo="abierto">3 · ${porEncuesta(s) ? 'Lanzar la encuesta' : 'Abrir la inscripción'}</button>
         <button class="btn ${s.estado === 'abierto' ? 'lima' : 'claro'}"
-          data-sorteo="cerrado">4 · ${porEncuesta() ? 'Cerrar la encuesta' : 'Cerrar la inscripción'}</button>
+          data-sorteo="cerrado">4 · ${porEncuesta(s) ? 'Cerrar la encuesta' : 'Cerrar la inscripción'}</button>
         <button class="btn ${s.estado === 'cerrado' ? 'lima' : 'claro'}" id="sortear"
           ${cuantas ? '' : 'disabled'}>5 · Sortear la ganadora</button>
       </div>
@@ -4548,6 +4677,8 @@ function admSorteo(){
 
     <div class="card">
       <h3>Los textos</h3>
+      <div style="margin-bottom:8px"><label class="lab">Nombre interno (solo lo ves tú)</label>
+        <input type="text" id="so-nom" maxlength="60" value="${esc(s.nombre ?? '')}"></div>
       <div style="margin-bottom:8px"><label class="lab">Título</label>
         <input type="text" id="so-tit" maxlength="80" value="${esc(s.titulo ?? '')}"></div>
       <div style="margin-bottom:8px"><label class="lab">Bajada</label>
@@ -4571,6 +4702,8 @@ function admSorteo(){
 
 async function guardarTextosSorteo(){
   const caja = $('#so-msg2');
+  const s = sorteoAdmin();
+  if(!s) return;
   try{
     const { error } = await sb.from('sorteo').update({
       titulo:     $('#so-tit').value.trim() || 'Sorteo de la final',
@@ -4578,8 +4711,9 @@ async function guardarTextosSorteo(){
       ventana:    $('#so-ven').value.trim() || null,
       requisitos: $('#so-req').value.trim() || null,
       premio:     $('#so-pre').value.trim() || null,
+      nombre:     ($('#so-nom')?.value ?? '').trim() || s.nombre,
       actualizado_en: new Date().toISOString()
-    }).eq('id', 1);
+    }).eq('id', s.id);
     if(error) throw error;
     await cargar();
     aviso(caja, 'Guardado.');
@@ -4590,10 +4724,12 @@ async function guardarTextosSorteo(){
    de todas. El aviso es lo que las hace mirar la app. */
 async function moverSorteo(estado){
   const caja = $('#so-msg');
-  const conEncuesta = porEncuesta();
+  const s = sorteoAdmin();
+  if(!s) return;
+  const conEncuesta = porEncuesta(s);
   try{
     const { error } = await sb.from('sorteo')
-      .update({ estado, actualizado_en: new Date().toISOString() }).eq('id', 1);
+      .update({ estado, actualizado_en: new Date().toISOString() }).eq('id', s.id);
     if(error) throw error;
 
     /* Cuando se entra respondiendo, abrir y cerrar el sorteo es
@@ -4629,7 +4765,9 @@ async function moverSorteo(estado){
    del navegador, que es el bueno, no el de Math.random. */
 async function sortearGanadora(){
   const caja = $('#so-msg');
-  const dentro = participantes().slice();
+  const s = sorteoAdmin();
+  if(!s) return;
+  const dentro = participantesDe(s).slice();
   if(!dentro.length) return aviso(caja, 'No entró nadie todavía.', true);
   /* El nombre se saca después de confirmar, a propósito: así nadie
      —ni la administradora— lo sabe antes, y no hay forma de repetir
@@ -4645,7 +4783,7 @@ async function sortearGanadora(){
     const { error } = await sb.from('sorteo').update({
       estado: 'sorteado', ganadora_id: elegida.jugadora_id,
       sorteado_en: new Date().toISOString(), actualizado_en: new Date().toISOString()
-    }).eq('id', 1);
+    }).eq('id', s.id);
     if(error) throw error;
     /* El aviso no dice el nombre: si lo dijera, la notificación
        arruinaría el redoble antes de que abran la app. */
@@ -4654,21 +4792,23 @@ async function sortearGanadora(){
     await cargar();
     if(!r.ok) aviso(caja, 'Sorteado, pero el aviso falló: ' + r.mensaje, true);
     /* Y la administradora ve el redoble igual que todas. */
-    setTimeout(() => { vista = 'sorteo'; pintar(); window.scrollTo({ top: 0 }); },
-      r.ok ? 700 : 3000);
+    setTimeout(() => { vista = 'sorteo'; sorteoMirado = s.id; pintar();
+      window.scrollTo({ top: 0 }); }, r.ok ? 700 : 3000);
   }catch(e){ problema(caja, e); }
 }
 
 async function revelarPremio(){
   const caja = $('#so-msg');
+  const s = sorteoAdmin();
+  if(!s) return;
   try{
     const cambio = { premio_revelado: true, actualizado_en: new Date().toISOString() };
     /* La bajada de fábrica dice "Premio sorpresa": ya no corresponde. */
-    if((D.sorteo.bajada ?? '').trim().toLowerCase() === 'premio sorpresa') cambio.bajada = '';
-    const { error } = await sb.from('sorteo').update(cambio).eq('id', 1);
+    if((s.bajada ?? '').trim().toLowerCase() === 'premio sorpresa') cambio.bajada = '';
+    const { error } = await sb.from('sorteo').update(cambio).eq('id', s.id);
     if(error) throw error;
     const r = await avisarATodas('¡Ya se sabe el premio del sorteo!',
-      (D.sorteo.premio ? D.sorteo.premio + '. ' : '') +
+      (s.premio ? s.premio + '. ' : '') +
       'Entra a la app y mantenla a mano: avisamos cuando se abra la inscripción.');
     await cargar();
     aviso(caja, r.ok ? 'Premio revelado y avisado.' : 'Revelado, pero el aviso falló: ' + r.mensaje, !r.ok);
@@ -5391,11 +5531,16 @@ function enlazar(){
   if($('#so-guardar'))     $('#so-guardar').onclick     = guardarTextosSorteo;
   if($('#ir-a-encuesta'))  $('#ir-a-encuesta').onclick  = () => {
     vista = 'encuesta'; pintar(); window.scrollTo({ top: 0 }); };
+  document.querySelectorAll('[data-adm-sorteo]').forEach(b => b.onclick = () => {
+    sorteoAdm = Number(b.dataset.admSorteo); pintar(); });
+  document.querySelectorAll('[data-mirar-sorteo]').forEach(b => b.onclick = () => {
+    sorteoMirado = Number(b.dataset.mirarSorteo); pintar(); });
   document.querySelectorAll('[data-fuente]').forEach(b => b.onclick = async () => {
-    if(D.sorteo && D.sorteo.estado !== 'oculto') return;
+    const s = sorteoAdmin();
+    if(!s || s.estado !== 'oculto') return;
     try{
       const { error } = await sb.from('sorteo')
-        .update({ fuente: b.dataset.fuente }).eq('id', 1);
+        .update({ fuente: b.dataset.fuente }).eq('id', s.id);
       if(error) throw error;
       await cargar(); pintar();
     }catch(e){ aviso($('#so-msg'), 'No se pudo cambiar: ' + (e.message ?? e), true); }
@@ -5437,8 +5582,20 @@ function enlazar(){
     borrador[t.dataset.encTexto] = t.value; });
   if($('#enc-enviar')) $('#enc-enviar').onclick = enviarEncuesta;
 
-  if($('#dip-imprimir')) $('#dip-imprimir').onclick = imprimirDiplomas;
-  if($('#dip-guardar'))  $('#dip-guardar').onclick  = guardarNombresLargos;
+
+  /* --- la tómbola --- */
+  document.querySelectorAll('[data-tombola]').forEach(b => b.onclick = () =>
+    moverTombola(b.dataset.tombola));
+  document.querySelectorAll('[data-tom-borra]').forEach(b => b.onclick = () =>
+    deshacerTombola(Number(b.dataset.tomBorra)));
+  if($('#tom-abrir'))     $('#tom-abrir').onclick     = () => {
+    vista = 'tombola'; tomFase = 'quieto'; pintar(); window.scrollTo({ top: 0 }); };
+  if($('#tom-girar'))     $('#tom-girar').onclick     = girarTombola;
+  if($('#tom-siguiente')) $('#tom-siguiente').onclick = () => {
+    const p = premioPendiente(); if(p){ tomPremio = p.id; tomFase = 'quieto'; pintar(); } };
+  if($('#tom-pantalla'))  $('#tom-pantalla').onclick  = pantallaCompleta;
+  if($('#tom-cerrar'))    $('#tom-cerrar').onclick    = () => {
+    salirDePantallaCompleta(); tomFase = 'quieto'; vista = 'resultados'; pintar(); };
 
   if($('#pd-siguiente')) $('#pd-siguiente').onclick = () => {
     grupoAdm = $('#pd-siguiente').dataset.sigue;
@@ -5953,13 +6110,15 @@ function huella(){
   const g = D.galerias.map(x => `${x.id}.${x.publicada}.${x.titulo}`).join('|')
           + '/' + D.galeriaFotos.length
           + '/' + D.fotoLikes.length + '/' + D.fotoComentarios.length;
-  const so = D.sorteo
-    ? `${D.sorteo.estado}.${D.sorteo.premio_revelado}.${D.sorteo.ganadora_id}.${D.sorteoPart.length}`
-    : '';
+  const so = D.sorteos.map(x =>
+      `${x.id}.${x.estado}.${x.premio_revelado}.${x.ganadora_id}`).join('|')
+    + '.' + D.sorteoPart.length;
   const po = D.podio ? `${D.podio.estado}.${D.podio.grupo}.${D.podio.revelado}` : '';
   const en = (D.encuesta ? D.encuesta.estado : '') + '.' + D.encPreguntas.length
            + '.' + D.encRespuestas.length;
-  return [p, n, q, e, d, t, v, g, so, po, en].join('#');
+  const tb = (D.tombola ? D.tombola.estado : '') + '.' +
+    D.tombolaPremios.map(x => `${x.id}:${x.ganadora_nombre ?? ''}`).join(',');
+  return [p, n, q, e, d, t, v, g, so, po, en, tb].join('#');
 }
 
 /* Tres momentos: al volver a la app, al tocar la pantalla después
@@ -5976,8 +6135,9 @@ function mantenerAlDia(){
      seguido: son los dos momentos en que lo que pasa en una
      pantalla tiene que verse al tiro en todas las demás. */
   setInterval(() => {
-    if(D.sorteo && ['abierto','cerrado','sorteado'].includes(D.sorteo.estado)) return refrescar();
-    if(D.podio && D.podio.estado === 'vivo') refrescar();
+    if(D.sorteos.some(x => ['abierto','cerrado','sorteado'].includes(x.estado))) return refrescar();
+    if(D.podio && D.podio.estado === 'vivo') return refrescar();
+    if(tombolaVisible() && premioPendiente()) refrescar();
   }, 5000);
 
   tironParaActualizar();
