@@ -484,6 +484,58 @@ td.jug{color:var(--gris);font-size:12px}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 }
 
+/* ---------- la encuesta ---------------------------------------- */
+.enc-cab{background:rgba(255,255,255,.1);border-radius:16px;padding:16px 16px 18px;
+  margin-bottom:14px}
+.enc-cab h2{margin:0;font-size:21px;line-height:1.2}
+.enc-cab p{margin:8px 0 0;font-size:13.5px;color:var(--claro);line-height:1.5}
+.enc-paso{font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--gris);font-weight:700;margin:0 0 6px}
+.enc-pregunta{font-size:15.5px;font-weight:700;line-height:1.35;margin:0 0 12px;
+  color:var(--tinta)}
+/* El contexto va antes de la pregunta, en gris y más chico: se lee
+   primero sin competir con lo que de verdad hay que contestar. */
+.enc-ayuda{font-size:13px;line-height:1.55;color:var(--gris);margin:0 0 9px}
+.enc-pregunta .opcional{display:inline-block;margin-left:6px;font-size:11px;
+  font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gris)}
+
+/* La escala: botones grandes, que se toquen con el pulgar. */
+.escala{display:flex;gap:6px;flex-wrap:wrap}
+.escala button{flex:1 1 0;min-width:40px;aspect-ratio:1;border-radius:12px;
+  border:1.5px solid var(--linea);background:#fff;color:var(--tinta);
+  font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.escala button.on{background:var(--verde);border-color:var(--verde);color:var(--lima)}
+.escala-pies{display:flex;justify-content:space-between;margin-top:7px;
+  font-size:11px;color:var(--gris)}
+
+.opciones2{display:flex;flex-direction:column;gap:7px}
+.opciones2 button{text-align:left;padding:11px 14px;border-radius:12px;
+  border:1.5px solid var(--linea);background:#fff;color:var(--tinta);font:inherit;
+  font-size:14px;cursor:pointer;line-height:1.3}
+.opciones2 button.on{background:var(--glass);border-color:var(--verde);font-weight:700}
+.opciones2 button.on::before{content:'✓ ';color:var(--verde);font-weight:800}
+
+.enc-texto{width:100%;min-height:84px;border-radius:12px;border:1.5px solid var(--linea);
+  padding:11px 13px;font:inherit;font-size:14px;color:var(--tinta);resize:vertical;
+  background:#fff}
+.enc-falta{border-color:var(--alerta)!important}
+.enc-gracias{text-align:center;padding:26px 18px}
+.enc-gracias .tic{font-size:46px;line-height:1}
+.enc-gracias h2{margin:10px 0 6px;font-size:22px}
+.enc-gracias p{margin:0;color:var(--claro);font-size:14px;line-height:1.55}
+
+/* Resultados, del lado de la administración. */
+.barra-res{display:flex;align-items:center;gap:8px;margin:5px 0}
+.barra-res span{flex:0 0 26px;font-size:12px;color:var(--gris);font-weight:700}
+.barra-res .riel{flex:1;height:9px;border-radius:99px;background:var(--glass);
+  overflow:hidden}
+.barra-res .riel i{display:block;height:100%;background:var(--verde);border-radius:99px}
+.barra-res b{flex:0 0 auto;font-size:12px;color:var(--tinta);min-width:34px;text-align:right}
+.nota-grande{font-size:30px;font-weight:800;color:var(--verde);line-height:1}
+.nota-grande small{font-size:.42em;font-weight:600;color:var(--gris);margin-left:4px}
+.comentario{border-left:3px solid var(--lima);padding:3px 0 3px 11px;margin:9px 0;
+  font-size:13.5px;line-height:1.5;color:var(--tinta)}
+
 /* ---------- el podio final, pensado para el proyector ----------
    Todo se mide en vmin y con clamp(), así que la misma pantalla
    sirve en un teléfono y en un telón de tres metros. */
@@ -623,6 +675,10 @@ td.jug{color:var(--gris);font-size:12px}
 /* Administración del sorteo. */
 .pasos{display:grid;gap:8px;margin-top:14px}
 .pasos .btn{width:100%;text-align:left}
+/* Variante en fila, para los botones chicos de cada pregunta: en
+   columna ocupaban media pantalla por pregunta. */
+.pasos.fila{display:flex;flex-wrap:wrap;gap:6px}
+.pasos.fila .btn{width:auto;text-align:center;padding:7px 13px;font-size:13px}
 .entraron{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
 .quien-entro{font-size:12.5px;background:var(--glass);border-radius:999px;padding:5px 11px}
 .quien-entro .apk{font-size:9.5px;font-weight:800;letter-spacing:.06em;color:var(--verde);
@@ -980,6 +1036,7 @@ body.quieto{overflow:hidden}
   <a data-vista="avisos">Avisos al teléfono</a>
   <a data-vista="sorteo" id="lnk-sorteo" class="oculta">Sorteo</a>
   <a data-vista="podio" id="lnk-podio" class="oculta">Podio</a>
+  <a data-vista="encuesta" id="lnk-encuesta" class="oculta">Encuesta</a>
   <a data-vista="auspiciadores">Auspiciadores</a>
   <h2>Acceso</h2>
   <a data-vista="entrar" id="lnk-entrar">Iniciar sesión</a>
@@ -993,6 +1050,7 @@ body.quieto{overflow:hidden}
     <a data-adm="galeria">Galería</a>
     <a data-adm="sorteo">Sorteo</a>
     <a data-adm="podio">Podio y premiación</a>
+    <a data-adm="encuesta">Encuesta</a>
     <a data-adm="diplomas">Diplomas</a>
     <a data-adm="mensaje">Mandar un aviso</a>
     <a data-adm="auspicio">Auspiciadores</a>
@@ -1019,7 +1077,8 @@ const LLAVE  = 'sb_publishable_HzIf3QRYjGYwWFYjkEJ--g_B8-Tg-_y';
 const sb = createClient(URL_SB, LLAVE);
 
 const VERSION = 'v10 · 25-08-2026';   // queda para poder confirmar qué versión está publicada
-const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[], sorteo:null, sorteoPart:[], podio:null };
+const D = { categorias:[], equipos:[], jugadoras:[], duplas:[], jornadas:[], partidos:[], tabla:[], ranking:[], noticias:[], ajustes:[], diva:null, preguntas:[], etiquetas:[], auspiciadores:null, galerias:[], galeriaFotos:[], fotoLikes:[], fotoComentarios:[], sorteo:null, sorteoPart:[], podio:null,
+  encuesta:null, encPreguntas:[], encRespuestas:[], encDetalle:[] };
 let vista = 'entrar';   /* al abrir se pide identificarse; el público puede saltarlo */
 let sesion = null;            // administradora conectada
 let miFicha = null;           // su ficha de jugadora, si además juega
@@ -1142,7 +1201,8 @@ async function cargarBase(){
 /* Lo demás: tablas calculadas, noticias, la DIVA. Se pide después
    de haber pintado, así la app aparece antes. */
 async function cargarResto(){
-  const [tab, ran, aju, pre, not, div, etq, gal, gfo, lik, com, sor, spa, pod] = await Promise.all([
+  const [tab, ran, aju, pre, not, div, etq, gal, gfo, lik, com, sor, spa, pod,
+         enc, epr, ere, ede] = await Promise.all([
     t('v_tabla_equipos'), t('v_ranking_duplas'), t('ajustes'),
     sb.from('preguntas').select('*').order('creada_en',{ascending:false}).then(r => r.data ?? []),
     sb.from('noticias').select('*').order('publicada_en',{ascending:false}).then(r => r.data ?? []),
@@ -1162,13 +1222,20 @@ async function cargarResto(){
     t('sorteo_participantes','creado_en'),
     /* El podio de la premiación. Mismo caso que el sorteo: si no
        se corrió su SQL, vuelve vacío y no aparece. */
-    sb.from('podio').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null)
+    sb.from('podio').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
+    /* La encuesta. El detalle solo lo devuelve la base si quien
+       pregunta es administradora; para el resto vuelve vacío. */
+    sb.from('encuesta').select('*').eq('id',1).maybeSingle().then(r => r.data ?? null),
+    t('encuesta_preguntas','orden'),
+    t('encuesta_respuestas','enviado_en'),
+    t('encuesta_detalle','id')
   ]);
   D.tabla = tab; D.ranking = ran; D.ajustes = aju;
   D.preguntas = pre; D.noticias = not; D.diva = div; D.etiquetas = etq;
   D.galerias = gal; D.galeriaFotos = gfo;
   D.fotoLikes = lik; D.fotoComentarios = com;
   D.sorteo = sor; D.sorteoPart = spa; D.podio = pod;
+  D.encuesta = enc; D.encPreguntas = epr; D.encRespuestas = ere; D.encDetalle = ede;
   restoListo = true;
 }
 
@@ -1295,7 +1362,7 @@ function pintar(){
   const f = { resultados:vResultados, equipos:vEquipos, perfil:vPerfil, programacion:vProgramacion,
               noticias:vNoticias, diva:vDiva, entrar:vEntrar, admin:vAdmin,
               auspiciadores:vAuspiciadores, avisos:vAvisos, sorteo:vSorteo,
-              podio:vPodio }[vista] ?? vResultados;
+              podio:vPodio, encuesta:vEncuesta }[vista] ?? vResultados;
   const puerta = vista === 'entrar';
   $('#navbar').classList.toggle('oculta', puerta);
   $('#abrir').classList.toggle('oculta', puerta);
@@ -1314,6 +1381,8 @@ function pintar(){
     if(lnk) lnk.classList.toggle('oculta', !sorteoVivo());
     const lnkP = $('#lnk-podio');
     if(lnkP) lnkP.classList.toggle('oculta', !podioVivo());
+    const lnkE = $('#lnk-encuesta');
+    if(lnkE) lnkE.classList.toggle('oculta', !encuestaViva());
   }catch(e){
     p.innerHTML = `<div class="vacio">Algo falló al mostrar esta sección.<br><br>
       <span class="mono" style="font-size:12px">${esc(e.message)}</span><br><br>
@@ -3032,7 +3101,15 @@ document.addEventListener('keydown', ev => {
 
 const SORTEO_VIVO = ['anuncio','abierto','cerrado','sorteado'];
 const sorteoVivo = () => D.sorteo && SORTEO_VIVO.includes(D.sorteo.estado);
-const yaEntre = () => yo && D.sorteoPart.some(x => x.jugadora_id === yo.jugadora_id);
+
+/* De dónde salen las participantes. Hay dos sorteos distintos en
+   el torneo y funcionan igual salvo en esto:
+     boton    · entra la que aprieta el botón durante la ventana
+     encuesta · entra sola la que respondió la encuesta
+   Todo lo demás —los pasos, el redoble, la ganadora— es lo mismo. */
+const porEncuesta = () => D.sorteo && D.sorteo.fuente === 'encuesta';
+const participantes = () => porEncuesta() ? D.encRespuestas : D.sorteoPart;
+const yaEntre = () => yo && participantes().some(x => x.jugadora_id === yo.jugadora_id);
 
 /* La franja de arriba. Se dibuja aparte de la pantalla para que
    acompañe a la jugadora esté donde esté. */
@@ -3040,13 +3117,29 @@ function pintarFranja(){
   const f = $('#franja-sorteo');
   if(!f) return;
   const puerta = vista === 'entrar';
+
+  /* El sorteo manda sobre la encuesta: si los dos están en marcha,
+     arriba va el sorteo, que es el que pasa en un rato concreto. */
+  if(!sorteoVivo() && !puerta && vista !== 'encuesta'
+     && encuestaAbierta() && yo && !yaRespondi()){
+    f.className = 'franja';
+    f.innerHTML = `<button id="ir-encuesta">
+      <span class="regalo">📝</span>
+      <span class="dice">Cuéntanos qué te pareció el torneo</span>
+      <span class="flechita">›</span></button>`;
+    $('#ir-encuesta').onclick = () => { vista = 'encuesta'; pintar(); window.scrollTo({top:0}); };
+    return;
+  }
+
   if(!sorteoVivo() || puerta || vista === 'sorteo'){
     f.className = 'franja oculta'; f.innerHTML = ''; return;
   }
   const s = D.sorteo;
   const texto = {
     anuncio : s.ventana ? `Hoy hay sorteo · ${s.ventana}` : 'Hoy hay sorteo',
-    abierto : '¡El sorteo está abierto! Entra ahora',
+    abierto : porEncuesta()
+      ? 'Responde la encuesta y entras al sorteo'
+      : '¡El sorteo está abierto! Entra ahora',
     cerrado : 'Inscripción cerrada · ya se sortea',
     sorteado: '¡Ya hay ganadora!'
   }[s.estado];
@@ -3057,6 +3150,138 @@ function pintarFranja(){
     <span class="dice">${esc(texto)}</span>
     <span class="flechita">›</span></button>`;
   $('#ir-sorteo').onclick = () => { vista = 'sorteo'; pintar(); window.scrollTo({top:0}); };
+}
+
+/* ---------- la encuesta de satisfacción ---------------------------
+   Mismo esquema que el sorteo: la administradora la abre, llega el
+   aviso, las jugadoras contestan y después la cierra. Cada una
+   responde una sola vez.
+
+   Lo que cada jugadora contestó lo lee solo la administración, y
+   acá se muestra en promedios y conteos, sin nombres: una encuesta
+   con nombre y apellido a la vista deja de ser sincera. Quién
+   respondió sí es público, porque de ahí sale el sorteo. */
+
+const encuestaViva = () => D.encuesta && ['abierta','cerrada'].includes(D.encuesta.estado);
+const encuestaAbierta = () => D.encuesta && D.encuesta.estado === 'abierta';
+const yaRespondi = () => yo && D.encRespuestas.some(r => r.jugadora_id === yo.jugadora_id);
+
+/* Lo que la jugadora lleva marcado, antes de enviar. */
+let borrador = {};
+
+function preguntasVivas(){
+  return D.encPreguntas.filter(p => p.activa)
+    .slice().sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0) || a.id - b.id);
+}
+
+function campoPregunta(p){
+  const v = borrador[p.id];
+  if(p.tipo === 'escala'){
+    const tope = p.tope || 5;
+    return `<div class="escala">${Array.from({length: tope}, (_, i) => i + 1).map(n =>
+      `<button type="button" class="${v === n ? 'on' : ''}" data-enc-escala="${p.id}"
+        data-valor="${n}">${n}</button>`).join('')}</div>
+      <div class="escala-pies"><span>1 · nada</span><span>${tope} · excelente</span></div>`;
+  }
+  if(p.tipo === 'si_no'){
+    return `<div class="opciones2">${['Sí','No'].map(o =>
+      `<button type="button" class="${v === o ? 'on' : ''}" data-enc-opcion="${p.id}"
+        data-valor="${esc(o)}">${o}</button>`).join('')}</div>`;
+  }
+  if(p.tipo === 'opciones'){
+    return `<div class="opciones2">${(p.opciones ?? []).map(o =>
+      `<button type="button" class="${v === o ? 'on' : ''}" data-enc-opcion="${p.id}"
+        data-valor="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+  }
+  return `<textarea class="enc-texto" data-enc-texto="${p.id}" maxlength="600"
+    placeholder="Escribe acá…">${esc(v ?? '')}</textarea>`;
+}
+
+function vEncuesta(){
+  const e = D.encuesta;
+  if(!e || e.estado === 'oculta')
+    return `<div class="vacio">Por ahora no hay ninguna encuesta abierta.</div>`;
+
+  if(!yo) return `<div class="vacio">Para responder la encuesta tienes que entrar con
+    tu nombre. Vuelve al inicio y elige quién eres.</div>`;
+
+  if(yaRespondi()) return `<div class="enc-gracias">
+    <div class="tic">✅</div>
+    <h2>${esc(e.gracias || '¡Gracias!')}</h2>
+    <p>Ya contestaste, no hace falta nada más.${
+      encuestaAbierta() ? ' Quedas dentro del sorteo entre quienes respondieron.' : ''}</p>
+  </div>`;
+
+  if(e.estado === 'cerrada') return `<div class="enc-gracias">
+    <div class="tic">🔒</div><h2>La encuesta ya cerró</h2>
+    <p>Gracias a todas las que alcanzaron a contestar.</p></div>`;
+
+  const preg = preguntasVivas();
+  if(!preg.length) return `<div class="vacio">La encuesta todavía no tiene preguntas.</div>`;
+
+  return `<div class="enc-cab">
+      <h2>${esc(e.titulo)}</h2>
+      ${e.bajada ? `<p>${esc(e.bajada)}</p>` : ''}
+    </div>
+    ${preg.map((p, i) => `<div class="card" id="preg-${p.id}">
+      <p class="enc-paso">Pregunta ${i + 1} de ${preg.length}</p>
+      ${p.ayuda ? `<p class="enc-ayuda">${esc(p.ayuda)}</p>` : ''}
+      <p class="enc-pregunta">${esc(p.texto)}${
+        p.obligatoria ? '' : '<span class="opcional">opcional</span>'}</p>
+      ${campoPregunta(p)}
+    </div>`).join('')}
+    <div id="enc-msg"></div>
+    <div class="pasos" style="margin-top:4px">
+      <button class="btn lima" id="enc-enviar">Enviar mis respuestas</button>
+    </div>
+    <p class="nota">Tus respuestas las lee solo la organización, y las mira en promedios,
+      sin nombres. Se guarda que respondiste para el sorteo.</p>`;
+}
+
+async function enviarEncuesta(){
+  const caja = $('#enc-msg');
+  const boton = $('#enc-enviar');
+  const preg = preguntasVivas();
+
+  /* Primero las obligatorias que falten: se marcan y se sube a la
+     primera, para no dejarla buscando cuál fue. */
+  document.querySelectorAll('.enc-falta').forEach(x => x.classList.remove('enc-falta'));
+  const faltan = preg.filter(p => p.obligatoria &&
+    (borrador[p.id] == null || String(borrador[p.id]).trim() === ''));
+  if(faltan.length){
+    faltan.forEach(p => $(`#preg-${p.id}`)?.classList.add('enc-falta'));
+    aviso(caja, `Te falta${faltan.length === 1 ? '' : 'n'} ${faltan.length} pregunta${
+      faltan.length === 1 ? '' : 's'} obligatoria${faltan.length === 1 ? '' : 's'}.`, true);
+    $(`#preg-${faltan[0].id}`)?.scrollIntoView({ behavior:'smooth', block:'center' });
+    return;
+  }
+
+  if(boton){ boton.disabled = true; boton.textContent = 'Enviando…'; }
+  try{
+    const { data, error } = await sb.from('encuesta_respuestas')
+      .insert({ jugadora_id: yo.jugadora_id }).select('id').single();
+    if(error) throw error;
+
+    const filas = preg
+      .filter(p => borrador[p.id] != null && String(borrador[p.id]).trim() !== '')
+      .map(p => ({ respuesta_id: data.id, pregunta_id: p.id,
+        valor:  p.tipo === 'escala' ? null : String(borrador[p.id]).trim(),
+        numero: p.tipo === 'escala' ? Number(borrador[p.id]) : null }));
+    if(filas.length){
+      const { error: e2 } = await sb.from('encuesta_detalle').insert(filas);
+      if(e2) throw e2;
+    }
+    borrador = {};
+    await cargar();
+    pintar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }catch(err){
+    if(boton){ boton.disabled = false; boton.textContent = 'Enviar mis respuestas'; }
+    const m = String(err.message ?? err);
+    aviso(caja, m.includes('duplicate') || m.includes('unique')
+      ? 'Parece que ya habías respondido. Recarga la app.'
+      : 'No se pudo enviar: ' + m, true);
+  }
 }
 
 /* ---------- el podio final ----------------------------------------
@@ -3448,6 +3673,287 @@ async function guardarNombresLargos(){
   }catch(e){ aviso(caja, 'No se pudo guardar: ' + (e.message ?? e), true); }
 }
 
+/* --- administración: la encuesta --- */
+
+const TIPOS = { escala:'Nota del 1 al N', opciones:'Elegir una opción',
+                si_no:'Sí o no', texto:'Comentario libre' };
+
+function admEncuesta(){
+  const e = D.encuesta;
+  if(!e) return `<div class="vacio">Falta correr esquema-parte22.sql en Supabase.</div>`;
+  const preg = D.encPreguntas.slice().sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0) || a.id - b.id);
+  const cuantas = D.encRespuestas.length;
+  const estado = { oculta:'No se ve nada en la app.',
+    abierta:'Abierta: las jugadoras pueden responder.',
+    cerrada:'Cerrada. Ya no se reciben respuestas.' }[e.estado];
+
+  return `<p class="nota">La encuesta se abre y se cierra a mano, igual que el sorteo.
+      Al abrirla sale notificación a todas. Cada jugadora responde una sola vez.</p>
+    <div class="card">
+      <h3>Estado</h3>
+      <p class="nota" style="margin:4px 0 12px">Ahora: <b>${esc(estado)}</b>
+        Respondieron <b>${cuantas}</b> de ${D.jugadoras.length}.</p>
+      <div class="pasos">
+        <button class="btn ${e.estado === 'oculta' ? 'lima' : 'claro'}"
+          data-enc="abierta">Abrir la encuesta y avisar</button>
+        <button class="btn ${e.estado === 'abierta' ? 'lima' : 'claro'}"
+          data-enc="cerrada">Cerrar las respuestas</button>
+        <button class="btn claro" data-enc="oculta"
+          style="border-color:var(--alerta);color:var(--alerta)">Esconder todo</button>
+      </div>
+      <div id="en-msg"></div>
+    </div>
+
+    <div class="card">
+      <h3>Textos</h3>
+      <div style="margin-bottom:8px"><label class="lab">Título</label>
+        <input type="text" id="en-titulo" maxlength="90" value="${esc(e.titulo ?? '')}"></div>
+      <div style="margin-bottom:8px"><label class="lab">Bajada</label>
+        <input type="text" id="en-bajada" maxlength="160" value="${esc(e.bajada ?? '')}"></div>
+      <div style="margin-bottom:10px"><label class="lab">Mensaje de agradecimiento</label>
+        <input type="text" id="en-gracias" maxlength="120" value="${esc(e.gracias ?? '')}"></div>
+      <button class="btn claro" id="en-guardar">Guardar los textos</button>
+    </div>
+
+    <h2 class="sec">Preguntas (${preg.length})</h2>
+    ${preg.map((p, i) => `<div class="card">
+      <div style="display:flex;gap:8px;align-items:flex-start">
+        <div style="flex:1;min-width:0">
+          <p class="nota" style="margin:0 0 6px">${i + 1} · ${esc(TIPOS[p.tipo] ?? p.tipo)}${
+            p.obligatoria ? ' · obligatoria' : ' · opcional'}${p.activa ? '' : ' · APAGADA'}</p>
+          ${p.ayuda ? `<p class="nota" style="margin:0 0 5px;font-style:italic">${
+            esc(p.ayuda)}</p>` : ''}
+          <p style="margin:0;font-weight:700;line-height:1.35">${esc(p.texto)}</p>
+          ${p.tipo === 'opciones' && p.opciones
+            ? `<p class="nota" style="margin:6px 0 0">${p.opciones.map(esc).join(' · ')}</p>` : ''}
+        </div>
+      </div>
+      <div class="pasos fila" style="margin-top:10px">
+        <button class="btn claro" data-preg-sube="${p.id}" ${i === 0 ? 'disabled' : ''}>↑</button>
+        <button class="btn claro" data-preg-baja="${p.id}" ${i === preg.length - 1 ? 'disabled' : ''}>↓</button>
+        <button class="btn claro" data-preg-activa="${p.id}">${p.activa ? 'Apagar' : 'Encender'}</button>
+        <button class="btn claro" data-preg-oblig="${p.id}">${
+          p.obligatoria ? 'Hacerla opcional' : 'Hacerla obligatoria'}</button>
+        <button class="btn claro" data-preg-borra="${p.id}"
+          style="border-color:var(--alerta);color:var(--alerta)">Borrar</button>
+      </div>
+    </div>`).join('') || `<p class="nota">Todavía no hay preguntas.</p>`}
+
+    <div class="card">
+      <h3>Agregar una pregunta</h3>
+      <div style="margin-bottom:8px"><label class="lab">La pregunta</label>
+        <input type="text" id="np-texto" maxlength="200" placeholder="¿Qué te pareció…?"></div>
+      <div style="margin-bottom:8px"><label class="lab">Contexto, si hace falta (opcional)</label>
+        <textarea id="np-ayuda" rows="2" maxlength="400"
+          placeholder="Considerando los horarios, la organización…"></textarea></div>
+      <div style="margin-bottom:8px"><label class="lab">Tipo</label>
+        <select id="np-tipo">${Object.entries(TIPOS).map(([k, v]) =>
+          `<option value="${k}">${esc(v)}</option>`).join('')}</select></div>
+      <div style="margin-bottom:8px"><label class="lab">Si es nota: hasta cuánto</label>
+        <input type="number" id="np-tope" min="3" max="10" value="7"></div>
+      <div style="margin-bottom:10px"><label class="lab">Si es de opciones: una por línea</label>
+        <textarea id="np-opciones" rows="4" placeholder="El ambiente&#10;El nivel&#10;La organización"></textarea></div>
+      <label class="lab" style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+        <input type="checkbox" id="np-oblig" checked style="width:auto"> Obligatoria</label>
+      <button class="btn lima" id="np-crear">Agregar</button>
+    </div>
+
+    <div class="card">
+      <h3>Pegar varias de una vez</h3>
+      <p class="nota" style="margin:2px 0 10px">Una pregunta por línea. Se crean todas como
+        nota del 1 al 7; después cambias el tipo de las que necesites.</p>
+      <textarea id="np-lote" rows="5" placeholder="¿Cómo estuvo la organización?&#10;¿Y las canchas?"></textarea>
+      <button class="btn claro" id="np-lote-crear" style="margin-top:10px">Crear todas</button>
+    </div>
+
+    ${cuantas ? resultadosEncuesta() : `<p class="nota">Los resultados aparecen acá en cuanto
+      llegue la primera respuesta.</p>`}`;
+}
+
+/* Los resultados, en promedios y conteos. Sin nombres. */
+/* Baja las respuestas a Excel, para poder tabularlas aparte. Dos
+   hojas: una fila por jugadora con todo al lado, y una fila por
+   respuesta suelta, que es más cómoda para contar. */
+async function bajarEncuesta(){
+  const XLSX = await import('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm');
+  const preg = D.encPreguntas.slice().sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0));
+  const det = D.encDetalle ?? [];
+  const quien = id => (D.jugadoras.find(j => j.id === id) || {}).nombre ?? '';
+  const equipoDe = id => {
+    const j = D.jugadoras.find(x => x.id === id);
+    return j && j.equipo_id ? eq(j.equipo_id) : '';
+  };
+
+  const ancho = D.encRespuestas.map(r => {
+    const fila = { Jugadora: quien(r.jugadora_id), Equipo: equipoDe(r.jugadora_id),
+                   Enviado: (r.enviado_en ?? '').slice(0, 16).replace('T', ' ') };
+    preg.forEach(p => {
+      const d = det.find(x => x.respuesta_id === r.id && x.pregunta_id === p.id);
+      fila[p.texto] = d ? (d.numero ?? d.valor ?? '') : '';
+    });
+    return fila;
+  });
+
+  const largo = det.map(d => {
+    const r = D.encRespuestas.find(x => x.id === d.respuesta_id) || {};
+    const p = preg.find(x => x.id === d.pregunta_id) || {};
+    return { Jugadora: quien(r.jugadora_id), Equipo: equipoDe(r.jugadora_id),
+             Pregunta: p.texto ?? '', Tipo: p.tipo ?? '',
+             Respuesta: d.numero ?? d.valor ?? '' };
+  });
+
+  const libro = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(libro, XLSX.utils.json_to_sheet(ancho), 'Una fila por jugadora');
+  XLSX.utils.book_append_sheet(libro, XLSX.utils.json_to_sheet(largo), 'Una fila por respuesta');
+  const hoy = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(libro, `encuesta-batalla-2026-${hoy}.xlsx`);
+}
+
+function resultadosEncuesta(){
+  const preg = D.encPreguntas.slice().sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0));
+  const det = D.encDetalle ?? [];
+  if(!det.length) return `<h2 class="sec">Resultados</h2>
+    <p class="nota">Hay respuestas, pero el detalle solo lo puede leer una administradora
+      con sesión iniciada. Vuelve a entrar con tu clave si no lo ves.</p>`;
+
+  return `<h2 class="sec">Resultados · ${D.encRespuestas.length} respuestas</h2>
+    <p class="nota">Estos resultados los ves solo tú: la base de datos no se los entrega
+      a nadie que no sea administradora. Quedan guardados para siempre.</p>
+    <div class="pasos" style="margin-bottom:14px">
+      <button class="btn claro" id="enc-bajar">Bajar las respuestas a Excel</button>
+    </div>` +
+    preg.map(p => {
+      const mias = det.filter(d => d.pregunta_id === p.id);
+      if(!mias.length) return `<div class="card"><p class="enc-pregunta">${esc(p.texto)}</p>
+        <p class="nota" style="margin:0">Sin respuestas.</p></div>`;
+
+      let cuerpo = '';
+      if(p.tipo === 'escala'){
+        const nums = mias.map(d => d.numero).filter(n => n != null);
+        const prom = nums.reduce((a, b) => a + b, 0) / (nums.length || 1);
+        const tope = p.tope || 5;
+        const cuenta = {};
+        nums.forEach(n => { cuenta[n] = (cuenta[n] ?? 0) + 1; });
+        cuerpo = `<p class="nota-grande">${prom.toFixed(1)}<small>de ${tope} · ${
+          nums.length} respuestas</small></p>
+          <div style="margin-top:10px">${Array.from({length: tope}, (_, i) => i + 1).map(n => {
+            const c = cuenta[n] ?? 0;
+            return `<div class="barra-res"><span>${n}</span>
+              <div class="riel"><i style="width:${nums.length ? c / nums.length * 100 : 0}%"></i></div>
+              <b>${c}</b></div>`; }).join('')}</div>`;
+      } else if(p.tipo === 'texto'){
+        cuerpo = mias.filter(d => d.valor).map(d =>
+          `<p class="comentario">${esc(d.valor)}</p>`).join('')
+          || `<p class="nota" style="margin:0">Sin comentarios.</p>`;
+      } else {
+        const lista = p.tipo === 'si_no' ? ['Sí','No'] : (p.opciones ?? []);
+        const cuenta = {};
+        mias.forEach(d => { if(d.valor) cuenta[d.valor] = (cuenta[d.valor] ?? 0) + 1; });
+        const total = mias.length;
+        cuerpo = lista.map(o => {
+          const c = cuenta[o] ?? 0;
+          return `<div class="barra-res"><span></span>
+            <div class="riel"><i style="width:${total ? c / total * 100 : 0}%"></i></div>
+            <b>${c}</b></div>
+            <p class="nota" style="margin:-4px 0 8px">${esc(o)}</p>`; }).join('');
+      }
+      return `<div class="card"><p class="enc-pregunta">${esc(p.texto)}</p>${cuerpo}</div>`;
+    }).join('');
+}
+
+async function moverEncuesta(estado){
+  const caja = $('#en-msg');
+  try{
+    const { error } = await sb.from('encuesta')
+      .update({ estado, actualizado_en: new Date().toISOString() }).eq('id', 1);
+    if(error) throw error;
+    let extra = '';
+    if(estado === 'abierta'){
+      const r = await avisarATodas('Encuesta del torneo',
+        'Cuéntanos qué te pareció la Batalla de Equipos. Son dos minutos, y entras al sorteo.');
+      extra = r.ok ? ' Aviso enviado.' : ' Pero el aviso falló: ' + r.mensaje;
+    }
+    await cargar();
+    aviso(caja, 'Listo.' + extra, estado === 'abierta' && extra.includes('falló'));
+    setTimeout(pintar, 700);
+  }catch(e){ aviso(caja, 'No se pudo: ' + (e.message ?? e), true); }
+}
+
+async function guardarTextosEncuesta(){
+  const caja = $('#en-msg');
+  try{
+    const { error } = await sb.from('encuesta').update({
+      titulo:  $('#en-titulo').value.trim(),
+      bajada:  $('#en-bajada').value.trim(),
+      gracias: $('#en-gracias').value.trim(),
+      actualizado_en: new Date().toISOString() }).eq('id', 1);
+    if(error) throw error;
+    await cargar(); aviso(caja, 'Textos guardados.');
+  }catch(e){ aviso(caja, 'No se pudo: ' + (e.message ?? e), true); }
+}
+
+async function crearPregunta(){
+  const texto = $('#np-texto').value.trim();
+  if(!texto) return;
+  const tipo = $('#np-tipo').value;
+  const opciones = $('#np-opciones').value.split('\n').map(x => x.trim()).filter(Boolean);
+  const ultimo = Math.max(0, ...D.encPreguntas.map(p => p.orden ?? 0));
+  try{
+    const { error } = await sb.from('encuesta_preguntas').insert({
+      texto, tipo, orden: ultimo + 10,
+      ayuda: ($('#np-ayuda')?.value ?? '').trim() || null,
+      tope: tipo === 'escala' ? Number($('#np-tope').value) || 7 : null,
+      opciones: tipo === 'opciones' ? opciones : null,
+      obligatoria: $('#np-oblig').checked });
+    if(error) throw error;
+    await cargar(); pintar();
+  }catch(e){ alert('No se pudo crear: ' + (e.message ?? e)); }
+}
+
+async function crearPreguntasEnLote(){
+  const lineas = $('#np-lote').value.split('\n').map(x => x.trim()).filter(Boolean);
+  if(!lineas.length) return;
+  let ultimo = Math.max(0, ...D.encPreguntas.map(p => p.orden ?? 0));
+  try{
+    const filas = lineas.map(texto => ({ texto, tipo:'escala', tope:7,
+      obligatoria:true, orden: (ultimo += 10) }));
+    const { error } = await sb.from('encuesta_preguntas').insert(filas);
+    if(error) throw error;
+    await cargar(); pintar();
+  }catch(e){ alert('No se pudo: ' + (e.message ?? e)); }
+}
+
+async function tocarPregunta(id, que){
+  const p = D.encPreguntas.find(x => x.id === id);
+  if(!p) return;
+  try{
+    if(que === 'borra'){
+      if(!confirm(`¿Borro la pregunta "${p.texto}"?\n\nSi ya la respondieron, se borran también esas respuestas.`)) return;
+      const { error } = await sb.from('encuesta_preguntas').delete().eq('id', id);
+      if(error) throw error;
+    } else if(que === 'activa'){
+      const { error } = await sb.from('encuesta_preguntas')
+        .update({ activa: !p.activa }).eq('id', id);
+      if(error) throw error;
+    } else if(que === 'oblig'){
+      const { error } = await sb.from('encuesta_preguntas')
+        .update({ obligatoria: !p.obligatoria }).eq('id', id);
+      if(error) throw error;
+    } else {
+      /* Subir o bajar: se intercambia el orden con la vecina. */
+      const lista = D.encPreguntas.slice()
+        .sort((a,b) => (a.orden ?? 0) - (b.orden ?? 0) || a.id - b.id);
+      const i = lista.findIndex(x => x.id === id);
+      const j = que === 'sube' ? i - 1 : i + 1;
+      if(j < 0 || j >= lista.length) return;
+      const a = lista[i], b = lista[j];
+      await sb.from('encuesta_preguntas').update({ orden: b.orden ?? 0 }).eq('id', a.id);
+      await sb.from('encuesta_preguntas').update({ orden: a.orden ?? 0 }).eq('id', b.id);
+    }
+    await cargar(); pintar();
+  }catch(e){ alert('No se pudo: ' + (e.message ?? e)); }
+}
+
 /* --- administración: el podio --- */
 function admPodio(){
   const p = D.podio;
@@ -3518,7 +4024,7 @@ const marcaSorteo = s => String(s.sorteado_en ?? s.ganadora_id ?? '');
 
 function hayQueRodar(s){
   if(s.estado !== 'sorteado' || !s.ganadora_id) return false;
-  if(D.sorteoPart.length < 2) return false;
+  if(participantes().length < 2) return false;
   try{ return localStorage.getItem('batalla:sorteo-visto') !== marcaSorteo(s); }
   catch(e){ return true; }
 }
@@ -3545,7 +4051,7 @@ function rodarNombres(){
   };
 
   /* Los nombres que van a pasar: solo las que de verdad entraron. */
-  const nombres = D.sorteoPart
+  const nombres = participantes()
     .map(x => { const j = D.jugadoras.find(y => y.id === x.jugadora_id); return j ? j.nombre : null; })
     .filter(Boolean);
 
@@ -3573,7 +4079,7 @@ function vSorteo(){
   if(!sorteoVivo())
     return `<div class="vacio">Por ahora no hay ningún sorteo en marcha.</div>`;
 
-  const cuantas = D.sorteoPart.length;
+  const cuantas = participantes().length;
   const ganadora = s.ganadora_id ? D.jugadoras.find(j => j.id === s.ganadora_id) : null;
 
   /* El premio, oculto hasta que lo revelen. */
@@ -3617,11 +4123,16 @@ function vSorteo(){
       ? `<div class="dentro">
            <span class="tilde">✓</span>
            <strong>Estás dentro</strong>
-           <p class="pista2">No cierres la app: el sorteo se hace acá mismo.</p>
+           <p class="pista2">${porEncuesta()
+             ? 'Ya respondiste, así que estás participando. Te avisamos cuando se sortee.'
+             : 'No cierres la app: el sorteo se hace acá mismo.'}</p>
          </div>`
       : (yo
-        ? `<button class="btn-sorteo" id="entrar-sorteo">Quiero participar</button>
-           <p class="pista2">Toca el botón para entrar. Un solo toque, una sola oportunidad.</p>`
+        ? (porEncuesta()
+          ? `<button class="btn-sorteo" id="ir-a-encuesta">Responder la encuesta</button>
+             <p class="pista2">Entras al sorteo con solo responderla. Son tres preguntas.</p>`
+          : `<button class="btn-sorteo" id="entrar-sorteo">Quiero participar</button>
+             <p class="pista2">Toca el botón para entrar. Un solo toque, una sola oportunidad.</p>`)
         : `<div class="dentro gris">
              <strong>Entra con tu nombre para participar</strong>
              <p class="pista2">El sorteo es solo para las jugadoras del torneo.</p>
@@ -3630,7 +4141,7 @@ function vSorteo(){
   }
   if(s.estado === 'cerrado'){
     centro = `<div class="dentro">
-        <strong>Inscripción cerrada</strong>
+        <strong>${porEncuesta() ? 'Encuesta cerrada' : 'Inscripción cerrada'}</strong>
         <p class="pista2">${yaEntre() ? 'Estás dentro. ' : ''}Ya viene el sorteo, no te vayas.</p>
       </div>`;
   }
@@ -3673,17 +4184,17 @@ function vAdmin(){
   if(!sesion) return `<h2 class="sec">Administración</h2>
     <div class="vacio">Tu sesión de administradora no está activa.<br><br>
       <button class="btn lima" id="ir-entrar">Iniciar sesión</button></div>`;
-  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','podio','diplomas','mensaje','auspicio','extra'].map(s =>
+  const chips = ['equipos','plantel','programacion','noticias','galeria','sorteo','podio','encuesta','diplomas','mensaje','auspicio','extra'].map(s =>
     `<button class="chip ${subAdm===s?'on':''}" data-adm="${s}">${
       {equipos:'Equipos',plantel:'Jugadoras y duplas',programacion:'Programación',
        noticias:'Noticias',galeria:'Galería',sorteo:'Sorteo',podio:'Podio',
-       diplomas:'Diplomas',mensaje:'Mandar un aviso',
+       encuesta:'Encuesta',diplomas:'Diplomas',mensaje:'Mandar un aviso',
        auspicio:'Auspiciadores',extra:'Puntos extra'}[s]}</button>`).join('');
   return `<h2 class="sec">Administración</h2><div class="chips">${chips}</div>` +
     ({ equipos:admEquipos, plantel:admPlantel, programacion:admProgramacion,
        noticias:admNoticias, galeria:admGaleria, sorteo:admSorteo, mensaje:admMensaje,
        auspicio:admAuspicio, extra:admExtra, podio:admPodio,
-      diplomas:admDiplomas }[subAdm])();
+      diplomas:admDiplomas, encuesta:admEncuesta }[subAdm])();
 }
 
 function admEquipos(){
@@ -3965,19 +4476,21 @@ function admSorteo(){
   const s = D.sorteo;
   if(!s) return `<div class="vacio">Falta correr el SQL del sorteo (parte 17) en Supabase.</div>`;
 
-  const cuantas = D.sorteoPart.length;
+  const cuantas = participantes().length;
   const ganadora = s.ganadora_id ? D.jugadoras.find(j => j.id === s.ganadora_id) : null;
   const paso = {
     oculto  : 'No se ve nada en la app.',
     anuncio : s.premio_revelado
       ? 'Ya saben cuál es el premio. Falta abrir la inscripción.'
       : 'Se ve el aviso arriba, con el premio tapado y sin botón todavía.',
-    abierto : 'El botón está abierto: las jugadoras pueden entrar.',
+    abierto : porEncuesta()
+      ? 'La encuesta está abierta: cada una que responde entra al sorteo.'
+      : 'El botón está abierto: las jugadoras pueden entrar.',
     cerrado : 'Ya no entra nadie más. Falta sortear.',
     sorteado: 'Ya hay ganadora.'
   }[s.estado];
 
-  const lista = D.sorteoPart.map(x => {
+  const lista = participantes().map(x => {
     const j = D.jugadoras.find(y => y.id === x.jugadora_id);
     return `<span class="quien-entro">${esc(j ? j.nombre : '—')}${
       x.instalada ? ' <span class="apk" title="Entró desde la app instalada">app</span>' : ''}</span>`;
@@ -3986,6 +4499,20 @@ function admSorteo(){
   return `<p class="nota">El sorteo se maneja desde acá, paso a paso. Mientras esté en
       "oculto" no existe para nadie. El premio queda guardado y se muestra como
       "Sorpresa" hasta que aprietes el paso 2.</p>
+    <div class="card">
+      <h3>Quiénes participan</h3>
+      <div class="chips" style="margin:10px 0 0">
+        <button class="chip ${porEncuesta() ? 'enblanco' : 'on'}" data-fuente="boton">Las que aprietan el botón</button>
+        <button class="chip ${porEncuesta() ? 'on' : 'enblanco'}" data-fuente="encuesta">Las que responden la encuesta</button>
+      </div>
+      <p class="nota" style="margin:12px 0 0">${porEncuesta()
+        ? `Entran solas al responder, sin apretar nada. Los pasos 3 y 4 abren y cierran
+           la encuesta. Van <b>${cuantas}</b> respuestas.`
+        : `Cada una entra tocando el botón durante la ventana. Van <b>${cuantas}</b> inscritas.`}</p>
+      ${s.estado !== 'oculto' ? `<p class="nota" style="margin:8px 0 0;color:var(--alerta)">
+        Para cambiar de modo, primero esconde el sorteo: cambiarlo en marcha
+        dejaría fuera a las que ya entraron.</p>` : ''}
+    </div>
 
     <div class="card">
       <div class="fila" style="margin:0">
@@ -3997,8 +4524,10 @@ function admSorteo(){
         <button class="btn ${s.estado === 'anuncio' && !s.premio_revelado ? 'lima' : 'claro'}"
           id="revelar-premio" ${s.premio_revelado ? 'disabled' : ''}>2 · Revelar el premio${
             s.premio_revelado ? ' ✓' : ''}</button>
-        <button class="btn ${s.estado === 'anuncio' && s.premio_revelado ? 'lima' : 'claro'}" data-sorteo="abierto">3 · Abrir la inscripción</button>
-        <button class="btn ${s.estado === 'abierto' ? 'lima' : 'claro'}" data-sorteo="cerrado">4 · Cerrar la inscripción</button>
+        <button class="btn ${s.estado === 'anuncio' && s.premio_revelado ? 'lima' : 'claro'}"
+          data-sorteo="abierto">3 · ${porEncuesta() ? 'Lanzar la encuesta' : 'Abrir la inscripción'}</button>
+        <button class="btn ${s.estado === 'abierto' ? 'lima' : 'claro'}"
+          data-sorteo="cerrado">4 · ${porEncuesta() ? 'Cerrar la encuesta' : 'Cerrar la inscripción'}</button>
         <button class="btn ${s.estado === 'cerrado' ? 'lima' : 'claro'}" id="sortear"
           ${cuantas ? '' : 'disabled'}>5 · Sortear la ganadora</button>
       </div>
@@ -4061,16 +4590,35 @@ async function guardarTextosSorteo(){
    de todas. El aviso es lo que las hace mirar la app. */
 async function moverSorteo(estado){
   const caja = $('#so-msg');
+  const conEncuesta = porEncuesta();
   try{
     const { error } = await sb.from('sorteo')
       .update({ estado, actualizado_en: new Date().toISOString() }).eq('id', 1);
     if(error) throw error;
+
+    /* Cuando se entra respondiendo, abrir y cerrar el sorteo es
+       abrir y cerrar la encuesta: son el mismo gesto, y separarlos
+       en dos pantallas sería pedirle acordarse de los dos. */
+    if(conEncuesta && (estado === 'abierto' || estado === 'cerrado')){
+      const { error: e2 } = await sb.from('encuesta').update({
+        estado: estado === 'abierto' ? 'abierta' : 'cerrada',
+        actualizado_en: new Date().toISOString() }).eq('id', 1);
+      if(e2) throw e2;
+    }
+
     let recado = 'Listo.';
     if(estado === 'abierto'){
-      const r = await avisarATodas('¡Se abrió el sorteo!',
-        'Entra a la app ahora y toca "Quiero participar". Se cierra en unos minutos.');
-      recado = r.ok ? 'Inscripción abierta y avisada.' : 'Abierta, pero el aviso falló: ' + r.mensaje;
+      const r = conEncuesta
+        ? await avisarATodas('Encuesta del torneo · y sorteo',
+            'Cuéntanos qué te pareció la Batalla de Equipos. Son tres preguntas, y quienes '
+            + 'respondan entran al sorteo.')
+        : await avisarATodas('¡Se abrió el sorteo!',
+            'Entra a la app ahora y toca "Quiero participar". Se cierra en unos minutos.');
+      recado = r.ok
+        ? (conEncuesta ? 'Encuesta lanzada y avisada.' : 'Inscripción abierta y avisada.')
+        : 'Abierta, pero el aviso falló: ' + r.mensaje;
     }
+    if(estado === 'cerrado' && conEncuesta) recado = 'Encuesta cerrada. Ya puedes sortear.';
     await cargar();
     aviso(caja, recado);
     setTimeout(pintar, 900);
@@ -4081,7 +4629,7 @@ async function moverSorteo(estado){
    del navegador, que es el bueno, no el de Math.random. */
 async function sortearGanadora(){
   const caja = $('#so-msg');
-  const dentro = D.sorteoPart.slice();
+  const dentro = participantes().slice();
   if(!dentro.length) return aviso(caja, 'No entró nadie todavía.', true);
   /* El nombre se saca después de confirmar, a propósito: así nadie
      —ni la administradora— lo sabe antes, y no hay forma de repetir
@@ -4841,6 +5389,17 @@ function enlazar(){
   if($('#resortear'))      $('#resortear').onclick      = sortearGanadora;
   if($('#revelar-premio')) $('#revelar-premio').onclick = revelarPremio;
   if($('#so-guardar'))     $('#so-guardar').onclick     = guardarTextosSorteo;
+  if($('#ir-a-encuesta'))  $('#ir-a-encuesta').onclick  = () => {
+    vista = 'encuesta'; pintar(); window.scrollTo({ top: 0 }); };
+  document.querySelectorAll('[data-fuente]').forEach(b => b.onclick = async () => {
+    if(D.sorteo && D.sorteo.estado !== 'oculto') return;
+    try{
+      const { error } = await sb.from('sorteo')
+        .update({ fuente: b.dataset.fuente }).eq('id', 1);
+      if(error) throw error;
+      await cargar(); pintar();
+    }catch(e){ aviso($('#so-msg'), 'No se pudo cambiar: ' + (e.message ?? e), true); }
+  });
 
   /* --- el podio --- */
   document.querySelectorAll('[data-podio]').forEach(b => b.onclick = () => {
@@ -4861,6 +5420,23 @@ function enlazar(){
     moverPodio({ revelado: Math.min(3, (D.podio?.revelado ?? 0) + 1) });
   if($('#pd-atras'))  $('#pd-atras').onclick  = () =>
     moverPodio({ revelado: Math.max(0, (D.podio?.revelado ?? 0) - 1) });
+  /* --- la encuesta --- */
+  document.querySelectorAll('[data-enc]').forEach(b => b.onclick = () => moverEncuesta(b.dataset.enc));
+  if($('#en-guardar'))    $('#en-guardar').onclick    = guardarTextosEncuesta;
+  if($('#np-crear'))      $('#np-crear').onclick      = crearPregunta;
+  if($('#np-lote-crear')) $('#np-lote-crear').onclick = crearPreguntasEnLote;
+  if($('#enc-bajar'))     $('#enc-bajar').onclick     = bajarEncuesta;
+  ['sube','baja','activa','borra','oblig'].forEach(que =>
+    document.querySelectorAll(`[data-preg-${que}]`).forEach(b => b.onclick = () =>
+      tocarPregunta(Number(b.dataset['preg' + que[0].toUpperCase() + que.slice(1)]), que)));
+  document.querySelectorAll('[data-enc-escala]').forEach(b => b.onclick = () => {
+    borrador[b.dataset.encEscala] = Number(b.dataset.valor); pintar(); });
+  document.querySelectorAll('[data-enc-opcion]').forEach(b => b.onclick = () => {
+    borrador[b.dataset.encOpcion] = b.dataset.valor; pintar(); });
+  document.querySelectorAll('[data-enc-texto]').forEach(t => t.oninput = () => {
+    borrador[t.dataset.encTexto] = t.value; });
+  if($('#enc-enviar')) $('#enc-enviar').onclick = enviarEncuesta;
+
   if($('#dip-imprimir')) $('#dip-imprimir').onclick = imprimirDiplomas;
   if($('#dip-guardar'))  $('#dip-guardar').onclick  = guardarNombresLargos;
 
@@ -5381,7 +5957,9 @@ function huella(){
     ? `${D.sorteo.estado}.${D.sorteo.premio_revelado}.${D.sorteo.ganadora_id}.${D.sorteoPart.length}`
     : '';
   const po = D.podio ? `${D.podio.estado}.${D.podio.grupo}.${D.podio.revelado}` : '';
-  return [p, n, q, e, d, t, v, g, so, po].join('#');
+  const en = (D.encuesta ? D.encuesta.estado : '') + '.' + D.encPreguntas.length
+           + '.' + D.encRespuestas.length;
+  return [p, n, q, e, d, t, v, g, so, po, en].join('#');
 }
 
 /* Tres momentos: al volver a la app, al tocar la pantalla después
